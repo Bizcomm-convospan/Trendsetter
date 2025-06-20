@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useActionState, useFormStatus } from 'react'; // Changed from react-dom
+import { useActionState, useFormStatus } from 'react';
 import { handleDiscoverTrends, ActionResponse } from '@/app/actions';
 import type { DiscoverTrendsOutput, DiscoveredTrend } from '@/ai/flows/discover-trends-flow';
 import { Button } from '@/components/ui/button';
@@ -51,10 +51,9 @@ function TrendCard({ trend }: { trend: DiscoveredTrend }) {
 export function TrendDiscoveryClient() {
   const [trendsData, setTrendsData] = useState<DiscoverTrendsOutput | null>(null);
   const { toast } = useToast();
-  const { pending } = useFormStatus();
 
   const initialState: ActionResponse<DiscoverTrendsOutput> = {};
-  const [state, formAction] = useActionState(handleDiscoverTrends, initialState);
+  const [state, formAction, isDiscovering] = useActionState(handleDiscoverTrends, initialState);
 
   useEffect(() => {
     if (state?.data) {
@@ -103,6 +102,7 @@ export function TrendDiscoveryClient() {
                 name="topic" 
                 placeholder="e.g., technology, marketing, finance" 
                 className="text-base"
+                disabled={isDiscovering}
               />
               {state?.validationErrors?.topic && (
                 <p className="text-sm text-destructive">{state.validationErrors.topic.join(', ')}</p>
@@ -115,7 +115,7 @@ export function TrendDiscoveryClient() {
         </form>
       </Card>
 
-      {pending && !trendsData && (
+      {isDiscovering && !trendsData && (
         <div className="text-center py-10">
           <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
           <p className="mt-4 text-lg text-muted-foreground">Discovering trends...</p>

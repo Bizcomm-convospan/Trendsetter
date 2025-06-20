@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useActionState, useFormStatus } from 'react'; // Changed from react-dom
+import { useActionState, useFormStatus } from 'react';
 import { handleFindProspects, ActionResponse } from '@/app/actions';
 import type { AutonomousProspectingOutput, ProspectData } from '@/ai/flows/autonomous-prospecting';
 import { Button } from '@/components/ui/button';
@@ -57,11 +57,9 @@ function ProspectCard({ prospect }: { prospect: ProspectData }) {
 export function ProspectingClient() {
   const [prospects, setProspects] = useState<AutonomousProspectingOutput | null>(null);
   const { toast } = useToast();
-  const { pending } = useFormStatus();
-
 
   const initialState: ActionResponse<AutonomousProspectingOutput> = {};
-  const [state, formAction] = useActionState(handleFindProspects, initialState); // Changed to useActionState
+  const [state, formAction, isProspecting] = useActionState(handleFindProspects, initialState); 
 
   useEffect(() => {
     if (state?.data) {
@@ -106,14 +104,14 @@ export function ProspectingClient() {
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="industry" className="text-base font-semibold">Industry</Label>
-                <Input id="industry" name="industry" placeholder="e.g., tech, healthcare" required className="text-base" />
+                <Input id="industry" name="industry" placeholder="e.g., tech, healthcare" required className="text-base" disabled={isProspecting} />
                 {state?.validationErrors?.industry && (
                   <p className="text-sm text-destructive">{state.validationErrors.industry.join(', ')}</p>
                 )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="region" className="text-base font-semibold">Region</Label>
-                <Input id="region" name="region" placeholder="e.g., US, Europe" required className="text-base" />
+                <Input id="region" name="region" placeholder="e.g., US, Europe" required className="text-base" disabled={isProspecting} />
                  {state?.validationErrors?.region && (
                   <p className="text-sm text-destructive">{state.validationErrors.region.join(', ')}</p>
                 )}
@@ -121,7 +119,7 @@ export function ProspectingClient() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="jobTitles" className="text-base font-semibold">Job Titles (comma-separated)</Label>
-              <Input id="jobTitles" name="jobTitles" placeholder="e.g., CEO, CTO, Marketing Manager" required className="text-base" />
+              <Input id="jobTitles" name="jobTitles" placeholder="e.g., CEO, CTO, Marketing Manager" required className="text-base" disabled={isProspecting} />
               <p className="text-xs text-muted-foreground">Enter multiple job titles separated by commas.</p>
               {state?.validationErrors?.jobTitles && (
                 <p className="text-sm text-destructive">{state.validationErrors.jobTitles.join(', ')}</p>
@@ -134,7 +132,7 @@ export function ProspectingClient() {
         </form>
       </Card>
 
-      {pending && !prospects && (
+      {isProspecting && !prospects && (
         <div className="text-center py-10">
           <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
           <p className="mt-4 text-lg text-muted-foreground">Searching for prospects...</p>
