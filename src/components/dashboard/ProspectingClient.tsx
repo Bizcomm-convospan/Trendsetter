@@ -2,7 +2,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useActionState, useFormStatus } from 'react';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { handleFindProspects, ActionResponse } from '@/app/actions';
 import type { AutonomousProspectingOutput, ProspectData } from '@/ai/flows/autonomous-prospecting';
 import { Button } from '@/components/ui/button';
