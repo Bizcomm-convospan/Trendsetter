@@ -3,8 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
-import { handleDiscoverTrends, ActionResponse } from '@/app/actions';
+import { useFormStatus } from 'react-dom'; // Ensure import is from react-dom
+import { handleDiscoverTrends, type ActionResponse } from '@/app/actions';
 import type { DiscoverTrendsOutput, DiscoveredTrend } from '@/ai/flows/discover-trends-flow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -98,10 +98,10 @@ export function TrendDiscoveryClient() {
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="topic" className="text-base font-semibold">Focus Topic (Optional)</Label>
-              <Input 
-                id="topic" 
-                name="topic" 
-                placeholder="e.g., technology, marketing, finance" 
+              <Input
+                id="topic"
+                name="topic"
+                placeholder="e.g., technology, marketing, finance"
                 className="text-base"
                 disabled={isDiscovering}
               />

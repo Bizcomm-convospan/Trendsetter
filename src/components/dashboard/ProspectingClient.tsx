@@ -3,8 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
-import { handleFindProspects, ActionResponse } from '@/app/actions';
+import { useFormStatus } from 'react-dom'; // Ensure import is from react-dom
+import { handleFindProspects, type ActionResponse } from '@/app/actions';
 import type { AutonomousProspectingOutput, ProspectData } from '@/ai/flows/autonomous-prospecting';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,7 +60,7 @@ export function ProspectingClient() {
   const { toast } = useToast();
 
   const initialState: ActionResponse<AutonomousProspectingOutput> = {};
-  const [state, formAction, isProspecting] = useActionState(handleFindProspects, initialState); 
+  const [state, formAction, isProspecting] = useActionState(handleFindProspects, initialState);
 
   useEffect(() => {
     if (state?.data) {

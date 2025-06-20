@@ -2,9 +2,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useActionState } from 'react'; 
-import { useFormStatus } from 'react-dom';
-import { handleGenerateArticle, ActionResponse } from '@/app/actions';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom'; // Ensure import is from react-dom
+import { handleGenerateArticle, type ActionResponse } from '@/app/actions';
 import type { GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,7 +31,7 @@ export function ContentCreationClient() {
   const { toast } = useToast();
 
   const initialState: ActionResponse<GenerateSeoArticleOutput> = {};
-  const [state, formAction] = useActionState(handleGenerateArticle, initialState); 
+  const [state, formAction] = useActionState(handleGenerateArticle, initialState);
 
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [copiedTitle, setCopiedTitle] = useState(false);
@@ -94,11 +94,11 @@ export function ContentCreationClient() {
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="trendingTopic" className="text-base font-semibold">Trending Topic</Label>
-              <Input 
-                id="trendingTopic" 
-                name="trendingTopic" 
-                placeholder="e.g., AI innovations in 2025" 
-                required 
+              <Input
+                id="trendingTopic"
+                name="trendingTopic"
+                placeholder="e.g., AI innovations in 2025"
+                required
                 className="text-base"
               />
               {state?.validationErrors?.trendingTopic && (
@@ -107,10 +107,10 @@ export function ContentCreationClient() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="simulatedTrends" className="text-base font-semibold">Simulated Trend Sources</Label>
-              <Textarea 
-                id="simulatedTrends" 
-                name="simulatedTrends" 
-                readOnly 
+              <Textarea
+                id="simulatedTrends"
+                name="simulatedTrends"
+                readOnly
                 rows={5}
                 className="bg-muted/50 text-sm"
                 value={`Reddit, YouTube, Twitter trends as of Friday, June 20, 2025, 02:08 PM IST will be considered by the AI.`}
@@ -147,17 +147,17 @@ export function ContentCreationClient() {
                   Copy
                 </Button>
               </div>
-              <Image 
-                src={`https://placehold.co/600x400.png`} 
-                alt="Placeholder for generated image" 
-                width={600} 
-                height={400} 
+              <Image
+                src={`https://placehold.co/600x400.png`}
+                alt="Placeholder for generated image"
+                width={600}
+                height={400}
                 className="mt-4 rounded-md shadow-md object-cover aspect-video"
                 data-ai-hint="article technology"
               />
                <p className="text-xs text-muted-foreground mt-1">Placeholder image. Use the prompt to generate an actual image.</p>
             </div>
-            
+
             <div>
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-semibold">
@@ -175,7 +175,7 @@ export function ContentCreationClient() {
             </div>
           </CardContent>
           <CardFooter className="border-t pt-6">
-            <Button 
+            <Button
               className="w-full sm:w-auto bg-accent hover:bg-accent/90"
               onClick={() => toast({ title: "WordPress Publishing", description: "This is a placeholder. Integration with WordPress would happen here." })}
             >
