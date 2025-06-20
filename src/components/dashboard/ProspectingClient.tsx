@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react'; // Changed from react-dom
 import { handleFindProspects, ActionResponse } from '@/app/actions';
 import type { AutonomousProspectingOutput, ProspectData } from '@/ai/flows/autonomous-prospecting';
 import { Button } from '@/components/ui/button';
@@ -60,7 +61,7 @@ export function ProspectingClient() {
 
 
   const initialState: ActionResponse<AutonomousProspectingOutput> = {};
-  const [state, formAction] = useFormState(handleFindProspects, initialState);
+  const [state, formAction] = useActionState(handleFindProspects, initialState); // Changed to useActionState
 
   useEffect(() => {
     if (state?.data) {

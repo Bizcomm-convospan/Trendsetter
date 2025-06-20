@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react'; // Changed from react-dom
 import { handleDiscoverTrends, ActionResponse } from '@/app/actions';
 import type { DiscoverTrendsOutput, DiscoveredTrend } from '@/ai/flows/discover-trends-flow';
 import { Button } from '@/components/ui/button';
@@ -54,7 +54,7 @@ export function TrendDiscoveryClient() {
   const { pending } = useFormStatus();
 
   const initialState: ActionResponse<DiscoverTrendsOutput> = {};
-  const [state, formAction] = useFormState(handleDiscoverTrends, initialState);
+  const [state, formAction] = useActionState(handleDiscoverTrends, initialState); // Changed to useActionState
 
   useEffect(() => {
     if (state?.data) {

@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react'; // Changed from react-dom
 import { handleGenerateArticle, ActionResponse } from '@/app/actions';
 import type { GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,7 @@ export function ContentCreationClient() {
   const { toast } = useToast();
 
   const initialState: ActionResponse<GenerateSeoArticleOutput> = {};
-  const [state, formAction] = useFormState(handleGenerateArticle, initialState);
+  const [state, formAction] = useActionState(handleGenerateArticle, initialState); // Changed to useActionState
 
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [copiedTitle, setCopiedTitle] = useState(false);
