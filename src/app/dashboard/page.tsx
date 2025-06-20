@@ -1,8 +1,10 @@
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Users, Zap, TrendingUp } from "lucide-react"; // Added TrendingUp
-import Link from "next/link";
+import { Zap } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TrendDiscoveryClient } from '@/components/dashboard/TrendDiscoveryClient';
+import { ContentCreationClient } from '@/components/dashboard/ContentCreationClient';
+import { ProspectingClient } from '@/components/dashboard/ProspectingClient';
 
 export default function DashboardPage() {
   return (
@@ -14,59 +16,55 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xl font-semibold">
-              Trend Discovery
-            </CardTitle>
-            <TrendingUp className="h-6 w-6 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <CardDescription className="mb-4">
-              Identify current trends, optionally focused on a specific topic.
-            </CardDescription>
-            <Button asChild className="w-full bg-primary hover:bg-primary/90">
-              <Link href="/dashboard/trends">Discover Trends</Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="trends" className="w-full">
+        <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 mb-6">
+          <TabsTrigger value="trends" className="py-2.5 text-base">Trend Discovery</TabsTrigger>
+          <TabsTrigger value="content" className="py-2.5 text-base">Content Creation</TabsTrigger>
+          <TabsTrigger value="prospecting" className="py-2.5 text-base">Autonomous Prospecting</TabsTrigger>
+        </TabsList>
+        <TabsContent value="trends">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold">Trend Discovery Engine</CardTitle>
+              <CardDescription>
+                Identify current trends, optionally focused on a specific topic. AI will (simulatedly) analyze various sources.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TrendDiscoveryClient />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="content">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold">Content Creation Engine</CardTitle>
+              <CardDescription>
+                Generate SEO-optimized articles based on trending topics.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ContentCreationClient />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="prospecting">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold">Autonomous Prospecting Engine</CardTitle>
+              <CardDescription>
+                Define your Ideal Customer Profile and let AI find relevant prospects.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ProspectingClient />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
+      <section className="grid gap-6 md:grid-cols-1">
         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xl font-semibold">
-              Content Creation
-            </CardTitle>
-            <FileText className="h-6 w-6 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <CardDescription className="mb-4">
-              Generate SEO-optimized articles based on trending topics.
-            </CardDescription>
-            <Button asChild className="w-full bg-primary hover:bg-primary/90">
-              <Link href="/dashboard/content-creation">Start Creating</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xl font-semibold">
-              Autonomous Prospecting
-            </CardTitle>
-            <Users className="h-6 w-6 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <CardDescription className="mb-4">
-              Define your Ideal Customer Profile and let AI find relevant prospects.
-            </CardDescription>
-            <Button asChild className="w-full bg-primary hover:bg-primary/90">
-              <Link href="/dashboard/prospecting">Find Prospects</Link>
-            </Button>
-          </CardContent>
-        </Card>
-        
-        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-3 lg:col-span-3">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xl font-semibold">
               Boost Your Outreach
@@ -78,7 +76,7 @@ export default function DashboardPage() {
               Leverage AI to stay ahead of trends and connect with the right people, effortlessly.
             </CardDescription>
              <p className="mt-4 text-sm text-muted-foreground">
-              Explore the features and start automating your growth today.
+              Explore the features above and start automating your growth today.
             </p>
           </CardContent>
         </Card>
@@ -90,11 +88,11 @@ export default function DashboardPage() {
             <CardTitle>How it Works</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-muted-foreground">
-            <p><strong>1. Discover Trends:</strong> Input a topic or let the system identify current trends using the new Trend Discovery agent.</p>
-            <p><strong>2. Generate Content:</strong> Our AI crafts engaging, SEO-friendly articles and suggests imagery based on identified trends.</p>
-            <p><strong>3. Define Your ICP:</strong> Specify your ideal customer criteria for targeted prospecting.</p>
+            <p><strong>1. Discover Trends:</strong> Use the 'Trend Discovery' tab. Input a topic or let the system identify current trends.</p>
+            <p><strong>2. Generate Content:</strong> Use the 'Content Creation' tab. Our AI crafts engaging, SEO-friendly articles and suggests imagery based on identified trends.</p>
+            <p><strong>3. Define Your ICP:</strong> Use the 'Autonomous Prospecting' tab. Specify your ideal customer criteria for targeted prospecting.</p>
             <p><strong>4. Uncover Prospects:</strong> AI scours public web data to find potential leads matching your ICP.</p>
-            <p><strong>5. Automate & Grow:</strong> Streamline your content and prospecting workflows by combining these powerful AI agents.</p>
+            <p><strong>5. Automate & Grow:</strong> Streamline your content and prospecting workflows by combining these powerful AI agents directly from this dashboard.</p>
           </CardContent>
         </Card>
       </section>
