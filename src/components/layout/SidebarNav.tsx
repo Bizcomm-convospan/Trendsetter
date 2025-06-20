@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Users, BotMessageSquare } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, TrendingUp } from 'lucide-react'; // Added TrendingUp
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/trends', label: 'Trend Discovery', icon: TrendingUp }, // Added Trend Discovery
   { href: '/dashboard/content-creation', label: 'Content Creation', icon: FileText },
   { href: '/dashboard/prospecting', label: 'Prospecting', icon: Users },
 ];

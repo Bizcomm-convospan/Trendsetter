@@ -3,3 +3,4 @@ config();
 
 import '@/ai/flows/autonomous-prospecting.ts';
 import '@/ai/flows/generate-seo-article.ts';
+import '@/ai/flows/discover-trends-flow.ts';

@@ -1,6 +1,7 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Users, Zap } from "lucide-react";
+import { FileText, Users, Zap, TrendingUp } from "lucide-react"; // Added TrendingUp
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -14,6 +15,23 @@ export default function DashboardPage() {
       </header>
 
       <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xl font-semibold">
+              Trend Discovery
+            </CardTitle>
+            <TrendingUp className="h-6 w-6 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <CardDescription className="mb-4">
+              Identify current trends, optionally focused on a specific topic.
+            </CardDescription>
+            <Button asChild className="w-full bg-primary hover:bg-primary/90">
+              <Link href="/dashboard/trends">Discover Trends</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xl font-semibold">
@@ -48,7 +66,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
         
-        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-2 lg:col-span-1">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-3 lg:col-span-3">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xl font-semibold">
               Boost Your Outreach
@@ -72,11 +90,11 @@ export default function DashboardPage() {
             <CardTitle>How it Works</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-muted-foreground">
-            <p><strong>1. Discover Trends:</strong> Input a topic or let the (simulated) system identify current trends.</p>
-            <p><strong>2. Generate Content:</strong> Our AI crafts engaging, SEO-friendly articles and suggests imagery.</p>
+            <p><strong>1. Discover Trends:</strong> Input a topic or let the system identify current trends using the new Trend Discovery agent.</p>
+            <p><strong>2. Generate Content:</strong> Our AI crafts engaging, SEO-friendly articles and suggests imagery based on identified trends.</p>
             <p><strong>3. Define Your ICP:</strong> Specify your ideal customer criteria for targeted prospecting.</p>
-            <p><strong>4. Uncover Prospects:</strong> AI scours the web to find potential leads matching your ICP.</p>
-            <p><strong>5. Automate & Grow:</strong> Streamline your content and prospecting workflows.</p>
+            <p><strong>4. Uncover Prospects:</strong> AI scours public web data to find potential leads matching your ICP.</p>
+            <p><strong>5. Automate & Grow:</strong> Streamline your content and prospecting workflows by combining these powerful AI agents.</p>
           </CardContent>
         </Card>
       </section>

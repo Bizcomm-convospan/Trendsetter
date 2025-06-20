@@ -1,7 +1,9 @@
+
 'use server';
 
 import { generateSeoArticle, GenerateSeoArticleInput, GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import { autonomousProspecting, IdealCustomerProfile, AutonomousProspectingOutput } from '@/ai/flows/autonomous-prospecting';
+import { discoverTrends, DiscoverTrendsInput, DiscoverTrendsOutput } from '@/ai/flows/discover-trends-flow';
 import { z } from 'zod';
 
 const GenerateArticleSchema = z.object({
@@ -12,6 +14,10 @@ const FindProspectsSchema = z.object({
   industry: z.string().min(2, "Industry must be at least 2 characters long."),
   region: z.string().min(2, "Region must be at least 2 characters long."),
   jobTitles: z.string().min(2, "Job titles must be at least 2 characters long."),
+});
+
+const DiscoverTrendsSchema = z.object({
+  topic: z.string().optional(),
 });
 
 export interface ActionResponse<T> {
@@ -80,5 +86,29 @@ export async function handleFindProspects(prevState: any, formData: FormData): P
   } catch (e: any) {
     console.error("Error finding prospects:", e);
     return { error: e.message || "Failed to find prospects. Please try again." };
+  }
+}
+
+export async function handleDiscoverTrends(prevState: any, formData: FormData): Promise<ActionResponse<DiscoverTrendsOutput>> {
+  const rawFormData = {
+    topic: formData.get('topic') as string | undefined,
+  };
+
+  const validatedFields = DiscoverTrendsSchema.safeParse(rawFormData);
+
+  if (!validatedFields.success) {
+    return {
+      validationErrors: validatedFields.error.flatten().fieldErrors,
+      error: "Validation failed. Please check your input.",
+    };
+  }
+
+  try {
+    const input: DiscoverTrendsInput = { topic: validatedFields.data.topic };
+    const trends = await discoverTrends(input);
+    return { data: trends };
+  } catch (e: any) {
+    console.error("Error discovering trends:", e);
+    return { error: e.message || "Failed to discover trends. Please try again." };
   }
 }
