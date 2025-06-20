@@ -54,7 +54,7 @@ export function TrendDiscoveryClient() {
   const { pending } = useFormStatus();
 
   const initialState: ActionResponse<DiscoverTrendsOutput> = {};
-  const [state, formAction] = useActionState(handleDiscoverTrends, initialState); // Changed to useActionState
+  const [state, formAction] = useActionState(handleDiscoverTrends, initialState);
 
   useEffect(() => {
     if (state?.data) {
