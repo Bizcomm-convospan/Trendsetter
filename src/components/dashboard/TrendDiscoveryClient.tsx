@@ -10,10 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, TrendingUp, Lightbulb, BarChart3 } from 'lucide-react';
+import { Loader2, TrendingUp, BarChart3, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -25,31 +25,7 @@ function SubmitButton() {
   );
 }
 
-function TrendCard({ trend }: { trend: DiscoveredTrend }) {
-  return (
-    <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold flex items-center">
-          <Lightbulb className="mr-2 h-5 w-5 text-primary" />
-          {trend.title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Badge variant="secondary">{trend.source}</Badge>
-        </div>
-        <div>
-          <Label htmlFor={`relevance-${trend.title.replace(/\s+/g, '-')}`} className="text-xs text-muted-foreground">Relevance</Label>
-          <Progress id={`relevance-${trend.title.replace(/\s+/g, '-')}`} value={trend.relevanceScore * 100} className="h-2 mt-1" />
-          <p className="text-xs text-muted-foreground text-right mt-0.5">{(trend.relevanceScore * 100).toFixed(0)}%</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-
-export function TrendDiscoveryClient() {
+export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic: string) => void }) {
   const [trendsData, setTrendsData] = useState<DiscoverTrendsOutput | null>(null);
   const { toast } = useToast();
 
@@ -71,7 +47,7 @@ export function TrendDiscoveryClient() {
         description: state.error,
       });
     }
-    if (state?.validationErrors) {
+     if (state?.validationErrors) {
        Object.entries(state.validationErrors).forEach(([key, messages]) => {
         if (messages && messages.length > 0) {
           toast({
@@ -91,7 +67,7 @@ export function TrendDiscoveryClient() {
           <CardTitle className="text-2xl font-bold">Trend Discovery Engine</CardTitle>
           <CardDescription>
             Enter an optional topic to focus the trend discovery, or leave blank for general trends.
-            The AI will (simulatedly) analyze various sources to find relevant insights.
+            The AI will analyze various sources to provide actionable insights.
           </CardDescription>
         </CardHeader>
         <form action={formAction}>
@@ -125,23 +101,53 @@ export function TrendDiscoveryClient() {
 
       {trendsData && (
         <section className="animate-fadeIn">
-          <h2 className="text-2xl font-bold mb-6 flex items-center">
+          <h2 className="text-2xl font-bold mb-4 flex items-center">
             <BarChart3 className="mr-3 h-7 w-7 text-primary" />
             Discovered Trends ({trendsData.discoveredTrends.length} found)
           </h2>
           {trendsData.discoveredTrends.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {trendsData.discoveredTrends.map((trend, index) => (
-                <TrendCard key={`${trend.title}-${index}`} trend={trend} />
-              ))}
-            </div>
+            <Card className="shadow-md">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[25%]">Trend Title</TableHead>
+                    <TableHead className="w-[40%]">Description</TableHead>
+                    <TableHead>Keywords</TableHead>
+                    {onSelectTrend && <TableHead className="text-right">Action</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {trendsData.discoveredTrends.map((trend) => (
+                    <TableRow key={trend.title}>
+                      <TableCell className="font-medium text-foreground">{trend.title}</TableCell>
+                      <TableCell className="text-muted-foreground">{trend.description}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {trend.keywords.map(keyword => (
+                            <Badge key={keyword} variant="secondary">{keyword}</Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      {onSelectTrend && (
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" onClick={() => onSelectTrend(trend.title)}>
+                            <FileText className="mr-2 h-4 w-4" />
+                            Generate Article
+                          </Button>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
           ) : (
             <Card className="shadow-md">
               <CardContent className="py-10 text-center">
                 <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-xl font-semibold text-foreground">No Trends Found</p>
                 <p className="text-muted-foreground mt-2">
-                  Try providing a topic or the AI might not have found general trends at this moment.
+                  The AI couldn't find any trends for the given topic. Please try another one.
                 </p>
               </CardContent>
             </Card>

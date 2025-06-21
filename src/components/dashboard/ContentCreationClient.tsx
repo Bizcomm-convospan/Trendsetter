@@ -26,9 +26,19 @@ function SubmitButton() {
   );
 }
 
-export function ContentCreationClient() {
+export function ContentCreationClient({ initialTopic }: { initialTopic?: string }) {
   const [articleData, setArticleData] = useState<GenerateSeoArticleOutput | null>(null);
   const { toast } = useToast();
+  const [topic, setTopic] = useState(initialTopic || '');
+
+  useEffect(() => {
+    if (initialTopic) {
+      setTopic(initialTopic);
+      // Clear previous article data when a new topic is selected
+      setArticleData(null);
+    }
+  }, [initialTopic]);
+
 
   const initialState: ActionResponse<GenerateSeoArticleOutput> = {};
   const [state, formAction] = useActionState(handleGenerateArticle, initialState);
@@ -100,6 +110,8 @@ export function ContentCreationClient() {
                 placeholder="e.g., AI innovations in 2025"
                 required
                 className="text-base"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
               />
               {state?.validationErrors?.trendingTopic && (
                 <p className="text-sm text-destructive">{state.validationErrors.trendingTopic.join(', ')}</p>

@@ -12,6 +12,12 @@ import { WorkflowGuide } from '@/components/dashboard/WorkflowGuide';
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('trends');
+  const [selectedTrend, setSelectedTrend] = useState<string | undefined>(undefined);
+
+  const handleSelectTrend = (trendTitle: string) => {
+    setSelectedTrend(trendTitle);
+    setActiveTab('content');
+  };
 
   return (
     <div className="space-y-8">
@@ -35,11 +41,11 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="text-xl font-semibold">Trend Discovery Engine</CardTitle>
               <CardDescription>
-                Identify current trends, optionally focused on a specific topic. AI will (simulatedly) analyze various sources.
+                Identify current trends, optionally focused on a specific topic. AI will analyze various sources to provide actionable insights.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <TrendDiscoveryClient />
+              <TrendDiscoveryClient onSelectTrend={handleSelectTrend} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -52,7 +58,7 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ContentCreationClient />
+              <ContentCreationClient initialTopic={selectedTrend} />
             </CardContent>
           </Card>
         </TabsContent>
