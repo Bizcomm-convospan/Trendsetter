@@ -57,3 +57,13 @@ This is how the components work together to fulfill a user request:
     *   If a `webhookUrl` exists, it sends a `POST` request to that URL with the job results.
 7.  **User (Browser):** The listener sees the `complete` status and displays the final report.
 8.  **External Service (e.g., WordPress):** Receives the webhook notification and processes the job result.
+
+## Testing, Monitoring, and Tooling
+
+A robust set of tools is recommended to ensure the application remains stable, performant, and easy to debug.
+
+-   **API Route Testing (Postman / Insomnia):** For manually testing the API endpoints like `/api/prospect` and `/api/job-status`. This is useful for verifying request/response formats and authentication mechanisms.
+-   **Local Development (Firebase Emulator Suite):** To run a local instance of Firestore and Firebase Functions. This allows for rapid, offline development and testing of the backend logic without incurring costs or affecting live data.
+-   **Backend Observability (Firebase Logs):** For monitoring and tracing the execution of background jobs. Structured logs within the Firebase Functions provide detailed insights into the job lifecycle, helping to debug failures or performance issues. For more advanced use cases, integrating with services like Sentry or Datadog is recommended.
+-   **Crawler Performance (Lighthouse):** To periodically audit the performance of the crawler service. While not a direct part of the application, ensuring the crawler is fast and efficient is crucial for the overall system's responsiveness.
+-   **Automated API Testing (Jest + Supertest):** For creating automated tests for the Next.js API routes. This ensures that changes to the API Gateway do not introduce regressions and that the endpoints behave as expected under various conditions.
