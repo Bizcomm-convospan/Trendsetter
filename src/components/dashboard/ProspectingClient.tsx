@@ -93,39 +93,25 @@ export function ProspectingClient() {
         body: JSON.stringify({ url }),
         headers: { 'Content-Type': 'application/json' },
       });
-
-      // The raw response from the API. `prospects` is a string here.
-      const rawData: { summary: string; prospects: string; error?: string } = await res.json();
+      
+      const rawData: { summary: string; prospects: ExtractedProspect[]; error?: string, details?: any } = await res.json();
 
       if (!res.ok || rawData.error) {
-        throw new Error(rawData.error || 'An unknown error occurred');
-      }
-      
-      // Parse the JSON string from the AI
-      let parsedProspects: ExtractedProspect[] = [];
-      try {
-        parsedProspects = JSON.parse(rawData.prospects || '[]');
-        if (!Array.isArray(parsedProspects)) {
-          // Handle cases where the AI might not return an array
-          parsedProspects = [];
+        let errorMessage = rawData.error || 'An unknown error occurred';
+        if(rawData.details) {
+            errorMessage += ` ${JSON.stringify(rawData.details)}`;
         }
-      } catch (parseError) {
-        console.error("Failed to parse prospects JSON from AI:", parseError);
-        toast({
-          variant: "destructive",
-          title: "Data Parsing Error",
-          description: "The AI returned data in an unexpected format. Please try again.",
-        });
+        throw new Error(errorMessage);
       }
 
       setExtractionResult({
         summary: rawData.summary,
-        prospects: parsedProspects,
+        prospects: rawData.prospects || [],
       });
 
       toast({
         title: "Extraction Complete!",
-        description: `Found ${parsedProspects.length} potential prospects.`,
+        description: `Found ${rawData.prospects?.length || 0} potential prospects.`,
       });
 
     } catch (err: any) {

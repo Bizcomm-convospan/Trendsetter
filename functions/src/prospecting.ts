@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview An AI-powered agent designed to crawl a given URL, extract prospect information, and return it as a string.
+ * @fileOverview An AI-powered agent designed to crawl a given URL, extract prospect information, save it to Firestore, and return the structured data.
  *
  * - autonomousProspecting - A function that handles the prospect extraction from a URL.
  * - AutonomousProspectingInput - The input type for the autonomousProspecting function.
@@ -11,14 +11,13 @@
 import {ai} from './genkit';
 import {z} from 'zod';
 import { crawlPage } from './lib/crawl';
+import * as admin from 'firebase-admin';
 
 const AutonomousProspectingInputSchema = z.object({
   url: z.string().url().describe('The URL of the website to crawl and extract prospects from.'),
 });
 export type AutonomousProspectingInput = z.infer<typeof AutonomousProspectingInputSchema>;
 
-// Note: This schema is for type safety within the function. 
-// The client will use its own version of ExtractedProspect.
 export const ExtractedProspectSchema = z.object({
     companyName: z.string().optional().describe('The name of the company found.'),
     contactPersons: z.array(z.string()).optional().describe('A list of contact persons found, including their roles if available.'),
@@ -28,17 +27,15 @@ export const ExtractedProspectSchema = z.object({
 });
 export type ExtractedProspect = z.infer<typeof ExtractedProspectSchema>;
 
-
 const AutonomousProspectingOutputSchema = z.object({
   summary: z.string().describe("A summary of the extracted information."),
-  prospects: z.string().describe("A stringified JSON array of structured prospect data extracted from the page.")
+  prospects: z.array(ExtractedProspectSchema).describe("An array of structured prospect data extracted from the page.")
 });
 export type AutonomousProspectingOutput = z.infer<typeof AutonomousProspectingOutputSchema>;
 
+// Helper to remove markdown ```json ... ``` wrappers from LLM output
 function cleanJsonString(str: string): string {
-    // Remove markdown code blocks
     let cleaned = str.replace(/```json/g, '').replace(/```/g, '');
-    // Trim whitespace
     cleaned = cleaned.trim();
     return cleaned;
 }
@@ -58,7 +55,7 @@ const autonomousProspectingFlow = ai.defineFlow(
         console.error(`Crawling failed for ${input.url}:`, error);
         return {
             summary: `Failed to crawl the URL: ${input.url}. Error: ${error.message}`,
-            prospects: "[]",
+            prospects: [],
         };
     }
     
@@ -76,15 +73,52 @@ const autonomousProspectingFlow = ai.defineFlow(
         `,
     });
 
-    const rawProspectsString = output?.text || "[]";
-    const cleanedProspectsString = cleanJsonString(rawProspectsString);
+    const rawJsonString = output?.text || "[]";
+    const cleanedJsonString = cleanJsonString(rawJsonString);
     
-    // Note: Saving to Firestore was removed because this function no longer has access to the structured data.
-    // The parsing now happens on the client side.
+    // 3. Parse and validate the extracted data
+    let prospects: ExtractedProspect[] = [];
+    try {
+        const parsedData = JSON.parse(cleanedJsonString);
+        const validationResult = z.array(ExtractedProspectSchema).safeParse(parsedData);
+        if (validationResult.success) {
+            prospects = validationResult.data;
+        } else {
+            console.error("Zod validation failed:", validationResult.error);
+            // Decide if you want to throw an error or return empty prospects
+        }
+    } catch (e) {
+        console.error("Failed to parse JSON from LLM output:", e);
+        // Decide if you want to throw an error or return empty prospects
+    }
+
+    // 4. Save valid prospects to Firestore
+    if (prospects.length > 0) {
+        const db = admin.firestore();
+        const batch = db.batch();
+        
+        prospects.forEach(prospect => {
+            const docRef = db.collection('prospects').doc(); // Auto-generate ID
+            const prospectWithMetadata = {
+                ...prospect,
+                sourceUrl: input.url,
+                extractedAt: new Date().toISOString(),
+            };
+            batch.set(docRef, prospectWithMetadata);
+        });
+
+        try {
+            await batch.commit();
+            console.log(`${prospects.length} prospects saved to Firestore.`);
+        } catch (error) {
+            console.error("Error saving prospects to Firestore:", error);
+            // Don't block the response to the user if saving fails.
+        }
+    }
 
     return {
-        summary: "AI has extracted the following potential prospects from the provided URL. Results are displayed below.",
-        prospects: cleanedProspectsString,
+        summary: `AI has extracted ${prospects.length} potential prospects from the provided URL. Results are displayed below.`,
+        prospects: prospects,
     };
   }
 );
