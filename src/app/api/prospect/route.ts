@@ -1,6 +1,5 @@
 
 import { NextResponse } from 'next/server';
-import { autonomousProspecting, AutonomousProspectingInput } from '@/ai/flows/autonomous-prospecting';
 import { z } from 'zod';
 
 const ProspectRequestSchema = z.object({
@@ -22,20 +21,37 @@ export async function POST(request: Request) {
       );
     }
 
-    const input: AutonomousProspectingInput = { url: validatedFields.data.url };
-    const result = await autonomousProspecting(input);
-    
-    return NextResponse.json(result);
+    const functionUrl = process.env.PROSPECTING_FUNCTION_URL;
+
+    if (!functionUrl || functionUrl.includes('your-firebase-cloud-function')) {
+        const errorMessage = "PROSPECTING_FUNCTION_URL environment variable is not set. Please configure it with your deployed Cloud Function URL in the .env file.";
+        console.error(errorMessage);
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
+    }
+
+    const response = await fetch(functionUrl, {
+      method: 'POST',
+      body: JSON.stringify({ url: validatedFields.data.url }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`Cloud Function returned status ${response.status}: ${errorBody}`);
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
 
   } catch (e: any) {
-    console.error("Error in /api/prospect:", e);
+    console.error("Error in /api/prospect proxy:", e);
     
     if (e.name === 'ZodError') {
       return NextResponse.json({ error: 'Invalid request body', details: e.errors }, { status: 400 });
     }
     
     return NextResponse.json(
-      { error: e.message || "Failed to extract prospects. Please try again." }, 
+      { error: e.message || "Failed to call prospecting function. Please try again." }, 
       { status: 500 }
     );
   }
