@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // The prospecting_jobs collection holds the status of background jobs.
+    // Client-side code needs to be able to read a document to check its status,
+    // but should not be able to write to it directly. All writes are handled
+    // by trusted server-side functions.
+    match /prospecting_jobs/{jobId} {
+      allow read: if true;
+      allow create, update, delete: if false;
+    }
+
+    // The prospects collection is a write-only target for the background
+    // AI functions. There is no client-side code that reads from this collection,
+    // so we can lock it down completely from client access.
+    match /prospects/{prospectId} {
+      allow read, write: if false;
+    }
+  }
+}
