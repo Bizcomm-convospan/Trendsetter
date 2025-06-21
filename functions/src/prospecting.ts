@@ -38,6 +38,41 @@ const AutonomousProspectingOutputSchema = z.object({
 });
 export type AutonomousProspectingOutput = z.infer<typeof AutonomousProspectingOutputSchema>;
 
+
+const crawlUrlTool = ai.defineTool({
+    name: 'crawlUrlForProspects',
+    description: 'Crawls the given URL to retrieve its HTML content for analysis.',
+    inputSchema: z.object({ url: z.string().url() }),
+    outputSchema: z.string().describe('The full HTML content of the page.'),
+}, async (input) => {
+    return crawlPage(input.url);
+});
+
+
+const extractionPrompt = ai.definePrompt({
+    name: 'prospectExtractionPrompt',
+    tools: [crawlUrlTool],
+    input: { schema: AutonomousProspectingInputSchema },
+    output: { schema: AutonomousProspectingOutputSchema },
+    prompt: `
+      You are an expert data extraction agent.
+      First, use the crawlUrlForProspects tool to get the HTML content of the following URL: {{{url}}}
+
+      Then, from the resulting HTML content, extract structured data about companies and people.
+      Specifically, look for:
+      - The primary company name.
+      - A list of people, including their full name and their role or job title.
+      - Any email addresses.
+      - Relevant links, such as LinkedIn profiles, Twitter accounts, or contact pages.
+      - Keywords that describe the company's industry.
+      
+      Finally, provide a brief summary of your findings and format the extracted data as an array of prospects.
+      If you cannot find any specific prospects, return an empty list for prospects, but still provide a summary.
+      Return the information in the specified JSON format.
+    `,
+});
+
+
 const autonomousProspectingFlow = ai.defineFlow(
   {
     name: 'autonomousProspectingFlow',
@@ -49,61 +84,25 @@ const autonomousProspectingFlow = ai.defineFlow(
     const jobDocRef = db.collection('prospecting_jobs').doc(); // Create a ref for a new job document
 
     try {
-      // 1. Set initial status to 'crawling'
+      // 1. Set initial status to 'starting'
       await jobDocRef.set({
         url: input.url,
-        status: 'crawling',
+        status: 'starting',
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // 2. Crawl the page
-      let html: string;
-      try {
-          html = await crawlPage(input.url);
-      } catch (error: any) {
-          console.error(`Crawling failed for ${input.url}:`, error);
-          await jobDocRef.update({
-            status: 'failed',
-            error: `Crawling failed: ${error.message}`,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          });
-          throw error; // Propagate the error
-      }
-      
-      // 3. Update status to 'analyzing'
+      // 2. Run the extraction prompt which will use the tool internally
+      const {output} = await extractionPrompt(input);
+      const prospects = output?.prospects || [];
+
+      // 3. Update status to 'saving'
       await jobDocRef.update({
-        status: 'analyzing',
+        status: 'saving',
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // 4. Generate content using the LLM with structured output
-      const {output} = await ai.generate({
-          prompt: `
-              You are an expert data extraction agent.
-              From the following HTML content, extract structured data about companies and people.
-              
-              Specifically, look for:
-              - The primary company name.
-              - A list of people, including their full name and their role or job title.
-              - Any email addresses.
-              - Relevant links, such as LinkedIn profiles, Twitter accounts, or contact pages.
-              - Keywords that describe the company's industry.
-
-              Return the data in the specified JSON format.
-              If you cannot find any information for a field, omit it or return an empty array.
-
-              HTML content:
-              ${html}
-          `,
-          output: {
-              schema: z.array(ExtractedProspectSchema),
-          },
-      });
-
-      const prospects = output || [];
-
-      // 5. Save valid prospects to the 'prospects' collection
+      // 4. Save valid prospects to the 'prospects' collection
       if (prospects.length > 0) {
           const batch = db.batch();
           
@@ -120,26 +119,28 @@ const autonomousProspectingFlow = ai.defineFlow(
           await batch.commit();
       }
 
-      // 6. Update job status to 'complete' and save the final data
+      // 5. Update job status to 'complete' and save the final data
       await jobDocRef.update({
         status: 'complete',
-        extractedData: prospects,
+        extractedData: output,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // 7. Return the final result to the client
+      // 6. Return the final result to the client
       return {
-          summary: `AI has extracted ${prospects.length} potential prospects from the provided URL. Results are displayed below.`,
+          summary: output?.summary || `AI has extracted ${prospects.length} potential prospects.`,
           prospects: prospects,
       };
 
     } catch (error: any) {
       // Catch any other errors during the process
-      await jobDocRef.update({
-        status: 'failed',
-        error: `Processing failed: ${error.message}`,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
+       if (jobDocRef) {
+         await jobDocRef.update({
+           status: 'failed',
+           error: `Processing failed: ${error.message}`,
+           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+         });
+       }
       throw error; // Re-throw to be handled by the caller
     }
   }
