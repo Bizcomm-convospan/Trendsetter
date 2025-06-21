@@ -6,6 +6,7 @@ jest.mock('firebase-admin', () => ({
     collection: jest.fn().mockReturnThis(),
     doc: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
+    add: jest.fn(), // Mock the add method
     get: jest.fn().mockResolvedValue({ size: 1 }), // Default: not rate-limited
     update: jest.fn().mockResolvedValue(true),
   })),
@@ -25,10 +26,11 @@ jest.mock('firebase-functions/logger', () => ({
 }));
 
 import * as admin from 'firebase-admin';
-import { onProspectingJobCreated } from './index';
+import { onProspectingJobCreated, prospect } from './index';
 import { autonomousProspecting } from './prospecting';
 import type { Event } from 'firebase-functions/v2';
 import type { DocumentSnapshot } from 'firebase-functions/v2/firestore';
+import type { Request, Response } from 'firebase-functions/v2/https';
 
 // A helper to get the mocked firestore instance
 const mockDb = admin.firestore() as jest.Mocked<any>;
@@ -137,4 +139,99 @@ describe('onProspectingJobCreated Cloud Function', () => {
       updatedAt: 'MOCK_TIMESTAMP',
     });
   });
+});
+
+describe('prospect HTTP Function', () => {
+    let mockRequest: Partial<Request>;
+    let mockResponse: Partial<Response>;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        
+        // Mock Firestore's add method to return a mock ref
+        mockDb.collection('prospecting_jobs').add.mockResolvedValue({ id: 'new-job-id-123' });
+
+        mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            send: jest.fn().mockReturnThis(),
+            json: jest.fn().mockReturnThis(),
+        };
+    });
+
+    it('should return 405 if method is not POST', async () => {
+        mockRequest = { method: 'GET' };
+        await prospect(mockRequest as Request, mockResponse as Response);
+        expect(mockResponse.status).toHaveBeenCalledWith(405);
+        expect(mockResponse.send).toHaveBeenCalledWith('Method Not Allowed');
+    });
+    
+    it('should return 400 for invalid URL in request body', async () => {
+        mockRequest = {
+            method: 'POST',
+            body: { url: 'not-a-valid-url' },
+        };
+        await prospect(mockRequest as Request, mockResponse as Response);
+        expect(mockResponse.status).toHaveBeenCalledWith(400);
+        expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
+            error: 'Validation failed. Please check your input.',
+        }));
+    });
+
+    it('should create a job and return 202 with job ID on success', async () => {
+        const validUrl = 'https://example.com';
+        mockRequest = {
+            method: 'POST',
+            body: { url: validUrl },
+        };
+        await prospect(mockRequest as Request, mockResponse as Response);
+
+        // Check if a job was added to firestore
+        expect(mockDb.collection('prospecting_jobs').add).toHaveBeenCalledWith({
+            url: validUrl,
+            status: 'queued',
+            createdAt: 'MOCK_TIMESTAMP',
+            updatedAt: 'MOCK_TIMESTAMP',
+        });
+        
+        // Check for correct response
+        expect(mockResponse.status).toHaveBeenCalledWith(202);
+        expect(mockResponse.json).toHaveBeenCalledWith({ jobId: 'new-job-id-123' });
+    });
+
+    it('should store webhookUrl if provided', async () => {
+        const validUrl = 'https://example.com';
+        const webhookUrl = 'https://webhook.site/test';
+        mockRequest = {
+            method: 'POST',
+            body: { url: validUrl, webhookUrl: webhookUrl },
+        };
+        await prospect(mockRequest as Request, mockResponse as Response);
+
+        expect(mockDb.collection('prospecting_jobs').add).toHaveBeenCalledWith({
+            url: validUrl,
+            webhookUrl: webhookUrl,
+            status: 'queued',
+            createdAt: 'MOCK_TIMESTAMP',
+            updatedAt: 'MOCK_TIMESTAMP',
+        });
+        
+        expect(mockResponse.status).toHaveBeenCalledWith(202);
+        expect(mockResponse.json).toHaveBeenCalledWith({ jobId: 'new-job-id-123' });
+    });
+    
+    it('should return 500 on Firestore error', async () => {
+        const error = new Error('Firestore write failed');
+        mockDb.collection('prospecting_jobs').add.mockRejectedValue(error);
+
+        mockRequest = {
+            method: 'POST',
+            body: { url: 'https://example.com' },
+        };
+        await prospect(mockRequest as Request, mockResponse as Response);
+
+        expect(mockResponse.status).toHaveBeenCalledWith(500);
+        expect(mockResponse.json).toHaveBeenCalledWith({
+            error: 'Firestore write failed',
+        });
+    });
 });
