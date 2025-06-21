@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
 
   if (!apiKey || apiKey.includes('your-secret-api-key-here')) {
     console.error('STATUS_API_KEY environment variable is not set on the server.');
-    // Do not expose the exact error to the client for security reasons.
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 
@@ -37,25 +36,14 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Job data is empty' }, { status: 404 });
     }
 
-    const status = jobData.status;
-    const lastUpdated = jobData.updatedAt?.toDate ? jobData.updatedAt.toDate().toISOString() : new Date().toISOString();
-
-    const responsePayload: {
-        status: string;
-        lastUpdated: string;
-        result?: { summary: string; prospects: any[] };
-    } = {
-      status,
-      lastUpdated,
+    // Simplified response payload creation, inspired by user's example.
+    const responsePayload = {
+        status: jobData.status || 'unknown',
+        // Map the 'extractedData' field from Firestore to the 'result' key in the response.
+        result: jobData.status === 'complete' ? jobData.extractedData : null,
+        lastUpdated: jobData.updatedAt?.toDate().toISOString() || null,
     };
-
-    if (status === 'complete' && jobData.extractedData) {
-      responsePayload.result = {
-        summary: jobData.extractedData.summary,
-        prospects: jobData.extractedData.prospects || [],
-      };
-    }
-
+    
     return NextResponse.json(responsePayload, { status: 200 });
 
   } catch (error: any) {
