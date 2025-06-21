@@ -1,7 +1,11 @@
+
 import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
+import * as admin from "firebase-admin";
 import { autonomousProspecting, AutonomousProspectingInput } from "./prospecting";
 import { z } from "zod";
+
+admin.initializeApp();
 
 const ProspectRequestSchema = z.object({
   url: z.string().url({ message: "A valid URL is required." }),

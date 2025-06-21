@@ -1,14 +1,16 @@
+
 'use server';
 /**
- * @fileOverview An AI-powered agent designed to crawl a given URL and extract prospect information.
+ * @fileOverview An AI-powered agent designed to crawl a given URL, extract prospect information, and save it to Firestore.
  *
- * - autonomousProspecting - A function that handles the prospect extraction from a URL.
+ * - autonomousProspecting - A function that handles the prospect extraction from a URL and saves the results.
  * - AutonomousProspectingInput - The input type for the autonomousProspecting function.
  * - AutonomousProspectingOutput - The return type for the autonomousProspecting function.
  */
 
 import {ai} from './genkit';
 import {z} from 'zod';
+import { getFirestore } from 'firebase-admin/firestore';
 
 const AutonomousProspectingInputSchema = z.object({
   url: z.string().url().describe('The URL of the website to crawl and extract prospects from.'),
@@ -93,6 +95,23 @@ const autonomousProspectingFlow = ai.defineFlow(
   },
   async (input) => {
     const {output} = await extractionPrompt(input);
+    
+    if (output && output.prospects && output.prospects.length > 0) {
+      const db = getFirestore();
+      const batch = db.batch();
+      
+      output.prospects.forEach(prospect => {
+          const prospectRef = db.collection('prospects').doc(); // Auto-generate ID
+          batch.set(prospectRef, {
+              ...prospect,
+              crawledUrl: input.url,
+              createdAt: new Date(),
+          });
+      });
+
+      await batch.commit();
+    }
+
     return output!;
   }
 );
