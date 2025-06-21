@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, TrendingUp, BarChart3, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '../ui/textarea';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -84,6 +85,17 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
               {state?.validationErrors?.topic && (
                 <p className="text-sm text-destructive">{state.validationErrors.topic.join(', ')}</p>
               )}
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="simulatedSources" className="text-base font-semibold">Simulated Trend Sources</Label>
+              <Textarea
+                id="simulatedSources"
+                name="simulatedSources"
+                readOnly
+                rows={3}
+                className="bg-muted/50 text-sm"
+                value={`For this demonstration, the AI will simulate checking real-time data from sources like Google Trends, top news sites, and social media to identify current trends.`}
+              />
             </div>
           </CardContent>
           <CardFooter className="border-t pt-6">
