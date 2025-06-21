@@ -1,15 +1,16 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ExtractedProspect } from '@/ai/flows/autonomous-prospecting';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Users, Search, Building2, Mail, Tag, Link as LinkIcon } from 'lucide-react';
+import { Loader2, Users, Search, Building2, Mail, Tag, Link as LinkIcon, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 // This is the shape the component uses for rendering
 interface ProspectDisplayData {
@@ -90,10 +91,46 @@ function ProspectCard({ prospect }: { prospect: ExtractedProspect }) {
 
 export function ProspectingClient() {
   const [url, setUrl] = useState('');
+  const [scannedUrl, setScannedUrl] = useState('');
   const [extractionResult, setExtractionResult] = useState<ProspectDisplayData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  const [progress, setProgress] = useState(0);
+  const [progressText, setProgressText] = useState('');
+
+  useEffect(() => {
+    let timers: NodeJS.Timeout[] = [];
+    if (isLoading) {
+      setProgress(0);
+      setScannedUrl(url); // Capture the URL for the report
+      let currentProgress = 0;
+      
+      const progressSteps = [
+        { text: 'Submitting job...', duration: 500, increment: 10 },
+        { text: 'Crawling website...', duration: 2000, increment: 30 },
+        { text: 'Analyzing content with AI...', duration: 2500, increment: 50 },
+        { text: 'Finalizing report...', duration: 1000, increment: 10 },
+      ];
+
+      let cumulativeDelay = 0;
+      progressSteps.forEach(step => {
+        timers.push(
+          setTimeout(() => {
+            currentProgress += step.increment;
+            setProgress(currentProgress > 100 ? 100 : currentProgress);
+            setProgressText(step.text);
+          }, cumulativeDelay)
+        );
+        cumulativeDelay += step.duration;
+      });
+    }
+    return () => {
+      timers.forEach(clearTimeout);
+    };
+  }, [isLoading, url]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,7 +164,8 @@ export function ProspectingClient() {
         }
         throw new Error(errorMessage);
       }
-
+      
+      setProgress(100); // Ensure progress completes
       setExtractionResult({
         summary: rawData.summary,
         prospects: rawData.prospects || [],
@@ -189,32 +227,59 @@ export function ProspectingClient() {
       </Card>
 
       {isLoading && (
-        <div className="text-center py-10">
-          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
-          <p className="mt-4 text-lg text-muted-foreground">Crawling and extracting information...</p>
-        </div>
+        <Card className="shadow-lg animate-fadeIn">
+          <CardHeader>
+            <CardTitle>Prospecting in Progress...</CardTitle>
+            <CardDescription>The AI is working on your request. This may take a moment.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-4">
+            <Progress value={progress} className="w-full" />
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-muted-foreground">{progressText}</p>
+              <p className="text-sm font-semibold text-foreground">{progress}%</p>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      {extractionResult && (
+      {extractionResult && !isLoading && (
         <section className="animate-fadeIn">
           <h2 className="text-2xl font-bold mb-6 flex items-center">
-            <Users className="mr-3 h-7 w-7 text-primary" />
-            Extraction Results
+            <FileText className="mr-3 h-7 w-7 text-primary" />
+            Prospecting Report
           </h2>
-           <Card className="shadow-md mb-6">
-              <CardHeader>
-                  <CardTitle>AI Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                  <p className="text-muted-foreground">{extractionResult.summary}</p>
-              </CardContent>
+          <Card className="shadow-md mb-6">
+            <CardHeader>
+              <CardTitle>Run Summary</CardTitle>
+              <CardDescription>A summary of the prospecting job that was just executed.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 text-sm">
+                <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">URL Scanned</span>
+                    <span className="font-medium text-right truncate">{scannedUrl}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Status</span>
+                    <Badge variant="outline" className="border-green-600 bg-green-50 text-green-700">Complete</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Prospects Found</span>
+                    <span className="font-semibold">{extractionResult.prospects.length}</span>
+                </div>
+                 <div className="pt-2">
+                    <p className="text-muted-foreground"><span className="font-semibold text-foreground">AI Analysis:</span> {extractionResult.summary}</p>
+                 </div>
+            </CardContent>
           </Card>
           
           {extractionResult.prospects.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {extractionResult.prospects.map((prospect, index) => (
-                <ProspectCard key={`${prospect.companyName || 'prospect'}-${index}`} prospect={prospect} />
-              ))}
+            <div>
+              <h3 className="text-xl font-bold mb-4">Extracted Prospects</h3>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {extractionResult.prospects.map((prospect, index) => (
+                  <ProspectCard key={`${prospect.companyName || 'prospect'}-${index}`} prospect={prospect} />
+                ))}
+              </div>
             </div>
           ) : (
             <Card className="shadow-md">
