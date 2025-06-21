@@ -3,7 +3,7 @@
 
 import { generateSeoArticle, GenerateSeoArticleInput, GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import { discoverTrends, DiscoverTrendsInput, DiscoverTrendsOutput } from '@/ai/flows/discover-trends-flow';
-import { generateHumanizedContent, HumanizedContentInputSchema, type HumanizedContentOutput } from '@/ai/flows/humanized-content';
+import { generateHumanizedContent, type HumanizedContentInput, type HumanizedContentOutput } from '@/ai/flows/humanized-content';
 import { z } from 'zod';
 
 const GenerateArticleSchema = z.object({
@@ -12,6 +12,27 @@ const GenerateArticleSchema = z.object({
 
 const DiscoverTrendsSchema = z.object({
   topic: z.string().optional(),
+});
+
+const HumanizedContentInputSchema = z.object({
+  topic: z.string().describe('The main topic for the blog post.'),
+  tone: z
+    .enum(['formal', 'casual', 'storytelling', 'mixed'])
+    .default('mixed')
+    .describe('The desired tone of the content.'),
+  includeAnecdotes: z
+    .boolean()
+    .default(true)
+    .describe('Whether to include personal-style anecdotes or insights.'),
+  keyword: z.string().optional().describe('A specific keyword to include naturally in the text.'),
+  userInsight: z
+    .string()
+    .optional()
+    .describe('A specific insight or perspective to include in the content.'),
+  chunkSize: z
+    .number()
+    .default(300)
+    .describe('The size of text chunks for the re-phrasing process.'),
 });
 
 export interface ActionResponse<T> {
@@ -87,7 +108,7 @@ export async function handleGenerateHumanizedContent(prevState: any, formData: F
     }
 
     try {
-        const result = await generateHumanizedContent(validatedFields.data);
+        const result = await generateHumanizedContent(validatedFields.data as HumanizedContentInput);
         return { data: result };
     } catch (e: any) {
         console.error("Error generating humanized content:", e);

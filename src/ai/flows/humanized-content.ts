@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow for generating content that sounds more human-like.
@@ -10,7 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const HumanizedContentInputSchema = z.object({
+const HumanizedContentInputSchema = z.object({
   topic: z.string().describe('The main topic for the blog post.'),
   tone: z
     .enum(['formal', 'casual', 'storytelling', 'mixed'])
