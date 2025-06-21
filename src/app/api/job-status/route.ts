@@ -4,6 +4,19 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 
 export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get('Authorization');
+  const apiKey = process.env.STATUS_API_KEY;
+
+  if (!apiKey || apiKey.includes('your-secret-api-key-here')) {
+    console.error('STATUS_API_KEY environment variable is not set on the server.');
+    // Do not expose the exact error to the client for security reasons.
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+
+  if (authHeader !== `Bearer ${apiKey}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const jobId = searchParams.get('jobId');
 
