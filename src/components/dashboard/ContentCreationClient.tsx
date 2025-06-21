@@ -1,22 +1,20 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { handleGenerateArticle, handleGenerateHumanizedContent, type ActionResponse } from '@/app/actions';
+import { handleGenerateArticle, type ActionResponse } from '@/app/actions';
 import type { GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileText, Image as ImageIcon, Copy, Check, Plug, CheckCircle2, UploadCloud, Wand2, Sparkles } from 'lucide-react';
+import { Loader2, FileText, Image as ImageIcon, Copy, Check, Plug, CheckCircle2, UploadCloud, Wand2 } from 'lucide-react';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -28,21 +26,8 @@ function SubmitButton() {
   );
 }
 
-function HumanizerSubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending} className="bg-accent hover:bg-accent/90">
-      {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-      Generate Humanized Version
-    </Button>
-  );
-}
-
 export function ContentCreationClient({ initialTopic }: { initialTopic?: string }) {
   const [articleData, setArticleData] = useState<GenerateSeoArticleOutput | null>(null);
-  const [humanizedContent, setHumanizedContent] = useState<string | null>(null);
-  const [showHumanizerForm, setShowHumanizerForm] = useState(false);
-
   const { toast } = useToast();
   const [topic, setTopic] = useState(initialTopic || '');
 
@@ -51,8 +36,6 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
     if (initialTopic) {
       setTopic(initialTopic);
       setArticleData(null);
-      setHumanizedContent(null);
-      setShowHumanizerForm(false);
     }
   }, [initialTopic]);
 
@@ -60,23 +43,16 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   const articleInitialState: ActionResponse<GenerateSeoArticleOutput> = {};
   const [articleState, articleFormAction] = useActionState(handleGenerateArticle, articleInitialState);
 
-  // Action state for article humanization
-  const humanizerInitialState: ActionResponse<string> = {};
-  const [humanizerState, humanizerFormAction] = useActionState(handleGenerateHumanizedContent, humanizerInitialState);
-
   const [copiedStates, setCopiedStates] = useState({
     prompt: false,
     title: false,
     originalContent: false,
-    humanizedContent: false
   });
   
   // Effect for article generation results
   useEffect(() => {
     if (articleState?.data) {
       setArticleData(articleState.data);
-      setHumanizedContent(null); // Reset humanized content
-      setShowHumanizerForm(false); // Hide form on new article
       toast({
         title: "Article Generated!",
         description: "Your SEO-optimized article is ready.",
@@ -87,22 +63,11 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
     }
   }, [articleState, toast]);
 
-  // Effect for humanizer results
-  useEffect(() => {
-    if (humanizerState?.data) {
-      setHumanizedContent(humanizerState.data);
-      toast({ title: "Content Humanized!", description: "Your article has been rewritten." });
-    }
-    if (humanizerState?.error) {
-      toast({ variant: "destructive", title: "Error Humanizing Content", description: humanizerState.error });
-    }
-  }, [humanizerState, toast]);
-
   const handleCopyToClipboard = (text: string, type: keyof typeof copiedStates) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedStates(prev => ({ ...prev, [type]: true }));
       setTimeout(() => setCopiedStates(prev => ({ ...prev, [type]: false })), 2000);
-      toast({ title: `Copied ${type} to clipboard!` });
+      toast({ title: `Copied ${type.replace('originalContent', 'content')} to clipboard!` });
     }).catch(err => {
       toast({ variant: 'destructive', title: 'Failed to copy', description: err.message });
     });
@@ -176,76 +141,21 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
               </div>
             </CardContent>
             <CardFooter className="border-t pt-6 flex-col items-start gap-4">
-               <Button onClick={() => setShowHumanizerForm(p => !p)} variant="outline">
+               <Button 
+                 onClick={() => toast({ 
+                   title: "Feature Placeholder", 
+                   description: "The full Article Humanizer feature will be integrated here." 
+                 })} 
+                 variant="outline"
+               >
                 <Wand2 className="mr-2 h-4 w-4" />
-                {showHumanizerForm ? 'Hide Humanizer' : 'Humanize this Article'}
+                Humanize this Article
               </Button>
-            </CardFooter>
-          </Card>
-        )}
-
-        {/* Humanizer Form Card */}
-        {articleData && showHumanizerForm && (
-          <Card className="shadow-lg animate-fadeIn">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold flex items-center"><Sparkles className="mr-2 h-6 w-6 text-accent" /> Article Humanizer</CardTitle>
-              <CardDescription>Refine the generated article to have a more natural, human-like tone.</CardDescription>
-            </CardHeader>
-            <form action={humanizerFormAction}>
-              <CardContent className="space-y-6">
-                <input type="hidden" name="contentToHumanize" value={articleData.content} />
-                <div className="space-y-3">
-                  <Label className="font-semibold">Tone</Label>
-                  <RadioGroup name="tone" defaultValue="mixed" className="flex flex-wrap gap-x-6 gap-y-2">
-                    {['formal', 'casual', 'storytelling', 'mixed'].map(toneValue => (
-                      <div key={toneValue} className="flex items-center space-x-2">
-                        <RadioGroupItem value={toneValue} id={`tone-${toneValue}`} />
-                        <Label htmlFor={`tone-${toneValue}`} className="font-normal capitalize">{toneValue}</Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="keyword">Keyword (Optional)</Label>
-                        <Input id="keyword" name="keyword" placeholder="e.g., solar power" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="userInsight">Specific Insight (Optional)</Label>
-                        <Input id="userInsight" name="userInsight" placeholder="e.g., Mention the impact on developing nations" />
-                    </div>
-                </div>
-              </CardContent>
-              <CardFooter className="border-t pt-6">
-                <HumanizerSubmitButton />
-              </CardFooter>
-            </form>
-          </Card>
-        )}
-        
-        {/* Humanized Content Card */}
-        {humanizedContent && (
-           <Card className="shadow-lg animate-fadeIn">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                  <CardTitle className="text-2xl font-bold">Humanized Version</CardTitle>
-                  <Button variant="ghost" size="icon" onClick={() => handleCopyToClipboard(humanizedContent, 'humanizedContent')}>
-                    {copiedStates.humanizedContent ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5 text-muted-foreground" />}
-                  </Button>
-              </div>
-              <CardDescription>This is the rewritten version of the article with a more human touch.</CardDescription>
-            </CardHeader>
-            <CardContent>
-               <article className="prose prose-sm dark:prose-invert max-w-none p-4 border rounded-md bg-muted/50">
-                  <ReactMarkdown>{humanizedContent}</ReactMarkdown>
-                </article>
-            </CardContent>
-             <CardFooter className="border-t pt-6">
-              <Button
+               <Button
                 className="w-full sm:w-auto"
-                onClick={() => toast({ title: "WordPress Publishing", description: "Publishing the HUMANIZED version. This is a placeholder." })}
+                onClick={() => toast({ title: "WordPress Publishing", description: "This is a placeholder for publishing the original article." })}
               >
-                Publish Humanized Version to WordPress (Mock)
+                Publish to WordPress (Mock)
               </Button>
             </CardFooter>
           </Card>
