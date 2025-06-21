@@ -4,6 +4,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { chromium } from 'playwright';
 
 const IdealCustomerProfileSchema = z.object({
   industry: z.string().describe('The industry of the target companies.'),
@@ -37,9 +38,38 @@ const webCrawlTool = ai.defineTool({
   outputSchema: z.string().describe('Extracted web content relevant to the ideal customer profile.'),
 },
 async (input) => {
-    // In a real implementation, this would perform web crawling based on the ICP and return relevant content.
-    // This mock implementation simply returns a canned response.
-    return `Example web content for industry: ${input.industry}, region: ${input.region}, job titles: ${input.jobTitles.join(', ')}`;
+    // This is a simplified implementation of a web crawler using Playwright.
+    // A real-world implementation would need a more sophisticated strategy
+    // to search for relevant URLs based on the ICP and handle various
+    // website structures, anti-scraping measures, and large-scale data extraction.
+    const browser = await chromium.launch();
+    const page = await browser.newPage();
+    
+    // For demonstration, we'll construct a search query and visit a simple, static page.
+    // In a real scenario, you might use a search engine API or scrape search results.
+    const searchQuery = `${input.industry} ${input.jobTitles.join(' ')} in ${input.region}`;
+    console.log(`Simulating web crawl for query: "${searchQuery}"`);
+
+    // We'll crawl a well-known static site for demonstration purposes.
+    // A real implementation would crawl multiple relevant URLs found via search.
+    try {
+        // Using a very simple, stable page to demonstrate crawling.
+        await page.goto('https://info.cern.ch/hypertext/WWW/TheProject.html', { waitUntil: 'domcontentloaded' });
+        
+        // Extract text content from the body. Using evaluate to run code in the browser context.
+        const content = await page.evaluate(() => document.body.innerText);
+
+        // Return a snippet of the crawled content.
+        // A real implementation might do more processing here to clean the text.
+        return content.substring(0, 4000);
+    } catch (error: any) {
+        console.error("Error during web crawl:", error);
+        // It's good practice to provide a useful error message to the LLM.
+        return `Failed to crawl web for the given ICP. Error: ${error.message}`;
+    } finally {
+        // Ensure the browser is always closed.
+        await browser.close();
+    }
 });
 
 const extractEntitiesTool = ai.defineTool({
