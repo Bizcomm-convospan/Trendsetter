@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useFormStatus, useActionState } from 'react-dom';
 import { handleGenerateArticle, type ActionResponse } from '@/app/actions';
 import type { GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import { Button } from '@/components/ui/button';
