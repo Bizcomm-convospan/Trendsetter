@@ -2,17 +2,12 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { verifyApiKey } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('Authorization');
-  const apiKey = process.env.STATUS_API_KEY;
+  const authHeader = request.headers.get('Authorization') ?? undefined;
 
-  if (!apiKey || apiKey.includes('your-secret-api-key-here')) {
-    console.error('STATUS_API_KEY environment variable is not set on the server.');
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
-
-  if (authHeader !== `Bearer ${apiKey}`) {
+  if (!verifyApiKey(authHeader)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -36,10 +31,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Job data is empty' }, { status: 404 });
     }
 
-    // Simplified response payload creation, inspired by user's example.
     const responsePayload = {
         status: jobData.status || 'unknown',
-        // Map the 'extractedData' field from Firestore to the 'result' key in the response.
         result: jobData.status === 'complete' ? jobData.extractedData : null,
         lastUpdated: jobData.updatedAt?.toDate().toISOString() || null,
     };
