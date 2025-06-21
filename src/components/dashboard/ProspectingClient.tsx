@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { ExtractedProspect } from '@/ai/flows/autonomous-prospecting';
+import type { ExtractedProspect, AutonomousProspectingOutput } from '@/ai/flows/autonomous-prospecting';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,8 +11,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Users, Search, Building2, Mail, Tag, Link as LinkIcon, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 
-// This is the shape the component uses for rendering
 interface ProspectDisplayData {
   summary: string;
   prospects: ExtractedProspect[];
@@ -88,10 +89,21 @@ function ProspectCard({ prospect }: { prospect: ExtractedProspect }) {
   );
 }
 
+const progressMap: Record<string, { percent: number; text: string }> = {
+  queued: { percent: 10, text: 'Job is queued for processing...' },
+  starting: { percent: 25, text: 'Starting job...' },
+  crawling: { percent: 40, text: 'Crawling website...' },
+  analyzing: { percent: 75, text: 'Analyzing content with AI...' },
+  saving: { percent: 90, text: 'Saving results...' },
+  complete: { percent: 100, text: 'Job complete!' },
+  failed: { percent: 100, text: 'Job failed. Please check the logs.' },
+};
 
 export function ProspectingClient() {
   const [url, setUrl] = useState('');
   const [scannedUrl, setScannedUrl] = useState('');
+  const [jobId, setJobId] = useState<string | null>(null);
+  
   const [extractionResult, setExtractionResult] = useState<ProspectDisplayData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,53 +112,71 @@ export function ProspectingClient() {
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState('');
 
+  // Real-time listener for job progress
   useEffect(() => {
-    let timers: NodeJS.Timeout[] = [];
-    if (isLoading) {
-      setProgress(0);
-      setScannedUrl(url); // Capture the URL for the report
-      let currentProgress = 0;
+    if (!jobId) return;
+
+    const unsubscribe = onSnapshot(doc(db, 'prospecting_jobs', jobId), (jobSnap) => {
+      const jobData = jobSnap.data();
+
+      if (!jobData) {
+        setIsLoading(false);
+        setError("The prospecting job could not be found.");
+        return;
+      }
       
-      const progressSteps = [
-        { text: 'Submitting job...', duration: 500, increment: 10 },
-        { text: 'Crawling website...', duration: 2000, increment: 30 },
-        { text: 'Analyzing content with AI...', duration: 2500, increment: 50 },
-        { text: 'Finalizing report...', duration: 1000, increment: 10 },
-      ];
+      const status = jobData.status || 'queued';
+      const { percent, text } = progressMap[status] || { percent: 0, text: 'Initializing...' };
+      setProgress(percent);
+      setProgressText(text);
 
-      let cumulativeDelay = 0;
-      progressSteps.forEach(step => {
-        timers.push(
-          setTimeout(() => {
-            currentProgress += step.increment;
-            setProgress(currentProgress > 100 ? 100 : currentProgress);
-            setProgressText(step.text);
-          }, cumulativeDelay)
-        );
-        cumulativeDelay += step.duration;
-      });
-    }
-    return () => {
-      timers.forEach(clearTimeout);
-    };
-  }, [isLoading, url]);
+      if (status === 'complete') {
+        const finalData = jobData.extractedData as AutonomousProspectingOutput;
+        setExtractionResult({
+            summary: finalData.summary,
+            prospects: finalData.prospects || [],
+        });
+        toast({
+            title: "Extraction Complete!",
+            description: `Found ${finalData.prospects?.length || 0} potential prospects.`,
+        });
+        setIsLoading(false);
+        setJobId(null); // Clear job to allow new submissions
+      } else if (status === 'failed') {
+        setError(jobData.error || 'An unknown error occurred during processing.');
+        toast({
+            variant: "destructive",
+            title: "Prospecting Failed",
+            description: jobData.error || 'Please try again.',
+        });
+        setIsLoading(false);
+        setJobId(null);
+      }
+    });
 
+    // Cleanup listener on component unmount or when jobId changes
+    return () => unsubscribe();
+  }, [jobId, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    setExtractionResult(null);
-
     if (!url) {
         toast({
             variant: "destructive",
             title: "URL is required",
             description: "Please enter a URL to extract prospects from.",
         });
-        setIsLoading(false);
         return;
     }
+    
+    // Reset state for new submission
+    setIsLoading(true);
+    setError(null);
+    setExtractionResult(null);
+    setJobId(null);
+    setScannedUrl(url);
+    setProgress(0);
+    setProgressText('Submitting job...');
 
     try {
       const res = await fetch('/api/prospect', {
@@ -155,35 +185,29 @@ export function ProspectingClient() {
         headers: { 'Content-Type': 'application/json' },
       });
       
-      const rawData: { summary: string; prospects: ExtractedProspect[]; error?: string, details?: any } = await res.json();
+      const data: { jobId?: string; error?: string, details?: any } = await res.json();
 
-      if (!res.ok || rawData.error) {
-        let errorMessage = rawData.error || 'An unknown error occurred';
-        if(rawData.details) {
-            errorMessage += ` ${JSON.stringify(rawData.details)}`;
+      if (!res.ok || data.error) {
+        let errorMessage = data.error || 'An unknown error occurred';
+        if(data.details) {
+            errorMessage += ` ${JSON.stringify(data.details)}`;
         }
         throw new Error(errorMessage);
       }
       
-      setProgress(100); // Ensure progress completes
-      setExtractionResult({
-        summary: rawData.summary,
-        prospects: rawData.prospects || [],
-      });
-
-      toast({
-        title: "Extraction Complete!",
-        description: `Found ${rawData.prospects?.length || 0} potential prospects.`,
-      });
+      if (data.jobId) {
+        setJobId(data.jobId);
+      } else {
+        throw new Error("Did not receive a job ID from the server.");
+      }
 
     } catch (err: any) {
       setError(err.message);
       toast({
         variant: "destructive",
-        title: "Error Extracting Prospects",
+        title: "Error Starting Job",
         description: err.message,
       });
-    } finally {
       setIsLoading(false);
     }
   };

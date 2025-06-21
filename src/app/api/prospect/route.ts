@@ -29,19 +29,22 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 
+    // This now calls the function that queues the job
     const response = await fetch(functionUrl, {
       method: 'POST',
       body: JSON.stringify({ url: validatedFields.data.url }),
       headers: { 'Content-Type': 'application/json' },
     });
 
-    if (!response.ok) {
-        const errorBody = await response.text();
-        throw new Error(`Cloud Function returned status ${response.status}: ${errorBody}`);
-    }
+    // The function is expected to respond quickly with a jobId
+    const responseData = await response.json();
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    if (!response.ok) {
+        throw new Error(responseData.error || `Cloud Function returned status ${response.status}`);
+    }
+    
+    // The client will now receive a jobId to track the request
+    return NextResponse.json(responseData, { status: response.status });
 
   } catch (e: any) {
     console.error("Error in /api/prospect proxy:", e);

@@ -15,6 +15,7 @@ import * as admin from 'firebase-admin';
 
 const AutonomousProspectingInputSchema = z.object({
   url: z.string().url().describe('The URL of the website to crawl and extract prospects from.'),
+  jobId: z.string().describe('The ID of the prospecting job document in Firestore.'),
 });
 export type AutonomousProspectingInput = z.infer<typeof AutonomousProspectingInputSchema>;
 
@@ -52,7 +53,8 @@ const crawlUrlTool = ai.defineTool({
 const extractionPrompt = ai.definePrompt({
     name: 'prospectExtractionPrompt',
     tools: [crawlUrlTool],
-    input: { schema: AutonomousProspectingInputSchema },
+    // The input for the prompt itself doesn't need the jobId
+    input: { schema: z.object({ url: z.string().url() }) },
     output: { schema: AutonomousProspectingOutputSchema },
     prompt: `
       You are an expert data extraction agent.
@@ -81,19 +83,17 @@ const autonomousProspectingFlow = ai.defineFlow(
   },
   async (input) => {
     const db = admin.firestore();
-    const jobDocRef = db.collection('prospecting_jobs').doc(); // Create a ref for a new job document
+    const jobDocRef = db.collection('prospecting_jobs').doc(input.jobId);
 
     try {
-      // 1. Set initial status to 'starting'
-      await jobDocRef.set({
-        url: input.url,
-        status: 'starting',
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      // 1. Update status to 'crawling' / 'analyzing'
+      await jobDocRef.update({
+        status: 'analyzing', // The tool call combines crawling and analysis
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
       // 2. Run the extraction prompt which will use the tool internally
-      const {output} = await extractionPrompt(input);
+      const {output} = await extractionPrompt({ url: input.url });
       const prospects = output?.prospects || [];
 
       // 3. Update status to 'saving'
@@ -111,6 +111,7 @@ const autonomousProspectingFlow = ai.defineFlow(
               const prospectWithMetadata = {
                   ...prospect,
                   sourceUrl: input.url,
+                  jobId: input.jobId,
                   createdAt: admin.firestore.FieldValue.serverTimestamp(),
               };
               batch.set(docRef, prospectWithMetadata);
@@ -125,23 +126,16 @@ const autonomousProspectingFlow = ai.defineFlow(
         extractedData: output,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
-
-      // 6. Return the final result to the client
-      return {
-          summary: output?.summary || `AI has extracted ${prospects.length} potential prospects.`,
-          prospects: prospects,
-      };
+      
+      return output!;
 
     } catch (error: any) {
-      // Catch any other errors during the process
-       if (jobDocRef) {
-         await jobDocRef.update({
-           status: 'failed',
-           error: `Processing failed: ${error.message}`,
-           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-         });
-       }
-      throw error; // Re-throw to be handled by the caller
+       await jobDocRef.update({
+         status: 'failed',
+         error: `Processing failed: ${error.message}`,
+         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+       });
+      throw error; // Re-throw to be logged by the calling function
     }
   }
 );
