@@ -34,6 +34,9 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
   const [state, formAction, isDiscovering] = useActionState(handleDiscoverTrends, initialState);
 
   useEffect(() => {
+    if (isDiscovering) {
+      setTrendsData(null);
+    }
     if (state?.data) {
       setTrendsData(state.data);
       toast({
@@ -59,7 +62,7 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
         }
       });
     }
-  }, [state, toast]);
+  }, [state, toast, isDiscovering]);
 
   return (
     <div className="space-y-8">
@@ -104,14 +107,50 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
         </form>
       </Card>
 
-      {isDiscovering && !trendsData && (
-        <div className="text-center py-10">
-          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
-          <p className="mt-4 text-lg text-muted-foreground">Discovering trends...</p>
-        </div>
+      {isDiscovering && (
+        <section className="animate-fadeIn">
+          <h2 className="text-2xl font-bold mb-4 flex items-center text-muted-foreground">
+            <BarChart3 className="mr-3 h-7 w-7 text-primary animate-spin" />
+            Awaiting AI output...
+          </h2>
+          <Card className="shadow-md">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[25%]">Trend Title</TableHead>
+                  <TableHead className="w-[40%]">Description</TableHead>
+                  <TableHead>Keywords</TableHead>
+                  {onSelectTrend && <TableHead className="text-right">Action</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...Array(3)].map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell className="font-medium text-muted-foreground">Analyzing emerging trends...</TableCell>
+                    <TableCell className="text-muted-foreground">The AI is currently processing data to provide a detailed description for this potential trend.</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                          <Badge variant="secondary">evaluating</Badge>
+                          <Badge variant="secondary">keywords</Badge>
+                      </div>
+                    </TableCell>
+                    {onSelectTrend && (
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" disabled>
+                          <FileText className="mr-2 h-4 w-4" />
+                          Generate Article
+                        </Button>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </section>
       )}
 
-      {trendsData && (
+      {trendsData && !isDiscovering && (
         <section className="animate-fadeIn">
           <h2 className="text-2xl font-bold mb-4 flex items-center">
             <BarChart3 className="mr-3 h-7 w-7 text-primary" />
