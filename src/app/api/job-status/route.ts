@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     const responsePayload = {
         status: jobData.status || 'unknown',
-        result: jobData.status === 'complete' ? jobData.extractedData : null,
+        result: jobData.status === 'complete' ? jobData.result : null,
         lastUpdated: jobData.updatedAt?.toDate().toISOString() || null,
     };
     

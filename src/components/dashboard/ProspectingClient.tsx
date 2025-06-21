@@ -128,7 +128,7 @@ export function ProspectingClient() {
       setProgressText(text);
 
       if (status === 'complete') {
-        const finalData = jobData.extractedData as AutonomousProspectingOutput;
+        const finalData = jobData.result as AutonomousProspectingOutput;
         setExtractionResult({
             summary: finalData.summary,
             prospects: finalData.prospects || [],

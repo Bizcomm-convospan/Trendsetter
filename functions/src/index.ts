@@ -154,7 +154,7 @@ export const onProspectingJobCreated = onDocumentCreated('prospecting_jobs/{jobI
         
         await jobRef.update({
           status: 'complete',
-          extractedData: output,
+          result: output,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 

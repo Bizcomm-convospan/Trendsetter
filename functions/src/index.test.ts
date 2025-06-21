@@ -76,7 +76,7 @@ describe('onProspectingJobCreated Cloud Function', () => {
     // 3. Verifies status is updated to 'complete' with data from the AI flow
     expect(docUpdateMock).toHaveBeenCalledWith({
       status: 'complete',
-      extractedData: { summary: 'Mock AI summary', prospects: [] },
+      result: { summary: 'Mock AI summary', prospects: [] },
       updatedAt: 'MOCK_TIMESTAMP',
     });
   });
