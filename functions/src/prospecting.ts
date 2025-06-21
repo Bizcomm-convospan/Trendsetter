@@ -11,6 +11,7 @@
 import {ai} from './genkit';
 import {z} from 'zod';
 import { getFirestore } from 'firebase-admin/firestore';
+import { crawlPage } from './lib/crawl';
 
 const AutonomousProspectingInputSchema = z.object({
   url: z.string().url().describe('The URL of the website to crawl and extract prospects from.'),
@@ -36,33 +37,13 @@ const crawlUrlTool = ai.defineTool({
     name: 'crawlUrl',
     description: 'Crawls the given URL and returns its HTML content by calling an external crawler service.',
     inputSchema: z.object({ url: z.string().url() }),
-    outputSchema: z.string().describe('The full HTML content of the page.'),
+    outputSchema: z.string().describe('The full HTML content of the page, or an error message if crawling fails.'),
 }, async (input) => {
-    const crawlerUrl = process.env.CRAWLER_SERVICE_URL;
-
-    if (!crawlerUrl || crawlerUrl.includes('your-crawler-service-url')) {
-        const errorMessage = "CRAWLER_SERVICE_URL environment variable is not set. Please configure it with your deployed crawler service URL in the .env file.";
-        console.error(errorMessage);
-        throw new Error(errorMessage);
-    }
-    
     try {
-        const response = await fetch(crawlerUrl, {
-            method: 'POST',
-            body: JSON.stringify({ url: input.url }),
-            headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (!response.ok) {
-            const errorBody = await response.text();
-            throw new Error(`Crawler service returned status ${response.status}: ${errorBody}`);
-        }
-
-        const data = await response.json();
-        return data.html;
+        return await crawlPage(input.url);
     } catch (error: any) {
-        console.error("Error calling crawler service:", error);
-        return `Failed to crawl URL ${input.url}. Error: ${error.message}`;
+        console.error("Error calling crawlPage from tool:", error);
+        return `An error occurred while trying to crawl the page: ${error.message}`;
     }
 });
 
@@ -75,14 +56,16 @@ const extractionPrompt = ai.definePrompt({
       You are an expert data extraction agent.
       First, use the crawlUrl tool to get the HTML content of the following URL: {{{url}}}
 
-      Then, from the resulting HTML content, extract the following information:
+      If the tool returns an error message instead of HTML, your summary should state that the page could not be crawled and explain the error. Return an empty list for prospects.
+
+      If you receive HTML content, extract the following information from it:
       - Company names
       - Contact persons (names of people)
       - Email addresses
       - Industry keywords that describe the company's business.
 
       Finally, provide a brief summary of your findings and format the extracted data as a list of prospects.
-      If you cannot find any specific prospects, return an empty list for prospects, but still provide a summary.
+      If you cannot find any specific prospects from the HTML, return an empty list for prospects, but still provide a summary of the page content.
       Return the information in the specified JSON format.
     `,
 });
