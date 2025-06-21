@@ -3,18 +3,19 @@
 
 import { useState, useEffect } from 'react';
 import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom'; // Ensure import is from react-dom
+import { useFormStatus } from 'react-dom';
 import { handleGenerateArticle, type ActionResponse } from '@/app/actions';
 import type { GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileText, Image as ImageIcon, Copy, Check } from 'lucide-react';
+import { Loader2, FileText, Image as ImageIcon, Copy, Check, Plug, CheckCircle2, UploadCloud } from 'lucide-react';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -34,7 +35,6 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   useEffect(() => {
     if (initialTopic) {
       setTopic(initialTopic);
-      // Clear previous article data when a new topic is selected
       setArticleData(null);
     }
   }, [initialTopic]);
@@ -92,99 +92,143 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   };
 
   return (
-    <div className="space-y-8">
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Trend-Based Content Generation</CardTitle>
-          <CardDescription>
-            Enter a trending topic to generate an SEO-optimized article (300-500 words) and a relevant image prompt.
-          </CardDescription>
-        </CardHeader>
-        <form action={formAction}>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="trendingTopic" className="text-base font-semibold">Trending Topic</Label>
-              <Input
-                id="trendingTopic"
-                name="trendingTopic"
-                placeholder="e.g., AI innovations in 2025"
-                required
-                className="text-base"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-              />
-              {state?.validationErrors?.trendingTopic && (
-                <p className="text-sm text-destructive">{state.validationErrors.trendingTopic.join(', ')}</p>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter className="border-t pt-6">
-            <SubmitButton />
-          </CardFooter>
-        </form>
-      </Card>
-
-      {articleData && (
-        <Card className="shadow-lg animate-fadeIn">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      <div className="lg:col-span-2 space-y-8">
+        <Card className="shadow-lg">
           <CardHeader>
-            <div className="flex justify-between items-start">
-              <CardTitle className="text-2xl font-bold">{articleData.title}</CardTitle>
-              <Button variant="ghost" size="icon" onClick={() => handleCopyToClipboard(articleData.title, 'title')}>
-                {copiedTitle ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5 text-muted-foreground" />}
-                <span className="sr-only">Copy title</span>
-              </Button>
-            </div>
+            <CardTitle className="text-2xl font-bold">Trend-Based Content Generation</CardTitle>
+            <CardDescription>
+              Enter a trending topic to generate an SEO-optimized article (300-500 words) and a relevant image prompt.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold mb-2 flex items-center">
-                <ImageIcon className="mr-2 h-5 w-5 text-primary" />
-                Featured Image Prompt
-              </h3>
-              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-md">
-                <p className="text-sm text-foreground flex-grow">{articleData.featuredImagePrompt}</p>
-                <Button variant="outline" size="sm" onClick={() => handleCopyToClipboard(articleData.featuredImagePrompt, 'prompt')}>
-                  {copiedPrompt ? <Check className="mr-1 h-4 w-4 text-green-500" /> : <Copy className="mr-1 h-4 w-4" />}
-                  Copy
-                </Button>
+          <form action={formAction}>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="trendingTopic" className="text-base font-semibold">Trending Topic</Label>
+                <Input
+                  id="trendingTopic"
+                  name="trendingTopic"
+                  placeholder="e.g., AI innovations in 2025"
+                  required
+                  className="text-base"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                />
+                {state?.validationErrors?.trendingTopic && (
+                  <p className="text-sm text-destructive">{state.validationErrors.trendingTopic.join(', ')}</p>
+                )}
               </div>
-              <Image
-                src={`https://placehold.co/600x400.png`}
-                alt="Placeholder for generated image"
-                width={600}
-                height={400}
-                className="mt-4 rounded-md shadow-md object-cover aspect-video"
-                data-ai-hint="article technology"
-              />
-               <p className="text-xs text-muted-foreground mt-1">Placeholder image. Use the prompt to generate an actual image.</p>
-            </div>
+            </CardContent>
+            <CardFooter className="border-t pt-6">
+              <SubmitButton />
+            </CardFooter>
+          </form>
+        </Card>
 
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-semibold">
-                  <FileText className="inline-block mr-2 h-5 w-5 text-primary" />
-                  Article Content
-                </h3>
-                <Button variant="ghost" size="icon" onClick={() => handleCopyToClipboard(articleData.content, 'content')}>
-                  {copiedContent ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5 text-muted-foreground" />}
-                  <span className="sr-only">Copy content</span>
+        {articleData && (
+          <Card className="shadow-lg animate-fadeIn">
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <CardTitle className="text-2xl font-bold">{articleData.title}</CardTitle>
+                <Button variant="ghost" size="icon" onClick={() => handleCopyToClipboard(articleData.title, 'title')}>
+                  {copiedTitle ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5 text-muted-foreground" />}
+                  <span className="sr-only">Copy title</span>
                 </Button>
               </div>
-              <article className="prose prose-sm dark:prose-invert max-w-none p-4 border rounded-md bg-background">
-                <ReactMarkdown>{articleData.content}</ReactMarkdown>
-              </article>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-2 flex items-center">
+                  <ImageIcon className="mr-2 h-5 w-5 text-primary" />
+                  Featured Image Prompt
+                </h3>
+                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-md">
+                  <p className="text-sm text-foreground flex-grow">{articleData.featuredImagePrompt}</p>
+                  <Button variant="outline" size="sm" onClick={() => handleCopyToClipboard(articleData.featuredImagePrompt, 'prompt')}>
+                    {copiedPrompt ? <Check className="mr-1 h-4 w-4 text-green-500" /> : <Copy className="mr-1 h-4 w-4" />}
+                    Copy
+                  </Button>
+                </div>
+                <Image
+                  src={`https://placehold.co/600x400.png`}
+                  alt="Placeholder for generated image"
+                  width={600}
+                  height={400}
+                  className="mt-4 rounded-md shadow-md object-cover aspect-video"
+                  data-ai-hint="article technology"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Placeholder image. Use the prompt to generate an actual image.</p>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-semibold">
+                    <FileText className="inline-block mr-2 h-5 w-5 text-primary" />
+                    Article Content
+                  </h3>
+                  <Button variant="ghost" size="icon" onClick={() => handleCopyToClipboard(articleData.content, 'content')}>
+                    {copiedContent ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5 text-muted-foreground" />}
+                    <span className="sr-only">Copy content</span>
+                  </Button>
+                </div>
+                <article className="prose prose-sm dark:prose-invert max-w-none p-4 border rounded-md bg-background">
+                  <ReactMarkdown>{articleData.content}</ReactMarkdown>
+                </article>
+              </div>
+            </CardContent>
+            <CardFooter className="border-t pt-6">
+              <Button
+                className="w-full sm:w-auto bg-accent hover:bg-accent/90"
+                onClick={() => toast({ title: "WordPress Publishing", description: "This is a placeholder. Integration with WordPress would happen here." })}
+              >
+                Publish to WordPress (Mock)
+              </Button>
+            </CardFooter>
+          </Card>
+        )}
+      </div>
+
+      <div className="lg:col-span-1 space-y-8 sticky top-6">
+        <Card className="shadow-lg">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 bg-muted rounded-md p-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-foreground">
+                    <path d="M4.53,12.37a8.38,8.38,0,0,1,8.3-8.35,8.25,8.25,0,0,1,5.43,2L14.8,9.55a4.33,4.33,0,0,0-3-1.42,4.48,4.48,0,0,0-4.6,4.6,4.44,4.44,0,0,0,4.55,4.6,4,4,0,0,0,3.15-1.5l3.43,3.45a8.3,8.3,0,0,1-6.55,3A8.39,8.39,0,0,1,4.53,12.37Z" fill="currentColor"></path><path d="M12.83,12.43a.53.53,0,0,0,.53-.53V4.08a.54.54,0,0,0-.53-.53H4.63a.53.53,0,0,0-.53.53v8.2a.54.54,0,0,0,.53.53Z" fill="currentColor" fillOpacity="0.3"></path><path d="M12.83,12.43a.53.53,0,0,1-.53.53H4.63a.54.54,0,0,1-.53-.54V4.08a.53.53,0,0,1,.53-.53h8.2a.54.54,0,0,1,.53.53Z" fill="currentColor" fillOpacity="0.3"></path>
+                </svg>
+              </div>
+              <CardTitle>WordPress Plugin</CardTitle>
+            </div>
+            <CardDescription>Publish generated content directly to your WordPress site.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <Plug className="h-4 w-4" />
+                    <span>Connection Status</span>
+                </div>
+                <Badge variant="outline" className="text-green-600 border-green-500 bg-green-50">
+                    <CheckCircle2 className="mr-1 h-3 w-3"/>
+                    Connected
+                </Badge>
+            </div>
+            <Separator />
+             <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <UploadCloud className="h-4 w-4" />
+                    <span>Published Articles</span>
+                </div>
+                {/* Mock data */}
+                <span className="font-semibold text-foreground">14</span>
             </div>
           </CardContent>
-          <CardFooter className="border-t pt-6">
-            <Button
-              className="w-full sm:w-auto bg-accent hover:bg-accent/90"
-              onClick={() => toast({ title: "WordPress Publishing", description: "This is a placeholder. Integration with WordPress would happen here." })}
-            >
-              Publish to WordPress (Mock)
+          <CardFooter>
+            <Button variant="outline" className="w-full" onClick={() => toast({ title: "Manage Connection", description: "This is a placeholder for managing your WordPress connection." })}>
+                Manage Connection (Mock)
             </Button>
           </CardFooter>
         </Card>
-      )}
+      </div>
     </div>
   );
 }
