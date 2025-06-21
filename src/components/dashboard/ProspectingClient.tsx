@@ -91,12 +91,9 @@ function ProspectCard({ prospect }: { prospect: ExtractedProspect }) {
 
 const progressMap: Record<string, { percent: number; text: string }> = {
   queued: { percent: 10, text: 'Job is queued for processing...' },
-  starting: { percent: 25, text: 'Starting job...' },
-  crawling: { percent: 40, text: 'Crawling website...' },
-  analyzing: { percent: 75, text: 'Analyzing content with AI...' },
-  saving: { percent: 90, text: 'Saving results...' },
+  processing: { percent: 50, text: 'Crawling website and analyzing content with AI...' },
   complete: { percent: 100, text: 'Job complete!' },
-  failed: { percent: 100, text: 'Job failed. Please check the logs.' },
+  failed: { percent: 100, text: 'Job failed. Please check the logs or error message.' },
 };
 
 export function ProspectingClient() {

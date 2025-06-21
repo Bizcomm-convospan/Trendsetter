@@ -3,7 +3,7 @@ import { onRequest } from "firebase-functions/v2/https";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { autonomousProspecting, AutonomousProspectingInput } from "./prospecting";
+import { autonomousProspecting, AutonomousProspectingInput, AutonomousProspectingOutput } from "./prospecting";
 import { z } from "zod";
 
 admin.initializeApp();
@@ -58,21 +58,42 @@ export const prospect = onRequest({ cors: true }, async (request, response) => {
 
 /**
  * A Firestore-triggered function that executes the long-running prospecting flow
- * when a new job document is created.
+ * when a new job document is created. Includes rate-limiting to prevent abuse.
  */
 export const onProspectingJobCreated = onDocumentCreated('prospecting_jobs/{jobId}', async (event) => {
     const snap = event.data;
+    const jobId = event.params.jobId;
+    const jobRef = db.collection('prospecting_jobs').doc(jobId);
+
     if (!snap) {
         logger.error("No data associated with the event", { params: event.params });
         return;
     }
+
+    // --- RATE LIMIT LOGIC ---
+    const fiveMinutesAgo = admin.firestore.Timestamp.fromMillis(Date.now() - 5 * 60 * 1000);
+    const recentJobsQuery = db.collection('prospecting_jobs').where('createdAt', '>=', fiveMinutesAgo);
+
+    const recentJobsSnap = await recentJobsQuery.get();
+    const JOBS_LIMIT_PER_5_MINS = 20;
+
+    if (recentJobsSnap.size > JOBS_LIMIT_PER_5_MINS) {
+        logger.warn(`Rate limit exceeded for job ${jobId}. Found ${recentJobsSnap.size} jobs in the last 5 minutes.`);
+        await jobRef.update({
+            status: 'failed',
+            error: 'Rate limit exceeded. Please try again in a few minutes.',
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return;
+    }
+    // --- END RATE LIMIT LOGIC ---
+
     const data = snap.data();
     const url = data.url;
-    const jobId = event.params.jobId;
 
     if (!url) {
         logger.error(`Job ${jobId} is missing a URL.`, { data });
-        await db.collection('prospecting_jobs').doc(jobId).update({
+        await jobRef.update({
           status: 'failed',
           error: 'Job document is missing the required URL field.',
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -81,12 +102,29 @@ export const onProspectingJobCreated = onDocumentCreated('prospecting_jobs/{jobI
     }
 
     try {
+        await jobRef.update({
+            status: 'processing',
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        
         const input: AutonomousProspectingInput = { url, jobId };
         // This is a long-running process. The function will wait for it to complete.
-        await autonomousProspecting(input);
+        const output = await autonomousProspecting(input);
+        
+        await jobRef.update({
+          status: 'complete',
+          extractedData: output,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
         logger.info(`Prospecting job ${jobId} completed successfully.`);
+
     } catch(e: any) {
         logger.error(`Prospecting job ${jobId} failed.`, { error: e.message });
-        // The autonomousProspecting flow is responsible for updating the job status to 'failed'
+        await jobRef.update({
+          status: 'failed',
+          error: `Processing failed: ${e.message}`,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
     }
 });

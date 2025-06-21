@@ -15,7 +15,7 @@ import * as admin from 'firebase-admin';
 
 const AutonomousProspectingInputSchema = z.object({
   url: z.string().url().describe('The URL of the website to crawl and extract prospects from.'),
-  jobId: z.string().describe('The ID of the prospecting job document in Firestore.'),
+  jobId: z.string().describe('The ID of the prospecting job document in Firestore for logging/tracing.'),
 });
 export type AutonomousProspectingInput = z.infer<typeof AutonomousProspectingInputSchema>;
 
@@ -83,60 +83,31 @@ const autonomousProspectingFlow = ai.defineFlow(
   },
   async (input) => {
     const db = admin.firestore();
-    const jobDocRef = db.collection('prospecting_jobs').doc(input.jobId);
 
-    try {
-      // 1. Update status to 'crawling' / 'analyzing'
-      await jobDocRef.update({
-        status: 'analyzing', // The tool call combines crawling and analysis
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
+    // 1. Run the extraction prompt which will use the tool internally
+    const {output} = await extractionPrompt({ url: input.url });
+    const prospects = output?.prospects || [];
 
-      // 2. Run the extraction prompt which will use the tool internally
-      const {output} = await extractionPrompt({ url: input.url });
-      const prospects = output?.prospects || [];
+    // 2. Save valid prospects to the 'prospects' collection
+    if (prospects.length > 0) {
+        const batch = db.batch();
+        
+        prospects.forEach(prospect => {
+            const docRef = db.collection('prospects').doc(); // Auto-generate ID
+            const prospectWithMetadata = {
+                ...prospect,
+                sourceUrl: input.url,
+                jobId: input.jobId,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            };
+            batch.set(docRef, prospectWithMetadata);
+        });
 
-      // 3. Update status to 'saving'
-      await jobDocRef.update({
-        status: 'saving',
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-
-      // 4. Save valid prospects to the 'prospects' collection
-      if (prospects.length > 0) {
-          const batch = db.batch();
-          
-          prospects.forEach(prospect => {
-              const docRef = db.collection('prospects').doc(); // Auto-generate ID
-              const prospectWithMetadata = {
-                  ...prospect,
-                  sourceUrl: input.url,
-                  jobId: input.jobId,
-                  createdAt: admin.firestore.FieldValue.serverTimestamp(),
-              };
-              batch.set(docRef, prospectWithMetadata);
-          });
-
-          await batch.commit();
-      }
-
-      // 5. Update job status to 'complete' and save the final data
-      await jobDocRef.update({
-        status: 'complete',
-        extractedData: output,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-      
-      return output!;
-
-    } catch (error: any) {
-       await jobDocRef.update({
-         status: 'failed',
-         error: `Processing failed: ${error.message}`,
-         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-       });
-      throw error; // Re-throw to be logged by the calling function
+        await batch.commit();
     }
+    
+    // 3. Return the final data to the calling function, which will handle the job status update.
+    return output!;
   }
 );
 
