@@ -16,7 +16,6 @@ const navItems = [
   { href: '/dashboard/trends', label: 'Trend Discovery', icon: TrendingUp },
   { href: '/dashboard/content-creation', label: 'Content Creation', icon: FileText },
   { href: '/dashboard/prospecting', label: 'Prospecting', icon: Users },
-  { href: '/dashboard/humanizer', label: 'Article Humanizer', icon: Wand2 },
 ];
 
 export function SidebarNav() {

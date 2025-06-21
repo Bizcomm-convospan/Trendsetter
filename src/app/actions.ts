@@ -3,7 +3,7 @@
 
 import { generateSeoArticle, GenerateSeoArticleInput, GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import { discoverTrends, DiscoverTrendsInput, DiscoverTrendsOutput } from '@/ai/flows/discover-trends-flow';
-import { generateHumanizedContent, type HumanizedContentInput, type HumanizedContentOutput } from '@/ai/flows/humanized-content';
+import { generateHumanizedContent, type HumanizedContentInput } from '@/ai/flows/humanized-content';
 import { z } from 'zod';
 
 const GenerateArticleSchema = z.object({
@@ -14,26 +14,15 @@ const DiscoverTrendsSchema = z.object({
   topic: z.string().optional(),
 });
 
-const HumanizedContentInputSchema = z.object({
-  topic: z.string().describe('The main topic for the blog post.'),
+const HumanizeArticleSchema = z.object({
+  contentToHumanize: z.string().min(20, "Content to humanize must be at least 20 characters long."),
   tone: z
     .enum(['formal', 'casual', 'storytelling', 'mixed'])
-    .default('mixed')
-    .describe('The desired tone of the content.'),
-  includeAnecdotes: z
-    .boolean()
-    .default(true)
-    .describe('Whether to include personal-style anecdotes or insights.'),
-  keyword: z.string().optional().describe('A specific keyword to include naturally in the text.'),
-  userInsight: z
-    .string()
-    .optional()
-    .describe('A specific insight or perspective to include in the content.'),
-  chunkSize: z
-    .number()
-    .default(300)
-    .describe('The size of text chunks for the re-phrasing process.'),
+    .default('mixed'),
+  keyword: z.string().optional(),
+  userInsight: z.string().optional(),
 });
+
 
 export interface ActionResponse<T> {
   data?: T;
@@ -89,16 +78,15 @@ export async function handleDiscoverTrends(prevState: any, formData: FormData): 
   }
 }
 
-export async function handleGenerateHumanizedContent(prevState: any, formData: FormData): Promise<ActionResponse<HumanizedContentOutput>> {
+export async function handleGenerateHumanizedContent(prevState: any, formData: FormData): Promise<ActionResponse<string>> {
     const rawFormData = {
-        topic: formData.get('topic'),
+        contentToHumanize: formData.get('contentToHumanize'),
         tone: formData.get('tone'),
         keyword: formData.get('keyword'),
         userInsight: formData.get('userInsight'),
-        includeAnecdotes: formData.get('includeAnecdotes') === 'on',
     };
 
-    const validatedFields = HumanizedContentInputSchema.safeParse(rawFormData);
+    const validatedFields = HumanizeArticleSchema.safeParse(rawFormData);
 
     if (!validatedFields.success) {
         return {

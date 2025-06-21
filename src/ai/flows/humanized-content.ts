@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview A flow for generating content that sounds more human-like.
+ * @fileOverview A flow for making existing content sound more human-like.
  *
  * - generateHumanizedContent - A function that handles the humanized content generation.
  * - HumanizedContentInput - The input type for the generateHumanizedContent function.
@@ -12,15 +12,11 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const HumanizedContentInputSchema = z.object({
-  topic: z.string().describe('The main topic for the blog post.'),
+  contentToHumanize: z.string().describe('The article content to rewrite.'),
   tone: z
     .enum(['formal', 'casual', 'storytelling', 'mixed'])
     .default('mixed')
     .describe('The desired tone of the content.'),
-  includeAnecdotes: z
-    .boolean()
-    .default(true)
-    .describe('Whether to include personal-style anecdotes or insights.'),
   keyword: z.string().optional().describe('A specific keyword to include naturally in the text.'),
   userInsight: z
     .string()
@@ -28,7 +24,7 @@ const HumanizedContentInputSchema = z.object({
     .describe('A specific insight or perspective to include in the content.'),
   chunkSize: z
     .number()
-    .default(300)
+    .default(400)
     .describe('The size of text chunks for the re-phrasing process.'),
 });
 export type HumanizedContentInput = z.infer<typeof HumanizedContentInputSchema>;
@@ -48,28 +44,20 @@ const humanizedContentFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (input) => {
-    // Step 1: Generate the initial draft.
-    const initialPrompt = `
-You are a skilled human writer. Write a ${input.tone} blog post on the topic: "${input.topic}".
-- Use varied sentence lengths and structures.
-- ${input.includeAnecdotes ? 'Include personal-style anecdotes or insights.' : 'Avoid anecdotes.'}
-- ${input.keyword ? `Include the keyword '${input.keyword}' naturally.` : "Don't focus on any keyword."}
-- Add emotional flavor and a human touch.
-- ${input.userInsight ? `Make sure to include this insight: ${input.userInsight}` : 'Use your own judgment for a unique perspective.'}
-`;
-    const initialResponse = await ai.generate({
-      prompt: initialPrompt,
-    });
-    const rawOutput = initialResponse.text;
-
-    // Step 2: Chunk the output and rephrase each chunk to sound more natural.
+    // Chunk the input content and rephrase each chunk to sound more natural.
     const chunks =
-      rawOutput.match(new RegExp(`.{1,${input.chunkSize}}`, 'g')) || [];
+      input.contentToHumanize.match(new RegExp(`.{1,${input.chunkSize}}`, 'gs')) || [];
 
     let finalText = '';
     for (const chunk of chunks) {
       const rephraseResponse = await ai.generate({
-        prompt: `Paraphrase this text to sound more natural and less robotic. Add a human tone:
+        prompt: `You are an expert at rewriting content. Paraphrase this text to sound more natural, human, and less robotic.
+- Adopt a ${input.tone} tone.
+${input.keyword ? `- Make sure to naturally include the keyword: '${input.keyword}'` : ''}
+${input.userInsight ? `- Make sure to include this insight: '${input.userInsight}'` : ''}
+- Use varied sentence lengths and structures.
+
+Text to rewrite:
 ${chunk}`,
       });
       finalText += `\n${rephraseResponse.text}`;
