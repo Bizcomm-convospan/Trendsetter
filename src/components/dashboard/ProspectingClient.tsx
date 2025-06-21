@@ -3,52 +3,56 @@
 
 import { useState, useEffect } from 'react';
 import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom'; // Ensure import is from react-dom
+import { useFormStatus } from 'react-dom';
 import { handleFindProspects, type ActionResponse } from '@/app/actions';
-import type { AutonomousProspectingOutput, ProspectData } from '@/ai/flows/autonomous-prospecting';
+import type { AutonomousProspectingOutput, ExtractedProspect } from '@/ai/flows/autonomous-prospecting';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Users, Search, Building2, User, Briefcase, Linkedin, ExternalLink } from 'lucide-react';
-import Link from 'next/link';
+import { Loader2, Users, Search, Building2, User, Mail, Tag } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full sm:w-auto bg-primary hover:bg-primary/90">
       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
-      Find Prospects
+      Extract Prospects from URL
     </Button>
   );
 }
 
-function ProspectCard({ prospect }: { prospect: ProspectData }) {
+function ProspectCard({ prospect }: { prospect: ExtractedProspect }) {
   return (
     <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col">
       <CardHeader>
         <CardTitle className="text-xl flex items-center">
           <Building2 className="mr-2 h-5 w-5 text-primary" />
-          {prospect.companyName}
+          {prospect.companyName || 'N/A'}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 flex-grow">
-        <div className="flex items-center text-sm text-foreground">
-          <User className="mr-2 h-4 w-4 text-muted-foreground" />
-          <span>{prospect.contactName}</span>
-        </div>
-        <div className="flex items-center text-sm text-foreground">
-          <Briefcase className="mr-2 h-4 w-4 text-muted-foreground" />
-          <span>{prospect.jobTitle}</span>
-        </div>
-        {prospect.linkedinProfile && (
-          <div className="flex items-center text-sm">
-            <Linkedin className="mr-2 h-4 w-4 text-muted-foreground" />
-            <Link href={prospect.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center">
-              LinkedIn Profile <ExternalLink className="ml-1 h-3 w-3" />
-            </Link>
+        {prospect.contactPersons && prospect.contactPersons.length > 0 && (
+          <div className="text-sm text-foreground">
+            <User className="mr-2 h-4 w-4 text-muted-foreground inline-block align-middle" />
+            <span className="align-middle">{prospect.contactPersons.join(', ')}</span>
           </div>
+        )}
+        {prospect.emails && prospect.emails.length > 0 && (
+          <div className="text-sm text-foreground">
+            <Mail className="mr-2 h-4 w-4 text-muted-foreground inline-block align-middle" />
+            <span className="align-middle">{prospect.emails.join(', ')}</span>
+          </div>
+        )}
+        {prospect.industryKeywords && prospect.industryKeywords.length > 0 && (
+            <div>
+                 <p className="text-sm font-medium mb-2 flex items-center"><Tag className="mr-2 h-4 w-4 text-muted-foreground"/> Industry Keywords</p>
+                <div className="flex flex-wrap gap-2">
+                    {prospect.industryKeywords.map(keyword => <Badge key={keyword} variant="secondary">{keyword}</Badge>)}
+                </div>
+            </div>
         )}
       </CardContent>
     </Card>
@@ -56,7 +60,7 @@ function ProspectCard({ prospect }: { prospect: ProspectData }) {
 }
 
 export function ProspectingClient() {
-  const [prospects, setProspects] = useState<AutonomousProspectingOutput | null>(null);
+  const [extractionResult, setExtractionResult] = useState<AutonomousProspectingOutput | null>(null);
   const { toast } = useToast();
 
   const initialState: ActionResponse<AutonomousProspectingOutput> = {};
@@ -64,16 +68,16 @@ export function ProspectingClient() {
 
   useEffect(() => {
     if (state?.data) {
-      setProspects(state.data);
+      setExtractionResult(state.data);
       toast({
-        title: "Prospects Found!",
-        description: `Discovered ${state.data.length} potential prospects.`,
+        title: "Extraction Complete!",
+        description: `Found ${state.data.prospects.length} potential prospects.`,
       });
     }
     if (state?.error) {
       toast({
         variant: "destructive",
-        title: "Error Finding Prospects",
+        title: "Error Extracting Prospects",
         description: state.error,
       });
     }
@@ -82,7 +86,7 @@ export function ProspectingClient() {
         if (messages && messages.length > 0) {
           toast({
             variant: "destructive",
-            title: `Invalid ${key}`,
+            title: `Invalid input for ${key}`,
             description: messages.join(', '),
           });
         }
@@ -95,35 +99,17 @@ export function ProspectingClient() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Autonomous Prospecting Engine</CardTitle>
-          <CardDescription>
-            Define your Ideal Customer Profile (ICP) to find relevant prospects.
-            AI will crawl public web data based on your criteria.
+           <CardDescription>
+            Enter a URL and let the AI crawl the page and extract potential prospect data like company names, contacts, and emails.
           </CardDescription>
         </CardHeader>
         <form action={formAction}>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="industry" className="text-base font-semibold">Industry</Label>
-                <Input id="industry" name="industry" placeholder="e.g., tech, healthcare" required className="text-base" disabled={isProspecting} />
-                {state?.validationErrors?.industry && (
-                  <p className="text-sm text-destructive">{state.validationErrors.industry.join(', ')}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="region" className="text-base font-semibold">Region</Label>
-                <Input id="region" name="region" placeholder="e.g., US, Europe" required className="text-base" disabled={isProspecting} />
-                 {state?.validationErrors?.region && (
-                  <p className="text-sm text-destructive">{state.validationErrors.region.join(', ')}</p>
-                )}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="jobTitles" className="text-base font-semibold">Job Titles (comma-separated)</Label>
-              <Input id="jobTitles" name="jobTitles" placeholder="e.g., CEO, CTO, Marketing Manager" required className="text-base" disabled={isProspecting} />
-              <p className="text-xs text-muted-foreground">Enter multiple job titles separated by commas.</p>
-              {state?.validationErrors?.jobTitles && (
-                <p className="text-sm text-destructive">{state.validationErrors.jobTitles.join(', ')}</p>
+             <div className="space-y-2">
+              <Label htmlFor="url" className="text-base font-semibold">Website URL</Label>
+              <Input id="url" name="url" placeholder="e.g., https://example.com" required type="url" className="text-base" disabled={isProspecting} />
+              {state?.validationErrors?.url && (
+                <p className="text-sm text-destructive">{state.validationErrors.url.join(', ')}</p>
               )}
             </div>
           </CardContent>
@@ -133,23 +119,32 @@ export function ProspectingClient() {
         </form>
       </Card>
 
-      {isProspecting && !prospects && (
+      {isProspecting && !extractionResult && (
         <div className="text-center py-10">
           <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
-          <p className="mt-4 text-lg text-muted-foreground">Searching for prospects...</p>
+          <p className="mt-4 text-lg text-muted-foreground">Crawling and extracting information...</p>
         </div>
       )}
 
-      {prospects && (
+      {extractionResult && (
         <section className="animate-fadeIn">
           <h2 className="text-2xl font-bold mb-6 flex items-center">
             <Users className="mr-3 h-7 w-7 text-primary" />
-            Prospect Dashboard ({prospects.length} found)
+            Extraction Results
           </h2>
-          {prospects.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {prospects.map((prospect, index) => (
-                <ProspectCard key={`${prospect.companyName}-${prospect.contactName}-${index}`} prospect={prospect} />
+           <Card className="shadow-md mb-6">
+              <CardHeader>
+                  <CardTitle>AI Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                  <p className="text-muted-foreground">{extractionResult.summary}</p>
+              </CardContent>
+          </Card>
+          
+          {extractionResult.prospects.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {extractionResult.prospects.map((prospect, index) => (
+                <ProspectCard key={`${prospect.companyName || 'prospect'}-${index}`} prospect={prospect} />
               ))}
             </div>
           ) : (
@@ -158,7 +153,7 @@ export function ProspectingClient() {
                 <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-xl font-semibold text-foreground">No Prospects Found</p>
                 <p className="text-muted-foreground mt-2">
-                  Try adjusting your ICP criteria or the AI might not have found matches for the current input.
+                  The AI couldn't extract structured prospect information from this URL. Try a different page.
                 </p>
               </CardContent>
             </Card>

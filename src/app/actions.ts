@@ -2,7 +2,7 @@
 'use server';
 
 import { generateSeoArticle, GenerateSeoArticleInput, GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
-import { autonomousProspecting, IdealCustomerProfile, AutonomousProspectingOutput } from '@/ai/flows/autonomous-prospecting';
+import { autonomousProspecting, AutonomousProspectingInput, AutonomousProspectingOutput } from '@/ai/flows/autonomous-prospecting';
 import { discoverTrends, DiscoverTrendsInput, DiscoverTrendsOutput } from '@/ai/flows/discover-trends-flow';
 import { z } from 'zod';
 
@@ -10,10 +10,8 @@ const GenerateArticleSchema = z.object({
   trendingTopic: z.string().min(3, "Trending topic must be at least 3 characters long."),
 });
 
-const FindProspectsSchema = z.object({
-  industry: z.string().min(2, "Industry must be at least 2 characters long."),
-  region: z.string().min(2, "Region must be at least 2 characters long."),
-  jobTitles: z.string().min(2, "Job titles must be at least 2 characters long."),
+const ExtractProspectsSchema = z.object({
+  url: z.string().url({ message: "Please enter a valid URL." }),
 });
 
 const DiscoverTrendsSchema = z.object({
@@ -52,12 +50,10 @@ export async function handleGenerateArticle(prevState: any, formData: FormData):
 
 export async function handleFindProspects(prevState: any, formData: FormData): Promise<ActionResponse<AutonomousProspectingOutput>> {
    const rawFormData = {
-    industry: formData.get('industry') as string,
-    region: formData.get('region') as string,
-    jobTitles: formData.get('jobTitles') as string, // Comma-separated string
+    url: formData.get('url') as string,
   };
 
-  const validatedFields = FindProspectsSchema.safeParse(rawFormData);
+  const validatedFields = ExtractProspectsSchema.safeParse(rawFormData);
 
   if (!validatedFields.success) {
     return {
@@ -66,26 +62,13 @@ export async function handleFindProspects(prevState: any, formData: FormData): P
     };
   }
   
-  const jobTitlesArray = validatedFields.data.jobTitles.split(',').map(title => title.trim()).filter(title => title.length > 0);
-
-  if (jobTitlesArray.length === 0) {
-    return {
-      validationErrors: { jobTitles: ["Please provide at least one job title."] },
-      error: "Validation failed. Please provide at least one job title.",
-    }
-  }
-
   try {
-    const icp: IdealCustomerProfile = {
-      industry: validatedFields.data.industry,
-      region: validatedFields.data.region,
-      jobTitles: jobTitlesArray,
-    };
-    const prospects = await autonomousProspecting(icp);
-    return { data: prospects };
+    const input: AutonomousProspectingInput = { url: validatedFields.data.url };
+    const result = await autonomousProspecting(input);
+    return { data: result };
   } catch (e: any) {
-    console.error("Error finding prospects:", e);
-    return { error: e.message || "Failed to find prospects. Please try again." };
+    console.error("Error extracting prospects:", e);
+    return { error: e.message || "Failed to extract prospects. Please try again." };
   }
 }
 
