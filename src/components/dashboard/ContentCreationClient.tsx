@@ -117,17 +117,6 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                 <p className="text-sm text-destructive">{state.validationErrors.trendingTopic.join(', ')}</p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="simulatedTrends" className="text-base font-semibold">Simulated Trend Sources</Label>
-              <Textarea
-                id="simulatedTrends"
-                name="simulatedTrends"
-                readOnly
-                rows={5}
-                className="bg-muted/50 text-sm"
-                value={`Reddit, YouTube, Twitter trends as of Friday, June 20, 2025, 02:08 PM IST will be considered by the AI.`}
-              />
-            </div>
           </CardContent>
           <CardFooter className="border-t pt-6">
             <SubmitButton />
