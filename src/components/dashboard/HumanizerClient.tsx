@@ -8,7 +8,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -57,13 +56,22 @@ export function HumanizerClient() {
           <CardHeader>
             <CardTitle className="text-2xl font-bold">AI Article Humanizer</CardTitle>
             <CardDescription>
-              Transform basic topics into engaging, human-like articles with specific tones, keywords, and insights.
+              Transform existing text into engaging, human-like content with specific tones, keywords, and insights.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="topic">Topic</Label>
-              <Input id="topic" name="topic" placeholder="e.g., The future of renewable energy" required />
+              <Label htmlFor="contentToHumanize">Content to Humanize</Label>
+              <Textarea
+                id="contentToHumanize"
+                name="contentToHumanize"
+                placeholder="Paste or write the content you want to make more human-like here..."
+                required
+                rows={10}
+              />
+              {state?.validationErrors?.contentToHumanize && (
+                <p className="text-sm text-destructive">{state.validationErrors.contentToHumanize.join(', ')}</p>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -87,13 +95,6 @@ export function HumanizerClient() {
                 <Label htmlFor="userInsight">Specific Insight (Optional)</Label>
                 <Input id="userInsight" name="userInsight" placeholder="e.g., Mention the impact on developing nations" />
               </div>
-            </div>
-
-            <div className="flex items-center space-x-3 rounded-md border p-4">
-              <Switch id="includeAnecdotes" name="includeAnecdotes" defaultChecked />
-              <Label htmlFor="includeAnecdotes" className="text-base">
-                Include personal-style anecdotes
-              </Label>
             </div>
           </CardContent>
           <CardFooter>
