@@ -11,6 +11,7 @@ const db = admin.firestore();
 
 const ProspectRequestSchema = z.object({
   url: z.string().url({ message: "A valid URL is required." }),
+  webhookUrl: z.string().url().optional(),
 });
 
 /**
@@ -37,12 +38,24 @@ export const prospect = onRequest({ cors: true }, async (request, response) => {
   }
 
   try {
-    const jobRef = await db.collection('prospecting_jobs').add({
-        url: validatedFields.data.url,
-        status: 'queued', // Initial status
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    const jobData: {
+      url: string;
+      status: string;
+      createdAt: admin.firestore.FieldValue;
+      updatedAt: admin.firestore.FieldValue;
+      webhookUrl?: string;
+    } = {
+      url: validatedFields.data.url,
+      status: 'queued', // Initial status
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    if (validatedFields.data.webhookUrl) {
+      jobData.webhookUrl = validatedFields.data.webhookUrl;
+    }
+
+    const jobRef = await db.collection('prospecting_jobs').add(jobData);
 
     logger.info(`Prospecting job created with ID: ${jobRef.id}`);
     
@@ -90,6 +103,7 @@ export const onProspectingJobCreated = onDocumentCreated('prospecting_jobs/{jobI
 
     const data = snap.data();
     const url = data.url;
+    const webhookUrl = data.webhookUrl;
 
     if (!url) {
         logger.error(`Job ${jobId} is missing a URL.`, { data });
@@ -110,6 +124,33 @@ export const onProspectingJobCreated = onDocumentCreated('prospecting_jobs/{jobI
         const input: AutonomousProspectingInput = { url, jobId };
         // This is a long-running process. The function will wait for it to complete.
         const output = await autonomousProspecting(input);
+        
+        if (webhookUrl) {
+            logger.info(`Job ${jobId} has a webhook. Notifying ${webhookUrl}...`);
+            try {
+                const webhookPayload = {
+                    jobId,
+                    status: 'complete',
+                    result: output,
+                };
+                const webhookResponse = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(webhookPayload),
+                });
+
+                if (!webhookResponse.ok) {
+                    // Log error but don't fail the function
+                    const errorBody = await webhookResponse.text();
+                    logger.error(`Webhook for job ${jobId} failed with status: ${webhookResponse.status}`, { url: webhookUrl, body: errorBody });
+                } else {
+                    logger.info(`Successfully sent webhook for job ${jobId}.`);
+                }
+            } catch (e: any) {
+                // Also log fetch errors but don't fail the main function
+                logger.error(`Error sending webhook for job ${jobId}:`, { error: e.message, url: webhookUrl });
+            }
+        }
         
         await jobRef.update({
           status: 'complete',

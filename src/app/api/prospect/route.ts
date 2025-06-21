@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto';
 
 const ProspectRequestSchema = z.object({
   url: z.string().url({ message: "Please enter a valid URL." }),
+  webhookUrl: z.string().url().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -44,7 +45,10 @@ export async function POST(request: NextRequest) {
     // This now calls the function that queues the job
     const response = await fetch(functionUrl, {
       method: 'POST',
-      body: JSON.stringify({ url: validatedFields.data.url }),
+      body: JSON.stringify({
+        url: validatedFields.data.url,
+        webhookUrl: validatedFields.data.webhookUrl,
+      }),
       headers: { 'Content-Type': 'application/json' },
     });
 
