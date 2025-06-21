@@ -93,7 +93,7 @@ const autonomousProspectingFlow = ai.defineFlow(
             const prospectWithMetadata = {
                 ...prospect,
                 sourceUrl: input.url,
-                extractedAt: new Date().toISOString(),
+                createdAt: new Date(),
             };
             batch.set(docRef, prospectWithMetadata);
         });
