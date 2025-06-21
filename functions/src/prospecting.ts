@@ -18,11 +18,16 @@ const AutonomousProspectingInputSchema = z.object({
 });
 export type AutonomousProspectingInput = z.infer<typeof AutonomousProspectingInputSchema>;
 
+const PersonSchema = z.object({
+    name: z.string().describe("The person's full name."),
+    role: z.string().optional().describe("The person's job title or role, if available."),
+});
+
 export const ExtractedProspectSchema = z.object({
     companyName: z.string().optional().describe('The name of the company found.'),
-    contactPersons: z.array(z.string()).optional().describe('A list of contact persons found, including their roles if available.'),
-    emails: z.array(z.string()).optional().describe('A list of email addresses found.'),
-    links: z.array(z.string()).optional().describe('Relevant LinkedIn, Twitter, or contact links found on the page.'),
+    people: z.array(PersonSchema).optional().describe('A list of people found, including their names and roles.'),
+    emails: z.array(z.string().email()).optional().describe('A list of email addresses found.'),
+    links: z.array(z.string().url()).optional().describe('Relevant LinkedIn, Twitter, or contact links found on the page.'),
     industryKeywords: z.array(z.string()).optional().describe('Keywords related to the company\'s industry.'),
 });
 export type ExtractedProspect = z.infer<typeof ExtractedProspectSchema>;
@@ -32,13 +37,6 @@ const AutonomousProspectingOutputSchema = z.object({
   prospects: z.array(ExtractedProspectSchema).describe("An array of structured prospect data extracted from the page.")
 });
 export type AutonomousProspectingOutput = z.infer<typeof AutonomousProspectingOutputSchema>;
-
-// Helper to remove markdown ```json ... ``` wrappers from LLM output
-function cleanJsonString(str: string): string {
-    let cleaned = str.replace(/```json/g, '').replace(/```/g, '');
-    cleaned = cleaned.trim();
-    return cleaned;
-}
 
 const autonomousProspectingFlow = ai.defineFlow(
   {
@@ -59,40 +57,33 @@ const autonomousProspectingFlow = ai.defineFlow(
         };
     }
     
-    // 2. Generate content using the LLM with the crawled HTML
+    // 2. Generate content using the LLM with structured output
     const {output} = await ai.generate({
         prompt: `
             You are an expert data extraction agent.
-            From the following HTML content, extract structured data and return it ONLY as a raw JSON string representing an array of objects.
-            Each object in the array should conform to this structure: { "companyName": "...", "contactPersons": [...], "emails": [...], "links": [...], "industryKeywords": [...] }.
-            Do NOT include any explanatory text, markdown formatting like \`\`\`json, or anything else outside of the JSON array string.
-            If you cannot find any information, return an empty JSON array: [].
+            From the following HTML content, extract structured data about companies and people.
+            
+            Specifically, look for:
+            - The primary company name.
+            - A list of people, including their full name and their role or job title.
+            - Any email addresses.
+            - Relevant links, such as LinkedIn profiles, Twitter accounts, or contact pages.
+            - Keywords that describe the company's industry.
+
+            Return the data in the specified JSON format.
+            If you cannot find any information for a field, omit it or return an empty array.
 
             HTML content:
             ${html}
         `,
+        output: {
+            schema: z.array(ExtractedProspectSchema),
+        },
     });
 
-    const rawJsonString = output?.text || "[]";
-    const cleanedJsonString = cleanJsonString(rawJsonString);
-    
-    // 3. Parse and validate the extracted data
-    let prospects: ExtractedProspect[] = [];
-    try {
-        const parsedData = JSON.parse(cleanedJsonString);
-        const validationResult = z.array(ExtractedProspectSchema).safeParse(parsedData);
-        if (validationResult.success) {
-            prospects = validationResult.data;
-        } else {
-            console.error("Zod validation failed:", validationResult.error);
-            // Decide if you want to throw an error or return empty prospects
-        }
-    } catch (e) {
-        console.error("Failed to parse JSON from LLM output:", e);
-        // Decide if you want to throw an error or return empty prospects
-    }
+    const prospects = output || [];
 
-    // 4. Save valid prospects to Firestore
+    // 3. Save valid prospects to Firestore
     if (prospects.length > 0) {
         const db = admin.firestore();
         const batch = db.batch();

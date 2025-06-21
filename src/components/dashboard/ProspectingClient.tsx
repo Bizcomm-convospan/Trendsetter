@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Users, Search, Building2, User, Mail, Tag, Link as LinkIcon } from 'lucide-react';
+import { Loader2, Users, Search, Building2, Mail, Tag, Link as LinkIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 // This is the shape the component uses for rendering
@@ -26,35 +26,58 @@ function ProspectCard({ prospect }: { prospect: ExtractedProspect }) {
           {prospect.companyName || 'N/A'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 flex-grow">
-        {prospect.contactPersons && prospect.contactPersons.length > 0 && (
-          <div className="text-sm text-foreground">
-            <User className="mr-2 h-4 w-4 text-muted-foreground inline-block align-middle" />
-            <span className="align-middle">{prospect.contactPersons.join(', ')}</span>
+      <CardContent className="space-y-4 flex-grow">
+        {prospect.people && prospect.people.length > 0 && (
+          <div>
+            <div className="flex items-center text-sm font-semibold mb-2">
+              <Users className="mr-2 h-4 w-4 text-muted-foreground" />
+              Contacts
+            </div>
+            <div className="ml-6 space-y-2">
+              {prospect.people.map((person, index) => (
+                <div key={index}>
+                  <p className="text-sm font-medium text-foreground">{person.name}</p>
+                  {person.role && <p className="text-xs text-muted-foreground">{person.role}</p>}
+                </div>
+              ))}
+            </div>
           </div>
         )}
+
         {prospect.emails && prospect.emails.length > 0 && (
-          <div className="text-sm text-foreground">
-            <Mail className="mr-2 h-4 w-4 text-muted-foreground inline-block align-middle" />
-            <span className="align-middle">{prospect.emails.join(', ')}</span>
+          <div>
+            <div className="flex items-center text-sm font-semibold mb-2">
+              <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
+              Emails
+            </div>
+            <div className="ml-6 space-y-1">
+              {prospect.emails.map((email) => (
+                 <a href={`mailto:${email}`} key={email} className="text-sm text-primary hover:underline block truncate">{email}</a>
+              ))}
+            </div>
           </div>
         )}
+
          {prospect.links && prospect.links.length > 0 && (
-          <div className="text-sm text-foreground flex">
-            <LinkIcon className="mr-2 mt-1 h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <div className="flex flex-col space-y-1">
+          <div>
+             <div className="flex items-center text-sm font-semibold mb-2">
+              <LinkIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+              Links
+            </div>
+            <div className="ml-6 space-y-1">
               {prospect.links.map(link => (
-                <a href={link} key={link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate">
+                <a href={link} key={link} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline block truncate">
                   {link}
                 </a>
               ))}
             </div>
           </div>
         )}
+
         {prospect.industryKeywords && prospect.industryKeywords.length > 0 && (
             <div>
-                 <p className="text-sm font-medium mb-2 flex items-center"><Tag className="mr-2 h-4 w-4 text-muted-foreground"/> Industry Keywords</p>
-                <div className="flex flex-wrap gap-2">
+                 <div className="flex items-center text-sm font-semibold mb-2"><Tag className="mr-2 h-4 w-4 text-muted-foreground"/> Industry Keywords</div>
+                <div className="ml-6 flex flex-wrap gap-2">
                     {prospect.industryKeywords.map(keyword => <Badge key={keyword} variant="secondary">{keyword}</Badge>)}
                 </div>
             </div>
@@ -63,6 +86,7 @@ function ProspectCard({ prospect }: { prospect: ExtractedProspect }) {
     </Card>
   );
 }
+
 
 export function ProspectingClient() {
   const [url, setUrl] = useState('');

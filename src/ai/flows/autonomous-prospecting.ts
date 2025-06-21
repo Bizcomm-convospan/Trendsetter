@@ -16,20 +16,24 @@ const AutonomousProspectingInputSchema = z.object({
 });
 export type AutonomousProspectingInput = z.infer<typeof AutonomousProspectingInputSchema>;
 
+const PersonSchema = z.object({
+  name: z.string().describe("The person's full name."),
+  role: z.string().optional().describe("The person's job title or role, if available."),
+});
+
 export const ExtractedProspectSchema = z.object({
     companyName: z.string().optional().describe('The name of the company found.'),
-    contactPersons: z.array(z.string()).optional().describe('A list of contact persons found.'),
-    emails: z.array(z.string()).optional().describe('A list of email addresses found.'),
-    links: z.array(z.string()).optional().describe('Relevant LinkedIn, Twitter, or contact links found on the page.'),
+    people: z.array(PersonSchema).optional().describe('A list of people found, including their names and roles.'),
+    emails: z.array(z.string().email()).optional().describe('A list of email addresses found.'),
+    links: z.array(z.string().url()).optional().describe('Relevant LinkedIn, Twitter, or contact links found on the page.'),
     industryKeywords: z.array(z.string()).optional().describe('Keywords related to the company\'s industry.'),
 });
 export type ExtractedProspect = z.infer<typeof ExtractedProspectSchema>;
 
 
-// The output now contains a summary and a stringified JSON of prospects.
 const AutonomousProspectingOutputSchema = z.object({
   summary: z.string().describe("A summary of the extracted information."),
-  prospects: z.string().describe("A stringified JSON array of structured prospect data extracted from the page.")
+  prospects: z.array(ExtractedProspectSchema).describe("An array of structured prospect data extracted from the page.")
 });
 export type AutonomousProspectingOutput = z.infer<typeof AutonomousProspectingOutputSchema>;
 
@@ -76,13 +80,15 @@ const extractionPrompt = ai.definePrompt({
       You are an expert data extraction agent.
       First, use the crawlUrl tool to get the HTML content of the following URL: {{{url}}}
 
-      Then, from the resulting HTML content, extract the following information:
-      - Company names
-      - Contact persons (names of people)
-      - Email addresses
-      - Industry keywords that describe the company's business.
-
-      Finally, provide a brief summary of your findings and format the extracted data as a list of prospects.
+      Then, from the resulting HTML content, extract structured data about companies and people.
+      Specifically, look for:
+      - The primary company name.
+      - A list of people, including their full name and their role or job title.
+      - Any email addresses.
+      - Relevant links, such as LinkedIn profiles, Twitter accounts, or contact pages.
+      - Keywords that describe the company's industry.
+      
+      Finally, provide a brief summary of your findings and format the extracted data as an array of prospects.
       If you cannot find any specific prospects, return an empty list for prospects, but still provide a summary.
       Return the information in the specified JSON format.
     `,
