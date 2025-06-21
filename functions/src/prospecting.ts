@@ -45,72 +45,103 @@ const autonomousProspectingFlow = ai.defineFlow(
     outputSchema: AutonomousProspectingOutputSchema,
   },
   async (input) => {
-    // 1. Crawl the page
-    let html: string;
+    const db = admin.firestore();
+    const jobDocRef = db.collection('prospecting_jobs').doc(); // Create a ref for a new job document
+
     try {
-        html = await crawlPage(input.url);
+      // 1. Set initial status to 'crawling'
+      await jobDocRef.set({
+        url: input.url,
+        status: 'crawling',
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // 2. Crawl the page
+      let html: string;
+      try {
+          html = await crawlPage(input.url);
+      } catch (error: any) {
+          console.error(`Crawling failed for ${input.url}:`, error);
+          await jobDocRef.update({
+            status: 'failed',
+            error: `Crawling failed: ${error.message}`,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          throw error; // Propagate the error
+      }
+      
+      // 3. Update status to 'analyzing'
+      await jobDocRef.update({
+        status: 'analyzing',
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // 4. Generate content using the LLM with structured output
+      const {output} = await ai.generate({
+          prompt: `
+              You are an expert data extraction agent.
+              From the following HTML content, extract structured data about companies and people.
+              
+              Specifically, look for:
+              - The primary company name.
+              - A list of people, including their full name and their role or job title.
+              - Any email addresses.
+              - Relevant links, such as LinkedIn profiles, Twitter accounts, or contact pages.
+              - Keywords that describe the company's industry.
+
+              Return the data in the specified JSON format.
+              If you cannot find any information for a field, omit it or return an empty array.
+
+              HTML content:
+              ${html}
+          `,
+          output: {
+              schema: z.array(ExtractedProspectSchema),
+          },
+      });
+
+      const prospects = output || [];
+
+      // 5. Save valid prospects to the 'prospects' collection
+      if (prospects.length > 0) {
+          const batch = db.batch();
+          
+          prospects.forEach(prospect => {
+              const docRef = db.collection('prospects').doc(); // Auto-generate ID
+              const prospectWithMetadata = {
+                  ...prospect,
+                  sourceUrl: input.url,
+                  createdAt: admin.firestore.FieldValue.serverTimestamp(),
+              };
+              batch.set(docRef, prospectWithMetadata);
+          });
+
+          await batch.commit();
+      }
+
+      // 6. Update job status to 'complete' and save the final data
+      await jobDocRef.update({
+        status: 'complete',
+        extractedData: prospects,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // 7. Return the final result to the client
+      return {
+          summary: `AI has extracted ${prospects.length} potential prospects from the provided URL. Results are displayed below.`,
+          prospects: prospects,
+      };
+
     } catch (error: any) {
-        console.error(`Crawling failed for ${input.url}:`, error);
-        return {
-            summary: `Failed to crawl the URL: ${input.url}. Error: ${error.message}`,
-            prospects: [],
-        };
+      // Catch any other errors during the process
+      await jobDocRef.update({
+        status: 'failed',
+        error: `Processing failed: ${error.message}`,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      throw error; // Re-throw to be handled by the caller
     }
-    
-    // 2. Generate content using the LLM with structured output
-    const {output} = await ai.generate({
-        prompt: `
-            You are an expert data extraction agent.
-            From the following HTML content, extract structured data about companies and people.
-            
-            Specifically, look for:
-            - The primary company name.
-            - A list of people, including their full name and their role or job title.
-            - Any email addresses.
-            - Relevant links, such as LinkedIn profiles, Twitter accounts, or contact pages.
-            - Keywords that describe the company's industry.
-
-            Return the data in the specified JSON format.
-            If you cannot find any information for a field, omit it or return an empty array.
-
-            HTML content:
-            ${html}
-        `,
-        output: {
-            schema: z.array(ExtractedProspectSchema),
-        },
-    });
-
-    const prospects = output || [];
-
-    // 3. Save valid prospects to Firestore
-    if (prospects.length > 0) {
-        const db = admin.firestore();
-        const batch = db.batch();
-        
-        prospects.forEach(prospect => {
-            const docRef = db.collection('prospects').doc(); // Auto-generate ID
-            const prospectWithMetadata = {
-                ...prospect,
-                sourceUrl: input.url,
-                createdAt: new Date(),
-            };
-            batch.set(docRef, prospectWithMetadata);
-        });
-
-        try {
-            await batch.commit();
-            console.log(`${prospects.length} prospects saved to Firestore.`);
-        } catch (error) {
-            console.error("Error saving prospects to Firestore:", error);
-            // Don't block the response to the user if saving fails.
-        }
-    }
-
-    return {
-        summary: `AI has extracted ${prospects.length} potential prospects from the provided URL. Results are displayed below.`,
-        prospects: prospects,
-    };
   }
 );
 
