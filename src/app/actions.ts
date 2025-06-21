@@ -3,6 +3,7 @@
 
 import { generateSeoArticle, GenerateSeoArticleInput, GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import { discoverTrends, DiscoverTrendsInput, DiscoverTrendsOutput } from '@/ai/flows/discover-trends-flow';
+import { generateHumanizedContent, HumanizedContentInputSchema, type HumanizedContentOutput } from '@/ai/flows/humanized-content';
 import { z } from 'zod';
 
 const GenerateArticleSchema = z.object({
@@ -65,4 +66,31 @@ export async function handleDiscoverTrends(prevState: any, formData: FormData): 
     console.error("Error discovering trends:", e);
     return { error: e.message || "Failed to discover trends. Please try again." };
   }
+}
+
+export async function handleGenerateHumanizedContent(prevState: any, formData: FormData): Promise<ActionResponse<HumanizedContentOutput>> {
+    const rawFormData = {
+        topic: formData.get('topic'),
+        tone: formData.get('tone'),
+        keyword: formData.get('keyword'),
+        userInsight: formData.get('userInsight'),
+        includeAnecdotes: formData.get('includeAnecdotes') === 'on',
+    };
+
+    const validatedFields = HumanizedContentInputSchema.safeParse(rawFormData);
+
+    if (!validatedFields.success) {
+        return {
+            validationErrors: validatedFields.error.flatten().fieldErrors,
+            error: "Validation failed. Please check your input.",
+        };
+    }
+
+    try {
+        const result = await generateHumanizedContent(validatedFields.data);
+        return { data: result };
+    } catch (e: any) {
+        console.error("Error generating humanized content:", e);
+        return { error: e.message || "Failed to generate content. Please try again." };
+    }
 }
