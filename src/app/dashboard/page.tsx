@@ -1,12 +1,18 @@
 
+'use client';
+
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Zap } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendDiscoveryClient } from '@/components/dashboard/TrendDiscoveryClient';
 import { ContentCreationClient } from '@/components/dashboard/ContentCreationClient';
 import { ProspectingClient } from '@/components/dashboard/ProspectingClient';
+import { WorkflowGuide } from '@/components/dashboard/WorkflowGuide';
 
 export default function DashboardPage() {
+  const [activeTab, setActiveTab] = useState('trends');
+
   return (
     <div className="space-y-8">
       <header className="space-y-2">
@@ -16,7 +22,9 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <Tabs defaultValue="trends" className="w-full">
+      <WorkflowGuide onTabChange={setActiveTab} />
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 mb-6">
           <TabsTrigger value="trends" className="py-2.5 text-base">Trend Discovery</TabsTrigger>
           <TabsTrigger value="content" className="py-2.5 text-base">Content Creation</TabsTrigger>
@@ -78,21 +86,6 @@ export default function DashboardPage() {
              <p className="mt-4 text-sm text-muted-foreground">
               Explore the features above and start automating your growth today.
             </p>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section>
-        <Card className="shadow-md">
-          <CardHeader>
-            <CardTitle>How it Works</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-muted-foreground">
-            <p><strong>1. Discover Trends:</strong> Use the 'Trend Discovery' tab. Input a topic or let the system identify current trends.</p>
-            <p><strong>2. Generate Content:</strong> Use the 'Content Creation' tab. Our AI crafts engaging, SEO-friendly articles and suggests imagery based on identified trends.</p>
-            <p><strong>3. Define Your ICP:</strong> Use the 'Autonomous Prospecting' tab. Specify your ideal customer criteria for targeted prospecting.</p>
-            <p><strong>4. Uncover Prospects:</strong> AI scours public web data to find potential leads matching your ICP.</p>
-            <p><strong>5. Automate & Grow:</strong> Streamline your content and prospecting workflows by combining these powerful AI agents directly from this dashboard.</p>
           </CardContent>
         </Card>
       </section>
