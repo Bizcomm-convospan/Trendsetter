@@ -1,16 +1,15 @@
 
 'use server';
 /**
- * @fileOverview An AI-powered agent designed to crawl a given URL, extract prospect information, and save it to Firestore.
+ * @fileOverview An AI-powered agent designed to crawl a given URL, extract prospect information, and return it as a string.
  *
- * - autonomousProspecting - A function that handles the prospect extraction from a URL and saves the results.
+ * - autonomousProspecting - A function that handles the prospect extraction from a URL.
  * - AutonomousProspectingInput - The input type for the autonomousProspecting function.
  * - AutonomousProspectingOutput - The return type for the autonomousProspecting function.
  */
 
 import {ai} from './genkit';
 import {z} from 'zod';
-import { getFirestore } from 'firebase-admin/firestore';
 import { crawlPage } from './lib/crawl';
 
 const AutonomousProspectingInputSchema = z.object({
@@ -18,6 +17,8 @@ const AutonomousProspectingInputSchema = z.object({
 });
 export type AutonomousProspectingInput = z.infer<typeof AutonomousProspectingInputSchema>;
 
+// Note: This schema is for type safety within the function. 
+// The client will use its own version of ExtractedProspect.
 export const ExtractedProspectSchema = z.object({
     companyName: z.string().optional().describe('The name of the company found.'),
     contactPersons: z.array(z.string()).optional().describe('A list of contact persons found, including their roles if available.'),
@@ -30,9 +31,17 @@ export type ExtractedProspect = z.infer<typeof ExtractedProspectSchema>;
 
 const AutonomousProspectingOutputSchema = z.object({
   summary: z.string().describe("A summary of the extracted information."),
-  prospects: z.array(ExtractedProspectSchema).describe("A list of structured prospect data extracted from the page.")
+  prospects: z.string().describe("A stringified JSON array of structured prospect data extracted from the page.")
 });
 export type AutonomousProspectingOutput = z.infer<typeof AutonomousProspectingOutputSchema>;
+
+function cleanJsonString(str: string): string {
+    // Remove markdown code blocks
+    let cleaned = str.replace(/```json/g, '').replace(/```/g, '');
+    // Trim whitespace
+    cleaned = cleaned.trim();
+    return cleaned;
+}
 
 const autonomousProspectingFlow = ai.defineFlow(
   {
@@ -41,16 +50,15 @@ const autonomousProspectingFlow = ai.defineFlow(
     outputSchema: AutonomousProspectingOutputSchema,
   },
   async (input) => {
-    // 1. Crawl the page, catching potential errors.
+    // 1. Crawl the page
     let html: string;
     try {
         html = await crawlPage(input.url);
     } catch (error: any) {
         console.error(`Crawling failed for ${input.url}:`, error);
-        // Return a structured error response if crawling fails.
         return {
             summary: `Failed to crawl the URL: ${input.url}. Error: ${error.message}`,
-            prospects: [],
+            prospects: "[]",
         };
     }
     
@@ -58,45 +66,26 @@ const autonomousProspectingFlow = ai.defineFlow(
     const {output} = await ai.generate({
         prompt: `
             You are an expert data extraction agent.
-            From the following HTML content, extract structured data.
-            
-            Information to extract:
-            - Company name
-            - Email addresses
-            - People (with roles if mentioned)
-            - Any relevant LinkedIn, Twitter, or contact links
-            - Industry keywords that describe the company's business
-
-            Also provide a brief summary of your findings.
-            Format the extracted data as a list of prospects and return the information in the specified JSON format.
-            If you cannot find any specific information, return an empty list for prospects, but still provide a summary of the page content.
+            From the following HTML content, extract structured data and return it ONLY as a raw JSON string representing an array of objects.
+            Each object in the array should conform to this structure: { "companyName": "...", "contactPersons": [...], "emails": [...], "links": [...], "industryKeywords": [...] }.
+            Do NOT include any explanatory text, markdown formatting like \`\`\`json, or anything else outside of the JSON array string.
+            If you cannot find any information, return an empty JSON array: [].
 
             HTML content:
             ${html}
         `,
-        output: {
-            schema: AutonomousProspectingOutputSchema,
-        },
     });
+
+    const rawProspectsString = output?.text || "[]";
+    const cleanedProspectsString = cleanJsonString(rawProspectsString);
     
-    // 3. Save the prospects to Firestore
-    if (output && output.prospects && output.prospects.length > 0) {
-      const db = getFirestore();
-      const batch = db.batch();
-      
-      output.prospects.forEach(prospect => {
-          const prospectRef = db.collection('prospects').doc(); // Auto-generate ID
-          batch.set(prospectRef, {
-              ...prospect,
-              crawledUrl: input.url,
-              createdAt: new Date(),
-          });
-      });
+    // Note: Saving to Firestore was removed because this function no longer has access to the structured data.
+    // The parsing now happens on the client side.
 
-      await batch.commit();
-    }
-
-    return output!;
+    return {
+        summary: "AI has extracted the following potential prospects from the provided URL. Results are displayed below.",
+        prospects: cleanedProspectsString,
+    };
   }
 );
 

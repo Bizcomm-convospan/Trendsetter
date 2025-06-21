@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI-powered agent designed to crawl a given URL and extract prospect information.
@@ -19,14 +20,16 @@ export const ExtractedProspectSchema = z.object({
     companyName: z.string().optional().describe('The name of the company found.'),
     contactPersons: z.array(z.string()).optional().describe('A list of contact persons found.'),
     emails: z.array(z.string()).optional().describe('A list of email addresses found.'),
+    links: z.array(z.string()).optional().describe('Relevant LinkedIn, Twitter, or contact links found on the page.'),
     industryKeywords: z.array(z.string()).optional().describe('Keywords related to the company\'s industry.'),
 });
 export type ExtractedProspect = z.infer<typeof ExtractedProspectSchema>;
 
 
+// The output now contains a summary and a stringified JSON of prospects.
 const AutonomousProspectingOutputSchema = z.object({
   summary: z.string().describe("A summary of the extracted information."),
-  prospects: z.array(ExtractedProspectSchema).describe("A list of structured prospect data extracted from the page.")
+  prospects: z.string().describe("A stringified JSON array of structured prospect data extracted from the page.")
 });
 export type AutonomousProspectingOutput = z.infer<typeof AutonomousProspectingOutputSchema>;
 

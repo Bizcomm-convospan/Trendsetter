@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { AutonomousProspectingOutput, ExtractedProspect } from '@/ai/flows/autonomous-prospecting';
+import type { ExtractedProspect } from '@/ai/flows/autonomous-prospecting';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,12 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Users, Search, Building2, User, Mail, Tag, Link as LinkIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+
+// This is the shape the component uses for rendering
+interface ProspectDisplayData {
+  summary: string;
+  prospects: ExtractedProspect[];
+}
 
 function ProspectCard({ prospect }: { prospect: ExtractedProspect }) {
   return (
@@ -60,7 +66,7 @@ function ProspectCard({ prospect }: { prospect: ExtractedProspect }) {
 
 export function ProspectingClient() {
   const [url, setUrl] = useState('');
-  const [extractionResult, setExtractionResult] = useState<AutonomousProspectingOutput | null>(null);
+  const [extractionResult, setExtractionResult] = useState<ProspectDisplayData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -88,16 +94,38 @@ export function ProspectingClient() {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      const data = await res.json();
+      // The raw response from the API. `prospects` is a string here.
+      const rawData: { summary: string; prospects: string; error?: string } = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || 'An unknown error occurred');
+      if (!res.ok || rawData.error) {
+        throw new Error(rawData.error || 'An unknown error occurred');
+      }
+      
+      // Parse the JSON string from the AI
+      let parsedProspects: ExtractedProspect[] = [];
+      try {
+        parsedProspects = JSON.parse(rawData.prospects || '[]');
+        if (!Array.isArray(parsedProspects)) {
+          // Handle cases where the AI might not return an array
+          parsedProspects = [];
+        }
+      } catch (parseError) {
+        console.error("Failed to parse prospects JSON from AI:", parseError);
+        toast({
+          variant: "destructive",
+          title: "Data Parsing Error",
+          description: "The AI returned data in an unexpected format. Please try again.",
+        });
       }
 
-      setExtractionResult(data);
+      setExtractionResult({
+        summary: rawData.summary,
+        prospects: parsedProspects,
+      });
+
       toast({
         title: "Extraction Complete!",
-        description: `Found ${data.prospects.length} potential prospects.`,
+        description: `Found ${parsedProspects.length} potential prospects.`,
       });
 
     } catch (err: any) {
