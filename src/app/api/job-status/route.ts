@@ -37,14 +37,27 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Job data is empty' }, { status: 404 });
     }
 
-    // Convert Firestore Timestamps to ISO strings to ensure they are serializable
-    const serializableData = {
-        ...jobData,
-        createdAt: jobData.createdAt?.toDate ? jobData.createdAt.toDate().toISOString() : jobData.createdAt,
-        updatedAt: jobData.updatedAt?.toDate ? jobData.updatedAt.toDate().toISOString() : jobData.updatedAt,
+    const status = jobData.status;
+    const lastUpdated = jobData.updatedAt?.toDate ? jobData.updatedAt.toDate().toISOString() : new Date().toISOString();
+
+    const responsePayload: {
+        status: string;
+        lastUpdated: string;
+        result?: { summary: string; prospects: any[] };
+    } = {
+      status,
+      lastUpdated,
     };
 
-    return NextResponse.json(serializableData, { status: 200 });
+    if (status === 'complete' && jobData.extractedData) {
+      responsePayload.result = {
+        summary: jobData.extractedData.summary,
+        prospects: jobData.extractedData.prospects || [],
+      };
+    }
+
+    return NextResponse.json(responsePayload, { status: 200 });
+
   } catch (error: any) {
     console.error(`Error fetching job status for ${jobId}:`, error);
     return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
