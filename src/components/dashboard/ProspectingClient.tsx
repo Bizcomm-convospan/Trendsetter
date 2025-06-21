@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Users, Search, Building2, User, Mail, Tag } from 'lucide-react';
+import { Loader2, Users, Search, Building2, User, Mail, Tag, Link as LinkIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 function ProspectCard({ prospect }: { prospect: ExtractedProspect }) {
@@ -31,6 +31,18 @@ function ProspectCard({ prospect }: { prospect: ExtractedProspect }) {
           <div className="text-sm text-foreground">
             <Mail className="mr-2 h-4 w-4 text-muted-foreground inline-block align-middle" />
             <span className="align-middle">{prospect.emails.join(', ')}</span>
+          </div>
+        )}
+         {prospect.links && prospect.links.length > 0 && (
+          <div className="text-sm text-foreground flex">
+            <LinkIcon className="mr-2 mt-1 h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <div className="flex flex-col space-y-1">
+              {prospect.links.map(link => (
+                <a href={link} key={link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate">
+                  {link}
+                </a>
+              ))}
+            </div>
           </div>
         )}
         {prospect.industryKeywords && prospect.industryKeywords.length > 0 && (

@@ -20,8 +20,9 @@ export type AutonomousProspectingInput = z.infer<typeof AutonomousProspectingInp
 
 export const ExtractedProspectSchema = z.object({
     companyName: z.string().optional().describe('The name of the company found.'),
-    contactPersons: z.array(z.string()).optional().describe('A list of contact persons found.'),
+    contactPersons: z.array(z.string()).optional().describe('A list of contact persons found, including their roles if available.'),
     emails: z.array(z.string()).optional().describe('A list of email addresses found.'),
+    links: z.array(z.string()).optional().describe('Relevant LinkedIn, Twitter, or contact links found on the page.'),
     industryKeywords: z.array(z.string()).optional().describe('Keywords related to the company\'s industry.'),
 });
 export type ExtractedProspect = z.infer<typeof ExtractedProspectSchema>;
@@ -33,43 +34,6 @@ const AutonomousProspectingOutputSchema = z.object({
 });
 export type AutonomousProspectingOutput = z.infer<typeof AutonomousProspectingOutputSchema>;
 
-const crawlUrlTool = ai.defineTool({
-    name: 'crawlUrl',
-    description: 'Crawls the given URL and returns its HTML content by calling an external crawler service.',
-    inputSchema: z.object({ url: z.string().url() }),
-    outputSchema: z.string().describe('The full HTML content of the page, or an error message if crawling fails.'),
-}, async (input) => {
-    try {
-        return await crawlPage(input.url);
-    } catch (error: any) {
-        console.error("Error calling crawlPage from tool:", error);
-        return `An error occurred while trying to crawl the page: ${error.message}`;
-    }
-});
-
-const extractionPrompt = ai.definePrompt({
-    name: 'prospectExtractionPrompt',
-    tools: [crawlUrlTool],
-    input: { schema: AutonomousProspectingInputSchema },
-    output: { schema: AutonomousProspectingOutputSchema },
-    prompt: `
-      You are an expert data extraction agent.
-      First, use the crawlUrl tool to get the HTML content of the following URL: {{{url}}}
-
-      If the tool returns an error message instead of HTML, your summary should state that the page could not be crawled and explain the error. Return an empty list for prospects.
-
-      If you receive HTML content, extract the following information from it:
-      - Company names
-      - Contact persons (names of people)
-      - Email addresses
-      - Industry keywords that describe the company's business.
-
-      Finally, provide a brief summary of your findings and format the extracted data as a list of prospects.
-      If you cannot find any specific prospects from the HTML, return an empty list for prospects, but still provide a summary of the page content.
-      Return the information in the specified JSON format.
-    `,
-});
-
 const autonomousProspectingFlow = ai.defineFlow(
   {
     name: 'autonomousProspectingFlow',
@@ -77,8 +41,45 @@ const autonomousProspectingFlow = ai.defineFlow(
     outputSchema: AutonomousProspectingOutputSchema,
   },
   async (input) => {
-    const {output} = await extractionPrompt(input);
+    // 1. Crawl the page, catching potential errors.
+    let html: string;
+    try {
+        html = await crawlPage(input.url);
+    } catch (error: any) {
+        console.error(`Crawling failed for ${input.url}:`, error);
+        // Return a structured error response if crawling fails.
+        return {
+            summary: `Failed to crawl the URL: ${input.url}. Error: ${error.message}`,
+            prospects: [],
+        };
+    }
     
+    // 2. Generate content using the LLM with the crawled HTML
+    const {output} = await ai.generate({
+        prompt: `
+            You are an expert data extraction agent.
+            From the following HTML content, extract structured data.
+            
+            Information to extract:
+            - Company name
+            - Email addresses
+            - People (with roles if mentioned)
+            - Any relevant LinkedIn, Twitter, or contact links
+            - Industry keywords that describe the company's business
+
+            Also provide a brief summary of your findings.
+            Format the extracted data as a list of prospects and return the information in the specified JSON format.
+            If you cannot find any specific information, return an empty list for prospects, but still provide a summary of the page content.
+
+            HTML content:
+            ${html}
+        `,
+        output: {
+            schema: AutonomousProspectingOutputSchema,
+        },
+    });
+    
+    // 3. Save the prospects to Firestore
     if (output && output.prospects && output.prospects.length > 0) {
       const db = getFirestore();
       const batch = db.batch();
