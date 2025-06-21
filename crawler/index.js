@@ -68,16 +68,40 @@ app.post('/crawl', async (req, res) => {
 
 const PORT = process.env.PORT || 8080;
 
-// Start the server only after the browser is successfully initialized
-initializeBrowser().then(() => {
-    app.listen(PORT, () => console.log(`Crawler service listening on port ${PORT}`));
-});
+let serverInstance;
 
-// Handle graceful shutdown signals from the hosting environment
-process.on('SIGTERM', async () => {
-    console.log('SIGTERM signal received. Closing browser.');
-    if (browser) {
-        await browser.close();
+function startServer() {
+  return initializeBrowser().then(() => {
+    serverInstance = app.listen(PORT, () => {
+      console.log(`Crawler service listening on port ${PORT}`);
+    });
+    return serverInstance;
+  });
+}
+
+function closeServer(callback) {
+    if (serverInstance) {
+        serverInstance.close(callback);
     }
-    process.exit(0);
-});
+}
+
+async function shutdown() {
+  console.log('SIGTERM signal received. Closing server and browser.');
+  if (serverInstance) {
+    serverInstance.close(async () => {
+      if (browser) {
+        await browser.close();
+      }
+      process.exit(0);
+    });
+  }
+}
+
+// Start the server if running the file directly
+if (require.main === module) {
+    startServer();
+    process.on('SIGTERM', shutdown);
+}
+
+
+module.exports = { app, initializeBrowser, closeServer, browser: () => browser };
