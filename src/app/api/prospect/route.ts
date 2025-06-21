@@ -45,11 +45,6 @@ export async function POST(request: Request) {
 
   } catch (e: any) {
     console.error("Error in /api/prospect proxy:", e);
-    
-    if (e.name === 'ZodError') {
-      return NextResponse.json({ error: 'Invalid request body', details: e.errors }, { status: 400 });
-    }
-    
     return NextResponse.json(
       { error: e.message || "Failed to call prospecting function. Please try again." }, 
       { status: 500 }
