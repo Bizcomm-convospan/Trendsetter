@@ -2,16 +2,11 @@
 'use server';
 
 import { generateSeoArticle, GenerateSeoArticleInput, GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
-import { autonomousProspecting, AutonomousProspectingInput, AutonomousProspectingOutput } from '@/ai/flows/autonomous-prospecting';
 import { discoverTrends, DiscoverTrendsInput, DiscoverTrendsOutput } from '@/ai/flows/discover-trends-flow';
 import { z } from 'zod';
 
 const GenerateArticleSchema = z.object({
   trendingTopic: z.string().min(3, "Trending topic must be at least 3 characters long."),
-});
-
-const ExtractProspectsSchema = z.object({
-  url: z.string().url({ message: "Please enter a valid URL." }),
 });
 
 const DiscoverTrendsSchema = z.object({
@@ -45,30 +40,6 @@ export async function handleGenerateArticle(prevState: any, formData: FormData):
   } catch (e: any) {
     console.error("Error generating article:", e);
     return { error: e.message || "Failed to generate article. Please try again." };
-  }
-}
-
-export async function handleFindProspects(prevState: any, formData: FormData): Promise<ActionResponse<AutonomousProspectingOutput>> {
-   const rawFormData = {
-    url: formData.get('url') as string,
-  };
-
-  const validatedFields = ExtractProspectsSchema.safeParse(rawFormData);
-
-  if (!validatedFields.success) {
-    return {
-      validationErrors: validatedFields.error.flatten().fieldErrors,
-      error: "Validation failed. Please check your input.",
-    };
-  }
-  
-  try {
-    const input: AutonomousProspectingInput = { url: validatedFields.data.url };
-    const result = await autonomousProspecting(input);
-    return { data: result };
-  } catch (e: any) {
-    console.error("Error extracting prospects:", e);
-    return { error: e.message || "Failed to extract prospects. Please try again." };
   }
 }
 

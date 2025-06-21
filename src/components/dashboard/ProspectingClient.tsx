@@ -1,10 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
-import { handleFindProspects, type ActionResponse } from '@/app/actions';
+import { useState } from 'react';
 import type { AutonomousProspectingOutput, ExtractedProspect } from '@/ai/flows/autonomous-prospecting';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,16 +10,6 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Users, Search, Building2, User, Mail, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending} className="w-full sm:w-auto bg-primary hover:bg-primary/90">
-      {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
-      Extract Prospects from URL
-    </Button>
-  );
-}
 
 function ProspectCard({ prospect }: { prospect: ExtractedProspect }) {
   return (
@@ -60,39 +47,58 @@ function ProspectCard({ prospect }: { prospect: ExtractedProspect }) {
 }
 
 export function ProspectingClient() {
+  const [url, setUrl] = useState('');
   const [extractionResult, setExtractionResult] = useState<AutonomousProspectingOutput | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const initialState: ActionResponse<AutonomousProspectingOutput> = {};
-  const [state, formAction, isProspecting] = useActionState(handleFindProspects, initialState);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    setExtractionResult(null);
 
-  useEffect(() => {
-    if (state?.data) {
-      setExtractionResult(state.data);
+    if (!url) {
+        toast({
+            variant: "destructive",
+            title: "URL is required",
+            description: "Please enter a URL to extract prospects from.",
+        });
+        setIsLoading(false);
+        return;
+    }
+
+    try {
+      const res = await fetch('/api/prospect', {
+        method: 'POST',
+        body: JSON.stringify({ url }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'An unknown error occurred');
+      }
+
+      setExtractionResult(data);
       toast({
         title: "Extraction Complete!",
-        description: `Found ${state.data.prospects.length} potential prospects.`,
+        description: `Found ${data.prospects.length} potential prospects.`,
       });
-    }
-    if (state?.error) {
+
+    } catch (err: any) {
+      setError(err.message);
       toast({
         variant: "destructive",
         title: "Error Extracting Prospects",
-        description: state.error,
+        description: err.message,
       });
+    } finally {
+      setIsLoading(false);
     }
-     if (state?.validationErrors) {
-       Object.entries(state.validationErrors).forEach(([key, messages]) => {
-        if (messages && messages.length > 0) {
-          toast({
-            variant: "destructive",
-            title: `Invalid input for ${key}`,
-            description: messages.join(', '),
-          });
-        }
-      });
-    }
-  }, [state, toast]);
+  };
 
   return (
     <div className="space-y-8">
@@ -103,23 +109,36 @@ export function ProspectingClient() {
             Enter a URL and let the AI crawl the page and extract potential prospect data like company names, contacts, and emails.
           </CardDescription>
         </CardHeader>
-        <form action={formAction}>
+        <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6">
              <div className="space-y-2">
               <Label htmlFor="url" className="text-base font-semibold">Website URL</Label>
-              <Input id="url" name="url" placeholder="e.g., https://example.com" required type="url" className="text-base" disabled={isProspecting} />
-              {state?.validationErrors?.url && (
-                <p className="text-sm text-destructive">{state.validationErrors.url.join(', ')}</p>
+              <Input
+                id="url"
+                name="url"
+                placeholder="e.g., https://example.com"
+                required
+                type="url"
+                className="text-base"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                disabled={isLoading}
+              />
+               {error && !isLoading && (
+                <p className="text-sm text-destructive pt-1">{error}</p>
               )}
             </div>
           </CardContent>
           <CardFooter className="border-t pt-6">
-            <SubmitButton />
+            <Button type="submit" disabled={isLoading} className="w-full sm:w-auto bg-primary hover:bg-primary/90">
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+              Extract Prospects from URL
+            </Button>
           </CardFooter>
         </form>
       </Card>
 
-      {isProspecting && !extractionResult && (
+      {isLoading && (
         <div className="text-center py-10">
           <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
           <p className="mt-4 text-lg text-muted-foreground">Crawling and extracting information...</p>
