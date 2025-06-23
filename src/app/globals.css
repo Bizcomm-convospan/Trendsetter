@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Inter', sans-serif;
-}
-
 @layer base {
   :root {
     --background: 240 60% 98%; /* Slightly off-white/light lavender for card backgrounds */
@@ -87,6 +83,6 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-page-background text-foreground font-body antialiased;
+    @apply bg-page-background text-foreground antialiased;
   }
 }
