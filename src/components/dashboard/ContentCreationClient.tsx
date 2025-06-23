@@ -14,6 +14,7 @@ import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useRouter } from 'next/navigation';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -29,6 +30,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   const [articleData, setArticleData] = useState<GenerateSeoArticleOutput | null>(null);
   const { toast } = useToast();
   const [topic, setTopic] = useState(initialTopic || '');
+  const router = useRouter();
 
   // Effect for initial topic passed from another component
   useEffect(() => {
@@ -70,6 +72,19 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
     }).catch(err => {
       toast({ variant: 'destructive', title: 'Failed to copy', description: err.message });
     });
+  };
+
+  const handleHumanizeClick = () => {
+    if (articleData?.content) {
+      localStorage.setItem('humanizer-initial-content', articleData.content);
+      router.push('/dashboard/humanizer');
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'No Content Available',
+        description: 'Please generate an article before trying to humanize it.',
+      });
+    }
   };
 
   return (
@@ -141,10 +156,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
             </CardContent>
             <CardFooter className="border-t pt-6 flex-col items-start gap-4">
                <Button 
-                 onClick={() => toast({ 
-                   title: "Feature Placeholder", 
-                   description: "The full Article Humanizer feature will be integrated here." 
-                 })} 
+                 onClick={handleHumanizeClick} 
                  variant="outline"
                >
                 <Wand2 className="mr-2 h-4 w-4" />

@@ -27,10 +27,19 @@ function SubmitButton() {
 
 export function HumanizerClient() {
   const [result, setResult] = useState('');
+  const [content, setContent] = useState('');
   const { toast } = useToast();
 
   const initialState: ActionResponse<HumanizedContentOutput> = {};
   const [state, formAction] = useActionState(handleGenerateHumanizedContent, initialState);
+
+  useEffect(() => {
+    const initialContent = localStorage.getItem('humanizer-initial-content');
+    if (initialContent) {
+      setContent(initialContent);
+      localStorage.removeItem('humanizer-initial-content'); // Clean up after use
+    }
+  }, []);
 
   useEffect(() => {
     if (state?.data) {
@@ -68,6 +77,8 @@ export function HumanizerClient() {
                 placeholder="Paste or write the content you want to make more human-like here..."
                 required
                 rows={10}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
               />
               {state?.validationErrors?.contentToHumanize && (
                 <p className="text-sm text-destructive">{state.validationErrors.contentToHumanize.join(', ')}</p>
