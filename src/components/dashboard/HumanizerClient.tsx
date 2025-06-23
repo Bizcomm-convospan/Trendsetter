@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, useEffect, useActionState } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,7 +30,15 @@ export function HumanizerClient() {
   const { toast } = useToast();
 
   const initialState: ActionResponse<HumanizedContentOutput> = {};
-  const [state, formAction] = useActionState(handleGenerateHumanizedContent, initialState);
+  const [isGenerating, startTransition] = useTransition();
+  const [state, setState] = useState(initialState);
+  
+  const formAction = (formData: FormData) => {
+    startTransition(async () => {
+      const result = await handleGenerateHumanizedContent(state, formData);
+      setState(result);
+    });
+  };
 
   useEffect(() => {
     const initialContent = localStorage.getItem('humanizer-initial-content');

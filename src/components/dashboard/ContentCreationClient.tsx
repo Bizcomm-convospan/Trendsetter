@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useFormStatus, useActionState } from 'react-dom';
+import { useState, useEffect, useTransition } from 'react';
+import { useFormStatus } from 'react-dom';
 import { handleGenerateArticle, type ActionResponse } from '@/app/actions';
 import type { GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import { Button } from '@/components/ui/button';
@@ -42,7 +42,15 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
 
   // Action state for article generation
   const articleInitialState: ActionResponse<GenerateSeoArticleOutput> = {};
-  const [articleState, articleFormAction] = useActionState(handleGenerateArticle, articleInitialState);
+  const [isGenerating, startTransition] = useTransition();
+  const [articleState, setArticleState] = useState(articleInitialState);
+
+  const articleFormAction = (formData: FormData) => {
+    startTransition(async () => {
+      const result = await handleGenerateArticle(articleState, formData);
+      setArticleState(result);
+    });
+  };
 
   const [copiedStates, setCopiedStates] = useState({
     prompt: false,

@@ -1,11 +1,11 @@
 
 import { GET } from './route';
 import type { NextRequest } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
-import { verifyApiKey } from '@/lib/auth';
+import { adminDb } from '../../../lib/firebase-admin';
+import { verifyApiKey } from '../../../lib/auth';
 
 // Mock dependencies
-jest.mock('@/lib/firebase-admin', () => ({
+jest.mock('../../../lib/firebase-admin', () => ({
   adminDb: {
     collection: jest.fn().mockReturnThis(),
     doc: jest.fn().mockReturnThis(),
@@ -13,7 +13,7 @@ jest.mock('@/lib/firebase-admin', () => ({
   },
 }));
 
-jest.mock('@/lib/auth', () => ({
+jest.mock('../../../lib/auth', () => ({
   verifyApiKey: jest.fn(),
 }));
 

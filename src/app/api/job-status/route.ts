@@ -1,8 +1,8 @@
 'use server';
 
 import { type NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
-import { verifyApiKey } from '@/lib/auth';
+import { adminDb } from '../../../lib/firebase-admin';
+import { verifyApiKey } from '../../../lib/auth';
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('Authorization') ?? undefined;
