@@ -1,20 +1,19 @@
 import * as admin from 'firebase-admin';
 
-// This is more secure than storing the whole JSON key in an env var.
-// When setting this env var, you might need to replace newlines with \n.
-const serviceAccount = {
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-};
-
 if (!admin.apps.length) {
   try {
+    const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    if (!serviceAccountKey) {
+      throw new Error('The FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set. Please provide the service account JSON key.');
+    }
+
+    const serviceAccount = JSON.parse(serviceAccountKey);
+
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
   } catch (error: any) {
-    console.error('Firebase admin initialization error', error.stack);
+    console.error('Firebase admin initialization error. Make sure FIREBASE_SERVICE_ACCOUNT_KEY is a valid JSON key.', error.stack);
   }
 }
 
