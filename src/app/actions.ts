@@ -30,7 +30,7 @@ export interface ActionResponse<T> {
   validationErrors?: Record<string, string[]>;
 }
 
-export async function handleGenerateArticle(prevState: any, formData: FormData): Promise<ActionResponse<GenerateSeoArticleOutput>> {
+export async function handleGenerateArticle(formData: FormData): Promise<ActionResponse<GenerateSeoArticleOutput>> {
   const rawFormData = {
     trendingTopic: formData.get('trendingTopic') as string,
   };
@@ -54,7 +54,7 @@ export async function handleGenerateArticle(prevState: any, formData: FormData):
   }
 }
 
-export async function handleDiscoverTrends(prevState: any, formData: FormData): Promise<ActionResponse<DiscoverTrendsOutput>> {
+export async function handleDiscoverTrends(formData: FormData): Promise<ActionResponse<DiscoverTrendsOutput>> {
   const rawFormData = {
     topic: formData.get('topic') as string | undefined,
   };
@@ -78,7 +78,7 @@ export async function handleDiscoverTrends(prevState: any, formData: FormData): 
   }
 }
 
-export async function handleGenerateHumanizedContent(prevState: any, formData: FormData): Promise<ActionResponse<string>> {
+export async function handleGenerateHumanizedContent(formData: FormData): Promise<ActionResponse<string>> {
     const rawFormData = {
         contentToHumanize: formData.get('contentToHumanize'),
         tone: formData.get('tone'),

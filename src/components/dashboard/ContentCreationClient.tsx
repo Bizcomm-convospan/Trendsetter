@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -41,13 +42,12 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   }, [initialTopic]);
 
   // Action state for article generation
-  const articleInitialState: ActionResponse<GenerateSeoArticleOutput> = {};
   const [isGenerating, startTransition] = useTransition();
-  const [articleState, setArticleState] = useState(articleInitialState);
+  const [articleState, setArticleState] = useState<ActionResponse<GenerateSeoArticleOutput>>({});
 
   const articleFormAction = (formData: FormData) => {
     startTransition(async () => {
-      const result = await handleGenerateArticle(articleState, formData);
+      const result = await handleGenerateArticle(formData);
       setArticleState(result);
     });
   };

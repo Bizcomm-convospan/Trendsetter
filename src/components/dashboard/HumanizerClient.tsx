@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -29,13 +30,12 @@ export function HumanizerClient() {
   const [content, setContent] = useState('');
   const { toast } = useToast();
 
-  const initialState: ActionResponse<HumanizedContentOutput> = {};
   const [isGenerating, startTransition] = useTransition();
-  const [state, setState] = useState(initialState);
+  const [state, setState] = useState<ActionResponse<HumanizedContentOutput>>({});
   
   const formAction = (formData: FormData) => {
     startTransition(async () => {
-      const result = await handleGenerateHumanizedContent(state, formData);
+      const result = await handleGenerateHumanizedContent(formData);
       setState(result);
     });
   };

@@ -27,14 +27,13 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
   const [trendsData, setTrendsData] = useState<DiscoverTrendsOutput | null>(null);
   const { toast } = useToast();
 
-  const initialState: ActionResponse<DiscoverTrendsOutput> = {};
   const [isDiscovering, startTransition] = useTransition();
-  const [state, setState] = useState(initialState);
+  const [state, setState] = useState<ActionResponse<DiscoverTrendsOutput>>({});
 
   const formAction = (formData: FormData) => {
     setTrendsData(null); // Clear previous results
     startTransition(async () => {
-      const result = await handleDiscoverTrends(state, formData);
+      const result = await handleDiscoverTrends(formData);
       setState(result);
     });
   };
