@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useFormStatus, useActionState } from 'react-dom';
+import { useState, useEffect, useTransition } from 'react';
+import { useFormStatus } from 'react-dom';
 import { handleDiscoverTrends, type ActionResponse } from '@/app/actions';
 import type { DiscoverTrendsOutput, DiscoveredTrend } from '@/ai/flows/discover-trends-flow';
 import { Button } from '@/components/ui/button';
@@ -30,12 +30,18 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
   const { toast } = useToast();
 
   const initialState: ActionResponse<DiscoverTrendsOutput> = {};
-  const [state, formAction, isDiscovering] = useActionState(handleDiscoverTrends, initialState);
+  const [isDiscovering, startTransition] = useTransition();
+  const [state, setState] = useState(initialState);
+
+  const formAction = (formData: FormData) => {
+    setTrendsData(null); // Clear previous results
+    startTransition(async () => {
+      const result = await handleDiscoverTrends(state, formData);
+      setState(result);
+    });
+  };
 
   useEffect(() => {
-    if (isDiscovering) {
-      setTrendsData(null);
-    }
     if (state?.data) {
       setTrendsData(state.data);
       toast({
@@ -61,7 +67,7 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
         }
       });
     }
-  }, [state, toast, isDiscovering]);
+  }, [state, toast]);
 
   return (
     <div className="space-y-8">
