@@ -2,9 +2,8 @@
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
-import { useFormStatus } from 'react-dom';
 import { handleDiscoverTrends, type ActionResponse } from '@/app/actions';
-import type { DiscoverTrendsOutput, DiscoveredTrend } from '@/ai/flows/discover-trends-flow';
+import type { DiscoverTrendsOutput } from '@/ai/flows/discover-trends-flow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,8 +14,7 @@ import { Loader2, TrendingUp, BarChart3, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '../ui/textarea';
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
+function SubmitButton({ pending }: { pending: boolean }) {
   return (
     <Button type="submit" disabled={pending} className="w-full sm:w-auto bg-primary hover:bg-primary/90">
       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <TrendingUp className="mr-2 h-4 w-4" />}
@@ -107,7 +105,7 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
             </div>
           </CardContent>
           <CardFooter className="border-t pt-6">
-            <SubmitButton />
+            <SubmitButton pending={isDiscovering} />
           </CardFooter>
         </form>
       </Card>
