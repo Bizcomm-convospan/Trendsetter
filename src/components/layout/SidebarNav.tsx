@@ -15,6 +15,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/trends', label: 'Trend Discovery', icon: TrendingUp },
   { href: '/dashboard/content-creation', label: 'Content Creation', icon: FileText },
+  { href: '/dashboard/humanizer', label: 'AI Humanizer', icon: Wand2 },
   { href: '/dashboard/prospecting', label: 'Prospecting', icon: Users },
 ];
 

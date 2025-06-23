@@ -1,2 +1,1 @@
-// This configuration has been moved to next.config.mjs to resolve a server startup issue.
-// This file can now be safely deleted.
+// This file has been replaced by next.config.mjs and can be deleted.
