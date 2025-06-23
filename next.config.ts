@@ -1,27 +1,2 @@
-
-import type {NextConfig} from 'next';
-
-const nextConfig: NextConfig = {
-  /* config options here */
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
-      },
-    ],
-  },
-  experimental: {
-    allowedDevOrigins: ["https://6000-firebase-studio-1750409336727.cluster-73qgvk7hjjadkrjeyexca5ivva.cloudworkstations.dev"],
-  },
-};
-
-export default nextConfig;
+// This configuration has been moved to next.config.mjs to resolve a server startup issue.
+// This file can now be safely deleted.
