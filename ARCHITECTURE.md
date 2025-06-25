@@ -24,7 +24,25 @@ The application consists of three primary components that work together asynchro
     1.  **`prospect` (The Job Creator):** A lightweight HTTP-triggered function that receives a request from the API Gateway, creates a "job" document in Firestore (including the `webhookUrl` if provided), and **immediately** returns a `jobId`. It does not wait for the long-running task to complete.
     2.  **`onProspectingJobCreated` (The Background Worker):** A Firestore-triggered function that activates whenever a new job document is created. This "worker" is responsible for executing the entire long-running prospecting flow in the background.
 -   **Key Feature (Firestore as a Job Queue):** The `prospecting_jobs` collection acts as a simple but effective job queue. The worker function updates the job's status (`queued`, `processing`, `complete`, `failed`) directly in its Firestore document, providing real-time progress updates that the frontend can monitor.
--   **Key Feature (Webhook Notifications):** Upon successful job completion, the background worker sends a `POST` request to the stored `webhookUrl` with the final job results. This allows for seamless integration with external systems like WordPress plugins.
+-   **Key Feature (Webhook Notifications):** Upon successful job completion, the background worker sends a `POST` request to the stored `webhookUrl` with the final job results. This allows for seamless integration with external systems like WordPress plugins. The payload sent to the webhook will have the following structure:
+    ```json
+    {
+      "jobId": "string",
+      "status": "complete",
+      "result": {
+        "summary": "string",
+        "prospects": [
+          {
+            "companyName": "string",
+            "people": [{ "name": "string", "role": "string" }],
+            "emails": ["string"],
+            "links": ["string"],
+            "industryKeywords": ["string"]
+          }
+        ]
+      }
+    }
+    ```
 -   **Key Feature (Rate Limiting):** The background worker includes a rate-limiting mechanism to prevent cost spikes from too many concurrent AI calls.
 -   **Benefits:**
     -   **Responsiveness:** The user gets an immediate response with a `jobId`, improving the user experience.

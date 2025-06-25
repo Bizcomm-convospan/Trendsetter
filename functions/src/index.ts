@@ -126,13 +126,14 @@ export const onProspectingJobCreated = onDocumentCreated('prospecting_jobs/{jobI
         const output = await autonomousProspecting(input);
         
         if (webhookUrl) {
-            logger.info(`Job ${jobId} has a webhook. Notifying ${webhookUrl}...`);
+            const webhookPayload = {
+                jobId,
+                status: 'complete',
+                result: output,
+            };
+            logger.info(`Job ${jobId} has a webhook. Notifying ${webhookUrl}...`, { payload: webhookPayload });
+            
             try {
-                const webhookPayload = {
-                    jobId,
-                    status: 'complete',
-                    result: output,
-                };
                 const webhookResponse = await fetch(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -150,6 +151,8 @@ export const onProspectingJobCreated = onDocumentCreated('prospecting_jobs/{jobI
                 // Also log fetch errors but don't fail the main function
                 logger.error(`Error sending webhook for job ${jobId}:`, { error: e.message, url: webhookUrl });
             }
+        } else {
+            logger.info(`Job ${jobId} completed. No webhookUrl provided.`);
         }
         
         await jobRef.update({
