@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, FileText, Image as ImageIcon, Copy, Check, Plug, CheckCircle2, UploadCloud, Wand2 } from 'lucide-react';
 import Image from 'next/image';
-import ReactMarkdown from 'react-markdown';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
@@ -64,7 +63,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
       setArticleData(articleState.data);
       toast({
         title: "Article Generated!",
-        description: "Your SEO-optimized article is ready.",
+        description: "Your article is ready and has been sent to WordPress.",
       });
     }
     if (articleState?.error) {
@@ -157,9 +156,10 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                     {copiedStates.originalContent ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5 text-muted-foreground" />}
                   </Button>
                 </div>
-                <article className="prose prose-sm dark:prose-invert max-w-none p-4 border rounded-md bg-background">
-                  <ReactMarkdown>{articleData.content}</ReactMarkdown>
-                </article>
+                <article
+                  className="prose prose-sm dark:prose-invert max-w-none p-4 border rounded-md bg-background"
+                  dangerouslySetInnerHTML={{ __html: articleData.content }}
+                />
               </div>
             </CardContent>
             <CardFooter className="border-t pt-6 flex-col items-start gap-4">
