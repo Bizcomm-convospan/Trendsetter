@@ -69,7 +69,7 @@ const generateSeoArticleFlow = ai.defineFlow(
       const webhookUrl = process.env.WP_WEBHOOK_URL;
       const webhookToken = process.env.WP_WEBHOOK_TOKEN;
       
-      const isUrlConfigured = webhookUrl && !webhookUrl.includes('your-webhook-url-here');
+      const isUrlConfigured = webhookUrl && !webhookUrl.includes('your-ngrok-url');
       const isTokenConfigured = webhookToken && !webhookToken.includes('your_saved_token_here');
 
       if (isUrlConfigured && isTokenConfigured) {
@@ -98,10 +98,4 @@ const generateSeoArticleFlow = ai.defineFlow(
           console.error('Error calling WordPress webhook:', error.message);
         }
       } else {
-          console.warn('WP_WEBHOOK_URL or WP_WEBHOOK_TOKEN are not configured in .env. Skipping push to WordPress.');
-      }
-    }
-
-    return output!;
-  }
-);
+          console.warn('WP_WEBHOOK_URL
