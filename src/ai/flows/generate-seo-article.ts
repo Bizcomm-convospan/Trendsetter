@@ -66,33 +66,39 @@ const generateSeoArticleFlow = ai.defineFlow(
     const {output} = await prompt(input);
 
     if (output) {
-      // TODO: For production, move these to environment variables.
-      const webhookUrl = 'https://d773-182-71-135-30.ngrok-free.app/wp-json/ai-sync/v1/push';
-      const webhookToken = 'YOUR_SAVED_TOKEN_HERE';
+      const webhookUrl = process.env.WP_WEBHOOK_URL;
+      const webhookToken = process.env.WP_WEBHOOK_TOKEN;
+      
+      const isUrlConfigured = webhookUrl && !webhookUrl.includes('your-webhook-url-here');
+      const isTokenConfigured = webhookToken && !webhookToken.includes('your_saved_token_here');
 
-      try {
-        console.log(`Sending generated article to WordPress webhook: ${webhookUrl}`);
-        const response = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-ai-token': webhookToken,
-          },
-          body: JSON.stringify({
-            title: output.title,
-            content: output.content,
-            meta: output.meta,
-          }),
-        });
+      if (isUrlConfigured && isTokenConfigured) {
+        try {
+          console.log(`Sending generated article to WordPress webhook: ${webhookUrl}`);
+          const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-ai-token': webhookToken,
+            },
+            body: JSON.stringify({
+              title: output.title,
+              content: output.content,
+              meta: output.meta,
+            }),
+          });
 
-        if (!response.ok) {
-          const errorBody = await response.text();
-          console.error(`WordPress webhook failed with status ${response.status}:`, errorBody);
-        } else {
-          console.log('Successfully pushed article to WordPress.');
+          if (!response.ok) {
+            const errorBody = await response.text();
+            console.error(`WordPress webhook failed with status ${response.status}:`, errorBody);
+          } else {
+            console.log('Successfully pushed article to WordPress.');
+          }
+        } catch (error: any) {
+          console.error('Error calling WordPress webhook:', error.message);
         }
-      } catch (error: any) {
-        console.error('Error calling WordPress webhook:', error.message);
+      } else {
+          console.warn('WP_WEBHOOK_URL or WP_WEBHOOK_TOKEN are not configured in .env. Skipping push to WordPress.');
       }
     }
 
