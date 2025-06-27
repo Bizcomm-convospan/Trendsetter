@@ -98,4 +98,10 @@ const generateSeoArticleFlow = ai.defineFlow(
           console.error('Error calling WordPress webhook:', error.message);
         }
       } else {
-          console.warn('WP_WEBHOOK_URL
+          console.warn('WP_WEBHOOK_URL and/or WP_WEBHOOK_TOKEN are not configured. Skipping webhook call.');
+      }
+    }
+
+    return output!;
+  }
+);
