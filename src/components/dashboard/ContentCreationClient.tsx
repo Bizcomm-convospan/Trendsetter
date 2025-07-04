@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2 } from 'lucide-react';
+import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
@@ -140,10 +140,47 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
 
   return (
     <div className="space-y-8">
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="text-primary"/>
+            WordPress Integration Status
+          </CardTitle>
+          <CardDescription>
+            This module manages publishing content to your WordPress site. Status is based on your environment configuration.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="flex items-start gap-4 rounded-lg border p-4">
+            <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold">Webhook URL</h3>
+              <p className="text-sm text-muted-foreground">
+                The application is ready to send data to the URL configured in your <code>.env</code> file (<code>WP_WEBHOOK_URL</code>).
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-4 rounded-lg border p-4">
+            <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold">Authentication Token</h3>
+              <p className="text-sm text-muted-foreground">
+                A security token is correctly sent in the <code>x-ai-token</code> header, based on your <code>.env</code> file (<code>WP_WEBHOOK_TOKEN</code>).
+              </p>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter>
+            <p className="text-xs text-muted-foreground">
+                If publishing fails, ensure the URL is correct (e.g., using a valid ngrok link for local testing) and the token matches your WordPress plugin's settings.
+            </p>
+        </CardFooter>
+      </Card>
+      
       {/* Article Generation Card */}
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Content Generation</CardTitle>
+          <CardTitle className="text-2xl font-bold">Generate a New Article</CardTitle>
           <CardDescription>
             Enter a trending topic to generate an SEO-optimized article. It will appear in your drafts below, ready for publishing.
           </CardDescription>

@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, TrendingUp, Wand2, ScanText } from 'lucide-react';
+import { LayoutDashboard, FileText, TrendingUp, Wand2, ScanText, UploadCloud } from 'lucide-react';
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/trends', label: 'Trend Discovery', icon: TrendingUp },
-  { href: '/dashboard/content-creation', label: 'Content Creation', icon: FileText },
+  { href: '/dashboard/content-creation', label: 'WordPress Publisher', icon: UploadCloud },
   { href: '/dashboard/humanizer', label: 'AI Humanizer', icon: Wand2 },
   { href: '/dashboard/ai-detector', label: 'AI Detector', icon: ScanText },
 ];
