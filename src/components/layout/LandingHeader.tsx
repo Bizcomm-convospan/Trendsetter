@@ -1,7 +1,11 @@
 
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { TrendsetterProLogo } from '@/components/icons'; // Assuming you have this
+import { TrendsetterProLogo } from '@/components/icons';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Menu } from 'lucide-react';
 
 export function LandingHeader() {
   return (
@@ -11,7 +15,9 @@ export function LandingHeader() {
           <TrendsetterProLogo className="h-8 w-8 text-primary" />
           <span className="font-bold text-lg text-foreground">Trendsetter Pro</span>
         </Link>
-        <nav className="flex items-center gap-4">
+        
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-4">
           <Link href="/" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
             Home
           </Link>
@@ -25,6 +31,37 @@ export function LandingHeader() {
             <Link href="/dashboard">Go to App</Link>
           </Button>
         </nav>
+
+        {/* Mobile Navigation */}
+        <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <nav className="flex flex-col gap-6 p-6">
+                <Link href="/" className="text-lg font-medium text-foreground transition-colors hover:text-primary">
+                  Home
+                </Link>
+                <Link href="/pricing" className="text-lg font-medium text-foreground transition-colors hover:text-primary">
+                  Pricing
+                </Link>
+                <div className="flex flex-col gap-4 mt-4">
+                  <Button asChild>
+                    <Link href="/login">Login</Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link href="/dashboard">Go to App</Link>
+                  </Button>
+                </div>
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
+
       </div>
     </header>
   );

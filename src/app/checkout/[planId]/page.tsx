@@ -118,7 +118,7 @@ export default function CheckoutPage() {
                   <Input id="cardNumber" placeholder="•••• •••• •••• ••••" className="pl-10" required disabled={isLoading} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="expiryDate">Expiry Date</Label>
                   <div className="relative">
