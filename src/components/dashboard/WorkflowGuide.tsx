@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, FileText, Users, ArrowRight, Wand2 } from "lucide-react";
+import { TrendingUp, FileText, ArrowRight, Wand2, UploadCloud } from "lucide-react";
 
 interface WorkflowStep {
   icon: React.ReactNode;
@@ -37,11 +37,11 @@ const steps: WorkflowStep[] = [
     href: '/dashboard/ai-detector'
   },
   {
-    icon: <Users className="h-8 w-8 text-green-500" />,
-    title: 'Step 4: Find Prospects',
-    description: 'Automatically extract contact information and leads from any company website.',
-    cta: 'Find Prospects',
-    tabValue: 'prospecting'
+    icon: <UploadCloud className="h-8 w-8 text-green-500" />,
+    title: 'Step 4: Publish Content',
+    description: 'Review your drafts and publish them directly to your integrated WordPress website with one click.',
+    cta: 'Publish Now',
+    tabValue: 'content'
   }
 ];
 

@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview A flow for generating SEO-optimized articles from a trending topic.
+ * @fileOverview A flow for generating SEO-optimized articles and saving them as drafts in Firestore.
  *
  * - generateSeoArticle - A function that handles the generation of SEO-optimized articles.
  * - GenerateSeoArticleInput - The input type for the generateSeoArticle function.
@@ -10,6 +10,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { adminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 const GenerateSeoArticleInputSchema = z.object({
   trendingTopic: z
@@ -66,40 +68,13 @@ const generateSeoArticleFlow = ai.defineFlow(
     const {output} = await prompt(input);
 
     if (output) {
-      const webhookUrl = process.env.WP_WEBHOOK_URL;
-      const webhookToken = process.env.WP_WEBHOOK_TOKEN;
-      
-      const isUrlConfigured = webhookUrl && !webhookUrl.includes('your-ngrok-url');
-      const isTokenConfigured = webhookToken && !webhookToken.includes('your_saved_token_here');
-
-      if (isUrlConfigured && isTokenConfigured) {
-        try {
-          console.log(`Sending generated article to WordPress webhook: ${webhookUrl}`);
-          const response = await fetch(webhookUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-ai-token': webhookToken,
-            },
-            body: JSON.stringify({
-              title: output.title,
-              content: output.content,
-              meta: output.meta,
-            }),
-          });
-
-          if (!response.ok) {
-            const errorBody = await response.text();
-            console.error(`WordPress webhook failed with status ${response.status}:`, errorBody);
-          } else {
-            console.log('Successfully pushed article to WordPress.');
-          }
-        } catch (error: any) {
-          console.error('Error calling WordPress webhook:', error.message);
-        }
-      } else {
-          console.warn('WP_WEBHOOK_URL and/or WP_WEBHOOK_TOKEN are not configured. Skipping webhook call.');
-      }
+      await adminDb.collection('articles').add({
+        ...output,
+        status: 'draft',
+        createdAt: FieldValue.serverTimestamp(),
+        trendingTopic: input.trendingTopic,
+      });
+      console.log(`Article "${output.title}" saved as draft in Firestore.`);
     }
 
     return output!;

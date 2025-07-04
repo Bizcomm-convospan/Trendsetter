@@ -6,7 +6,6 @@ import { Zap } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendDiscoveryClient } from '@/components/dashboard/TrendDiscoveryClient';
 import { ContentCreationClient } from '@/components/dashboard/ContentCreationClient';
-import { ProspectingClient } from '@/components/dashboard/ProspectingClient';
 import { WorkflowGuide } from '@/components/dashboard/WorkflowGuide';
 
 export default function DashboardPage() {
@@ -30,10 +29,9 @@ export default function DashboardPage() {
       <WorkflowGuide onTabChange={setActiveTab} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 mb-6">
+        <TabsList className="grid w-full grid-cols-1 md:grid-cols-2 mb-6">
           <TabsTrigger value="trends" className="py-2.5 text-base">Trend Discovery</TabsTrigger>
-          <TabsTrigger value="content" className="py-2.5 text-base">Content Creation</TabsTrigger>
-          <TabsTrigger value="prospecting" className="py-2.5 text-base">Autonomous Prospecting</TabsTrigger>
+          <TabsTrigger value="content" className="py-2.5 text-base">Content Hub</TabsTrigger>
         </TabsList>
         <TabsContent value="trends">
           <Card className="shadow-lg">
@@ -49,30 +47,7 @@ export default function DashboardPage() {
           </Card>
         </TabsContent>
         <TabsContent value="content">
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold">Content Creation Engine</CardTitle>
-              <CardDescription>
-                Generate SEO-optimized articles based on trending topics.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ContentCreationClient initialTopic={selectedTrend} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="prospecting">
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold">Autonomous Prospecting Engine</CardTitle>
-              <CardDescription>
-                Define your Ideal Customer Profile and let AI find relevant prospects.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ProspectingClient />
-            </CardContent>
-          </Card>
+            <ContentCreationClient initialTopic={selectedTrend} />
         </TabsContent>
       </Tabs>
 

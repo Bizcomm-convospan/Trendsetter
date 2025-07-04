@@ -6,6 +6,9 @@ import { discoverTrends, DiscoverTrendsInput, DiscoverTrendsOutput } from '@/ai/
 import { generateHumanizedContent, type HumanizedContentInput } from '@/ai/flows/humanized-content';
 import { detectAiContent, type AiDetectorInput, type AiDetectorOutput } from '@/ai/flows/ai-detector-flow';
 import { z } from 'zod';
+import { adminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
+
 
 const GenerateArticleSchema = z.object({
   trendingTopic: z.string().min(3, "Trending topic must be at least 3 characters long."),
@@ -130,4 +133,67 @@ export async function handleAiDetection(formData: FormData): Promise<ActionRespo
         console.error("Error during AI detection:", e);
         return { error: e.message || "Failed to analyze content. Please try again." };
     }
+}
+
+export async function handlePublishArticle(articleId: string): Promise<ActionResponse<{ success: boolean }>> {
+  if (!articleId) {
+    return { error: "Article ID is required." };
+  }
+
+  try {
+    const articleRef = adminDb.collection('articles').doc(articleId);
+    const articleDoc = await articleRef.get();
+
+    if (!articleDoc.exists) {
+      return { error: "Article not found." };
+    }
+
+    const articleData = articleDoc.data();
+    
+    const webhookUrl = process.env.WP_WEBHOOK_URL;
+    const webhookToken = process.env.WP_WEBHOOK_TOKEN;
+    
+    const isUrlConfigured = webhookUrl && !webhookUrl.includes('your-ngrok-url');
+    const isTokenConfigured = webhookToken && !webhookToken.includes('your_secure_token_here');
+
+    if (isUrlConfigured && isTokenConfigured) {
+      console.log(`Sending article ${articleId} to WordPress webhook: ${webhookUrl}`);
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-ai-token': webhookToken,
+        },
+        body: JSON.stringify({
+          title: articleData?.title,
+          content: articleData?.content,
+          meta: articleData?.meta,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        const errorMessage = `WordPress webhook failed with status ${response.status}: ${errorBody}`;
+        console.error(errorMessage);
+        return { error: errorMessage };
+      } else {
+        console.log(`Successfully pushed article ${articleId} to WordPress.`);
+      }
+    } else {
+        const warningMessage = 'WP_WEBHOOK_URL and/or WP_WEBHOOK_TOKEN are not configured. Skipping actual webhook call and marking as published for testing.';
+        console.warn(warningMessage);
+    }
+
+    // Update status regardless of webhook for testing purposes, but production might handle this differently.
+    await articleRef.update({
+        status: 'published',
+        publishedAt: FieldValue.serverTimestamp(),
+    });
+
+    return { data: { success: true } };
+
+  } catch (e: any) {
+    console.error(`Error publishing article ${articleId}:`, e);
+    return { error: e.message || "Failed to publish article. Please try again." };
+  }
 }
