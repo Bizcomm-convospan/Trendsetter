@@ -1,3 +1,4 @@
+
 import * as admin from 'firebase-admin';
 
 if (!admin.apps.length) {
@@ -13,7 +14,10 @@ if (!admin.apps.length) {
       credential: admin.credential.cert(serviceAccount),
     });
   } catch (error: any) {
-    console.error('Firebase admin initialization error. Make sure FIREBASE_SERVICE_ACCOUNT_KEY is a valid JSON key.', error.stack);
+    console.error('CRITICAL: Firebase admin initialization failed.', error.stack);
+    // Re-throw the error to prevent the app from starting in a broken state.
+    // This makes configuration errors obvious immediately during startup.
+    throw new Error('Firebase Admin SDK could not be initialized. Check the server logs for more details.');
   }
 }
 
