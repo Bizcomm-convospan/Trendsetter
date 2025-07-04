@@ -5,15 +5,12 @@ export function TrendsetterProLogo(props: SVGProps<SVGSVGElement>) {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      fill="currentColor"
       {...props}
     >
-      <path d="M12 3v18" />
-      <path d="m5 10 7-7 7 7" />
+      <path d="M7 20a2 2 0 0 1-2-2V12a2 2 0 0 1 4 0v6a2 2 0 0 1-2 2z" />
+      <path d="M12 20a2 2 0 0 1-2-2V8a2 2 0 0 1 4 0v10a2 2 0 0 1-2 2z" />
+      <path d="M17 20a2 2 0 0 1-2-2V4a2 2 0 0 1 4 0v14a2 2 0 0 1-2 2z" />
     </svg>
   );
 }
