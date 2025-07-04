@@ -1,6 +1,6 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Wand2, ScanText, FileText, Users, BarChart3, Rocket } from 'lucide-react';
+import { Wand2, ScanText, FileText, UploadCloud, BarChart3, Rocket } from 'lucide-react';
 
 const features = [
   {
@@ -24,14 +24,14 @@ const features = [
     description: "Analyze content for AI patterns. Get a 'humanization score' and suggestions for improvement.",
   },
   {
-    icon: <Users className="mb-4 h-10 w-10 text-primary" />,
-    title: 'Autonomous Prospecting',
-    description: 'Define your Ideal Customer Profile and let our AI find qualified leads from across the web.',
+    icon: <UploadCloud className="mb-4 h-10 w-10 text-primary" />,
+    title: 'One-Click Publishing',
+    description: 'Seamlessly publish your generated and refined articles directly to your WordPress site with a single click.',
   },
   {
     icon: <Rocket className="mb-4 h-10 w-10 text-primary" />,
     title: 'Automated Workflows',
-    description: 'Streamline your content and prospecting processes to save time and scale your outreach.',
+    description: 'Streamline your content creation process from trend discovery to final publication to save time and scale your efforts.',
   },
 ];
 
