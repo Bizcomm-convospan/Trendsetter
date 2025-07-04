@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, TrendingUp, Wand2, ScanText, UploadCloud } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, Wand2, ScanText, UploadCloud, User } from 'lucide-react';
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -17,6 +17,7 @@ const navItems = [
   { href: '/dashboard/humanizer', label: 'AI Humanizer', icon: Wand2 },
   { href: '/dashboard/ai-detector', label: 'AI Detector', icon: ScanText },
   { href: '/dashboard/content-creation', label: 'WordPress Publisher', icon: UploadCloud },
+  { href: '/dashboard/profile', label: 'My Profile', icon: User },
 ];
 
 export function SidebarNav() {
