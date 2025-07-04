@@ -11,7 +11,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 
 
 const GenerateArticleSchema = z.object({
-  trendingTopic: z.string().min(3, "Trending topic must be at least 3 characters long."),
+  topic: z.string().min(3, "Topic or keyword must be at least 3 characters long."),
 });
 
 const DiscoverTrendsSchema = z.object({
@@ -40,7 +40,7 @@ export interface ActionResponse<T> {
 
 export async function handleGenerateArticle(formData: FormData): Promise<ActionResponse<GenerateSeoArticleOutput>> {
   const rawFormData = {
-    trendingTopic: formData.get('trendingTopic') as string,
+    topic: formData.get('topic') as string,
   };
 
   const validatedFields = GenerateArticleSchema.safeParse(rawFormData);
@@ -53,7 +53,7 @@ export async function handleGenerateArticle(formData: FormData): Promise<ActionR
   }
 
   try {
-    const input: GenerateSeoArticleInput = { trendingTopic: validatedFields.data.trendingTopic };
+    const input: GenerateSeoArticleInput = { topic: validatedFields.data.topic };
     const article = await generateSeoArticle(input);
     return { data: article };
   } catch (e: any) {

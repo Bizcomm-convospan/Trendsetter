@@ -14,9 +14,9 @@ import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
 const GenerateSeoArticleInputSchema = z.object({
-  trendingTopic: z
+  topic: z
     .string()
-    .describe('The trending topic to generate an article about.'),
+    .describe('The topic or keyword to generate an article about.'),
 });
 export type GenerateSeoArticleInput = z.infer<typeof GenerateSeoArticleInputSchema>;
 
@@ -44,9 +44,9 @@ const prompt = ai.definePrompt({
   name: 'generateSeoArticlePrompt',
   input: {schema: GenerateSeoArticleInputSchema},
   output: {schema: GenerateSeoArticleOutputSchema},
-  prompt: `You are an expert SEO content writer. Generate an SEO-optimized article about the following trending topic. The article should be 300-500 words.
+  prompt: `You are an expert SEO content writer. Generate an SEO-optimized article about the following topic or keyword. The article should be 300-500 words.
 
-Trending Topic: {{{trendingTopic}}}
+Topic/Keyword: {{{topic}}}
 
 The response must include:
 1.  A main title for the article.
@@ -72,7 +72,7 @@ const generateSeoArticleFlow = ai.defineFlow(
         ...output,
         status: 'draft',
         createdAt: FieldValue.serverTimestamp(),
-        trendingTopic: input.trendingTopic,
+        topic: input.topic,
       });
       console.log(`Article "${output.title}" saved as draft in Firestore.`);
     }

@@ -26,7 +26,7 @@ interface Article {
   status: 'draft' | 'published';
   createdAt: Timestamp;
   publishedAt?: Timestamp;
-  trendingTopic: string;
+  topic: string;
 }
 
 function GenerateArticleButton() {
@@ -182,24 +182,24 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Generate a New Article</CardTitle>
           <CardDescription>
-            Enter a trending topic to generate an SEO-optimized article. It will appear in your drafts below, ready for publishing.
+            Enter a topic or keyword to generate an SEO-optimized article. It will appear in your drafts below, ready for publishing.
           </CardDescription>
         </CardHeader>
         <form action={generateArticleAction}>
           <CardContent>
-            <Label htmlFor="trendingTopic" className="text-base font-semibold">Trending Topic</Label>
+            <Label htmlFor="topic" className="text-base font-semibold">Topic or Keyword</Label>
             <Input
-              id="trendingTopic"
-              name="trendingTopic"
-              placeholder="e.g., AI innovations in 2025"
+              id="topic"
+              name="topic"
+              placeholder="e.g., 'AI innovations in 2025' or 'sustainable energy'"
               required
               className="text-base"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               disabled={isGenerating}
             />
-             {generateState?.validationErrors?.trendingTopic && (
-                <p className="text-sm text-destructive mt-2">{generateState.validationErrors.trendingTopic.join(', ')}</p>
+             {generateState?.validationErrors?.topic && (
+                <p className="text-sm text-destructive mt-2">{generateState.validationErrors.topic.join(', ')}</p>
               )}
           </CardContent>
           <CardFooter className="border-t pt-6">
