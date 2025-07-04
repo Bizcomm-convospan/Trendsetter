@@ -1,5 +1,7 @@
 {
   "firebase_hosting": {
     "deploymentHostingUrl": "https://trendsetter-pro.web.app"
-  }
+  },
+  "gemini_api": {},
+  "secrets_manager": {}
 }

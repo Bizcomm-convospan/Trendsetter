@@ -9,6 +9,8 @@ This is a NextJS starter in Firebase Studio.
 **This step is mandatory.** Before running the application, you need to set up your environment variables. These are essential for connecting to Firebase and other services. The application will not start without them.
 
 1.  Copy the example environment file:
+
+
     ```bash
     cp .env.example .env
     ```
