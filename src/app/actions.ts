@@ -4,6 +4,7 @@
 import { generateSeoArticle, GenerateSeoArticleInput, GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import { discoverTrends, DiscoverTrendsInput, DiscoverTrendsOutput } from '@/ai/flows/discover-trends-flow';
 import { generateHumanizedContent, type HumanizedContentInput } from '@/ai/flows/humanized-content';
+import { detectAiContent, type AiDetectorInput, type AiDetectorOutput } from '@/ai/flows/ai-detector-flow';
 import { z } from 'zod';
 
 const GenerateArticleSchema = z.object({
@@ -21,6 +22,10 @@ const HumanizeArticleSchema = z.object({
     .default('mixed'),
   keyword: z.string().optional(),
   userInsight: z.string().optional(),
+});
+
+const AiDetectorSchema = z.object({
+    content: z.string().min(50, "Content must be at least 50 characters to analyze effectively."),
 });
 
 
@@ -101,5 +106,28 @@ export async function handleGenerateHumanizedContent(formData: FormData): Promis
     } catch (e: any) {
         console.error("Error generating humanized content:", e);
         return { error: e.message || "Failed to generate content. Please try again." };
+    }
+}
+
+export async function handleAiDetection(formData: FormData): Promise<ActionResponse<AiDetectorOutput>> {
+    const rawFormData = {
+        content: formData.get('content') as string,
+    };
+
+    const validatedFields = AiDetectorSchema.safeParse(rawFormData);
+
+    if (!validatedFields.success) {
+        return {
+            validationErrors: validatedFields.error.flatten().fieldErrors,
+            error: "Validation failed. Please check your input.",
+        };
+    }
+
+    try {
+        const result = await detectAiContent(validatedFields.data as AiDetectorInput);
+        return { data: result };
+    } catch (e: any) {
+        console.error("Error during AI detection:", e);
+        return { error: e.message || "Failed to analyze content. Please try again." };
     }
 }

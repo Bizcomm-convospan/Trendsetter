@@ -4,3 +4,4 @@ config();
 import '@/ai/flows/generate-seo-article.ts';
 import '@/ai/flows/discover-trends-flow.ts';
 import '@/ai/flows/humanized-content.ts';
+import '@/ai/flows/ai-detector-flow.ts';
