@@ -1,4 +1,4 @@
-
+import 'server-only';
 'use server';
 /**
  * @fileOverview A flow for discovering trending topics.
