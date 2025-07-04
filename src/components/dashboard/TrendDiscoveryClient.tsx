@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, TrendingUp, BarChart3, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '../ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function SubmitButton({ pending }: { pending: boolean }) {
   return (
@@ -91,6 +92,56 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
                 <p className="text-sm text-destructive">{state.validationErrors.topic.join(', ')}</p>
               )}
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="geography">Geography</Label>
+                    <Select name="geography" defaultValue="US">
+                        <SelectTrigger id="geography" disabled={isDiscovering}>
+                            <SelectValue placeholder="Select a country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="US">United States</SelectItem>
+                            <SelectItem value="GB">United Kingdom</SelectItem>
+                            <SelectItem value="IN">India</SelectItem>
+                            <SelectItem value="CA">Canada</SelectItem>
+                            <SelectItem value="AU">Australia</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="language">Language</Label>
+                    <Select name="language" defaultValue="en">
+                        <SelectTrigger id="language" disabled={isDiscovering}>
+                            <SelectValue placeholder="Select a language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="en">English</SelectItem>
+                            <SelectItem value="es">Spanish</SelectItem>
+                            <SelectItem value="fr">French</SelectItem>
+                            <SelectItem value="de">German</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Select name="category" defaultValue="all">
+                        <SelectTrigger id="category" disabled={isDiscovering}>
+                            <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Categories</SelectItem>
+                            <SelectItem value="Business">Business</SelectItem>
+                            <SelectItem value="Technology">Technology</SelectItem>
+                            <SelectItem value="Entertainment">Entertainment</SelectItem>
+                            <SelectItem value="Sports">Sports</SelectItem>
+                            <SelectItem value="Science">Science</SelectItem>
+                            <SelectItem value="Health">Health</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
              <div className="space-y-2">
               <Label htmlFor="simulatedSources" className="text-base font-semibold">Simulated Trend Sources</Label>
               <Textarea

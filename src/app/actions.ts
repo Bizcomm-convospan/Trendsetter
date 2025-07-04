@@ -16,6 +16,9 @@ const GenerateArticleSchema = z.object({
 
 const DiscoverTrendsSchema = z.object({
   topic: z.string().optional(),
+  geography: z.string().optional(),
+  language: z.string().optional(),
+  category: z.string().optional(),
 });
 
 const HumanizeArticleSchema = z.object({
@@ -63,9 +66,22 @@ export async function handleGenerateArticle(formData: FormData): Promise<ActionR
 }
 
 export async function handleDiscoverTrends(formData: FormData): Promise<ActionResponse<DiscoverTrendsOutput>> {
-  const rawFormData = {
+  const rawFormData: {
+    topic?: string;
+    geography?: string;
+    language?: string;
+    category?: string;
+  } = {
     topic: formData.get('topic') as string | undefined,
+    geography: formData.get('geography') as string | undefined,
+    language: formData.get('language') as string | undefined,
+    category: formData.get('category') as string | undefined,
   };
+  
+  // Don't pass 'all' to the AI flow, as it's the default behavior
+  if (rawFormData.category === 'all') {
+    rawFormData.category = undefined;
+  }
 
   const validatedFields = DiscoverTrendsSchema.safeParse(rawFormData);
 
@@ -77,7 +93,7 @@ export async function handleDiscoverTrends(formData: FormData): Promise<ActionRe
   }
 
   try {
-    const input: DiscoverTrendsInput = { topic: validatedFields.data.topic };
+    const input: DiscoverTrendsInput = validatedFields.data;
     const trends = await discoverTrends(input);
     return { data: trends };
   } catch (e: any) {
