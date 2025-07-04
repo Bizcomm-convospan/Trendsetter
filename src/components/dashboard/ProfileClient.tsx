@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -11,7 +10,8 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
-import { User, CreditCard, BarChart2, KeyRound, Copy, RefreshCw, Loader2, FileText, TrendingUp, ScanText, Badge } from 'lucide-react';
+import { User, CreditCard, BarChart2, KeyRound, Copy, RefreshCw, Loader2, FileText, TrendingUp, ScanText, Cpu } from 'lucide-react';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function ProfileClient() {
   const { toast } = useToast();
@@ -145,6 +145,35 @@ export function ProfileClient() {
                     </div>
                 </CardContent>
             </Card>
+
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Cpu /> AI Model Configuration</CardTitle>
+                    <CardDescription>Select the underlying AI model for content generation and analysis.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        <Label htmlFor="ai-model">Active Model</Label>
+                        <Select defaultValue="gemini" disabled>
+                            <SelectTrigger id="ai-model" className="w-full sm:w-[280px]">
+                                <SelectValue placeholder="Select a model" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectLabel>Supported Models</SelectLabel>
+                                    <SelectItem value="gemini">Google Gemini (Active)</SelectItem>
+                                    <SelectItem value="openai">OpenAI GPT-4 (Requires separate API key)</SelectItem>
+                                    <SelectItem value="anthropic">Anthropic Claude 3 (Requires separate API key)</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                            Model switching is a feature planned for future updates. The app currently uses Google Gemini.
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+
         </div>
       </div>
     </div>
