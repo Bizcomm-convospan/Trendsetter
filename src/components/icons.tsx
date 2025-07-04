@@ -12,9 +12,8 @@ export function TrendsetterProLogo(props: SVGProps<SVGSVGElement>) {
       strokeLinejoin="round"
       {...props}
     >
-      <circle cx="10.5" cy="10.5" r="7.5" />
-      <path d="M21 21l-5.2-5.2" />
-      <path d="M6 11l3-3 3 3 3-3" />
+      <path d="M3 17L9 11l4 4 8-8" />
+      <polyline points="15 7 21 7 21 13" />
     </svg>
   );
 }
