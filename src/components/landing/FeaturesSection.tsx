@@ -1,6 +1,6 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Zap, Search, FileText, Users, BarChart3, Rocket } from 'lucide-react';
+import { Wand2, ScanText, FileText, Users, BarChart3, Rocket } from 'lucide-react';
 
 const features = [
   {
@@ -12,6 +12,16 @@ const features = [
     icon: <FileText className="mb-4 h-10 w-10 text-primary" />,
     title: 'AI Content Generation',
     description: 'Craft engaging, SEO-friendly articles, blog posts, and social media content in minutes.',
+  },
+    {
+    icon: <Wand2 className="mb-4 h-10 w-10 text-primary" />,
+    title: 'AI Humanizer',
+    description: 'Refine AI-generated text to sound more natural and engaging. Adjust the tone to match your brand voice.',
+  },
+  {
+    icon: <ScanText className="mb-4 h-10 w-10 text-primary" />,
+    title: 'AI Detector',
+    description: "Analyze content for AI patterns. Get a 'humanization score' and suggestions for improvement.",
   },
   {
     icon: <Users className="mb-4 h-10 w-10 text-primary" />,
@@ -34,7 +44,7 @@ export function FeaturesSection() {
           Everything you need to supercharge your marketing and sales efforts with the power of AI.
         </p>
       </div>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {features.map((feature) => (
           <Card key={feature.title} className="flex flex-col items-center text-center shadow-lg hover:shadow-xl transition-shadow duration-300">
             <CardHeader>
