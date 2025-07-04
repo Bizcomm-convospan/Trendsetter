@@ -7,17 +7,13 @@ export function TrendsetterProLogo(props: SVGProps<SVGSVGElement>) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
       {...props}
     >
-      <path d="M3 17L9 11l4 4 8-8" />
-      <polyline points="15 7 21 7 21 13" />
-
-      {/* AI Sparkles */}
-      <path d="M12.5 2.5 14 5l-1.5 1.5L11 5z" />
-      <path d="m5 11 1.5 1.5L5 14l-1.5-1.5z" />
+      <path d="M12 3v18" />
+      <path d="m5 10 7-7 7 7" />
     </svg>
   );
 }
