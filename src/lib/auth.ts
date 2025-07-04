@@ -5,7 +5,7 @@
  * @param authHeader The value of the Authorization header.
  * @returns `true` if the key is valid, `false` otherwise.
  */
-export function verifyApiKey(authHeader: string | undefined): boolean {
+export async function verifyApiKey(authHeader: string | undefined): Promise<boolean> {
   const validKey = process.env.STATUS_API_KEY;
 
   // 1. Ensure the API key is configured on the server
