@@ -14,9 +14,9 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/trends', label: 'Trend Discovery', icon: TrendingUp },
-  { href: '/dashboard/content-creation', label: 'WordPress Publisher', icon: UploadCloud },
   { href: '/dashboard/humanizer', label: 'AI Humanizer', icon: Wand2 },
   { href: '/dashboard/ai-detector', label: 'AI Detector', icon: ScanText },
+  { href: '/dashboard/content-creation', label: 'WordPress Publisher', icon: UploadCloud },
 ];
 
 export function SidebarNav() {
