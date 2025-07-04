@@ -6,16 +6,16 @@ import { Check } from 'lucide-react';
 
 export function HeroSection() {
   return (
-    <section className="container grid items-center gap-12 pb-8 pt-6 md:py-10 lg:grid-cols-2">
-      <div className="flex flex-col items-start gap-4">
-        <h1 className="text-3xl font-extrabold leading-tight tracking-tighter sm:text-3xl md:text-5xl lg:text-6xl text-foreground">
+    <section className="container grid gap-12 lg:grid-cols-2 lg:gap-16 py-12 md:py-20 lg:py-24">
+      <div className="flex flex-col items-start gap-6 lg:gap-8">
+        <h1 className="text-4xl font-extrabold leading-tight tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl text-foreground">
           Automate Your Growth with <br className="hidden sm:inline" />
           <span className="text-primary">AI-Powered Insights</span>
         </h1>
-        <p className="max-w-[700px] text-lg text-muted-foreground sm:text-xl">
+        <p className="max-w-[600px] text-lg text-muted-foreground sm:text-xl">
           Discover trends, generate compelling content, and find your ideal customers effortlessly. Trendsetter Pro is your all-in-one AI platform for marketing and sales automation.
         </p>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           <Button asChild size="lg">
             <Link href="/dashboard">Get Started Now</Link>
           </Button>
