@@ -1,5 +1,3 @@
-'use server';
-
 import { type NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '../../../lib/firebase-admin';
 import { verifyApiKey } from '../../../lib/auth';
@@ -7,7 +5,7 @@ import { verifyApiKey } from '../../../lib/auth';
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('Authorization') ?? undefined;
 
-  if (!verifyApiKey(authHeader)) {
+  if (!await verifyApiKey(authHeader)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

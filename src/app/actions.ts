@@ -1,4 +1,3 @@
-import 'server-only';
 'use server';
 
 import { generateSeoArticle, GenerateSeoArticleInput, GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';

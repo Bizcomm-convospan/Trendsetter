@@ -1,4 +1,3 @@
-import 'server-only';
 'use server';
 /**
  * @fileOverview An AI agent for detecting and improving AI-generated content.

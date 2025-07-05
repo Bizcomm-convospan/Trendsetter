@@ -1,5 +1,4 @@
 import 'server-only';
-'use server';
 
 /**
  * Verifies the Authorization header against the stored API key.

@@ -42,7 +42,7 @@ describe('/api/job-status', () => {
   });
 
   it('should return 401 Unauthorized if API key is invalid', async () => {
-    mockedVerifyApiKey.mockReturnValue(false);
+    mockedVerifyApiKey.mockResolvedValue(false);
     const req = createMockRequest('job123', 'Bearer invalidkey');
     const response = await GET(req);
     const data = await response.json();
@@ -53,7 +53,7 @@ describe('/api/job-status', () => {
   });
 
   it('should return 400 Bad Request if jobId is missing', async () => {
-    mockedVerifyApiKey.mockReturnValue(true);
+    mockedVerifyApiKey.mockResolvedValue(true);
     const req = createMockRequest(null, 'Bearer validkey');
     const response = await GET(req);
     const data = await response.json();
@@ -63,7 +63,7 @@ describe('/api/job-status', () => {
   });
 
   it('should return 404 Not Found if job does not exist', async () => {
-    mockedVerifyApiKey.mockReturnValue(true);
+    mockedVerifyApiKey.mockResolvedValue(true);
     mockedDoc.mockReturnThis();
     mockAdminDb.get.mockResolvedValue({ exists: false });
 
@@ -77,7 +77,7 @@ describe('/api/job-status', () => {
   });
 
   it('should return 200 with complete job data', async () => {
-    mockedVerifyApiKey.mockReturnValue(true);
+    mockedVerifyApiKey.mockResolvedValue(true);
     const mockJobData = {
       status: 'complete',
       result: { summary: 'Job done', prospects: [] },
@@ -96,7 +96,7 @@ describe('/api/job-status', () => {
   });
 
   it('should return 200 with processing job data and null result', async () => {
-    mockedVerifyApiKey.mockReturnValue(true);
+    mockedVerifyApiKey.mockResolvedValue(true);
     const mockJobData = {
       status: 'processing',
       updatedAt: { toDate: () => new Date('2025-06-21T10:32:00Z') },
@@ -114,7 +114,7 @@ describe('/api/job-status', () => {
   });
 
   it('should return 500 on a firestore error', async () => {
-    mockedVerifyApiKey.mockReturnValue(true);
+    mockedVerifyApiKey.mockResolvedValue(true);
     mockAdminDb.get.mockRejectedValue(new Error('Firestore connection failed'));
 
     const req = createMockRequest('job789', 'Bearer validkey');
