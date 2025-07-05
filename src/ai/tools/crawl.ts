@@ -1,10 +1,11 @@
 'use server';
 /**
- * @fileOverview A helper function to crawl a web page using an external service.
+ * @fileOverview A helper function to crawl a web page using an external service and extract its main content.
  * This is a tool to be used within Genkit flows in the Next.js application.
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { extractTextFromHtml } from '../lib/text-extractor';
 
 async function crawlPage(url: string): Promise<string> {
   // IMPORTANT: This CRAWLER_SERVICE_URL must be configured in your environment.
@@ -49,9 +50,14 @@ async function crawlPage(url: string): Promise<string> {
 
 export const crawlUrlTool = ai.defineTool({
     name: 'crawlUrlForAnalysis',
-    description: 'Crawls the given URL to retrieve its full HTML content for analysis. Use this to get the source code of a competitor page.',
+    description: 'Crawls the given URL, extracts the main article text, and returns it. Use this to get the content of a competitor page for analysis.',
     inputSchema: z.object({ url: z.string().url() }),
-    outputSchema: z.string().describe('The full HTML content of the page.'),
+    outputSchema: z.string().describe('The clean, extracted text content of the page, stripped of HTML, scripts, and other boilerplate.'),
 }, async (input) => {
-    return crawlPage(input.url);
+    const htmlContent = await crawlPage(input.url);
+    if (!htmlContent) {
+        return "Failed to crawl or find content at the URL.";
+    }
+    const cleanText = await extractTextFromHtml(htmlContent);
+    return cleanText;
 });

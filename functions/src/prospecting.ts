@@ -11,6 +11,7 @@
 import {ai} from './genkit';
 import {z} from 'zod';
 import { crawlPage } from './lib/crawl';
+import { extractTextFromHtml } from './lib/text-extractor';
 import * as admin from 'firebase-admin';
 
 const AutonomousProspectingInputSchema = z.object({
@@ -42,11 +43,12 @@ export type AutonomousProspectingOutput = z.infer<typeof AutonomousProspectingOu
 
 const crawlUrlTool = ai.defineTool({
     name: 'crawlUrlForProspects',
-    description: 'Crawls the given URL to retrieve its HTML content for analysis.',
+    description: 'Crawls the given URL to retrieve its main text content for analysis.',
     inputSchema: z.object({ url: z.string().url() }),
-    outputSchema: z.string().describe('The full HTML content of the page.'),
+    outputSchema: z.string().describe('The clean, extracted text content of the page.'),
 }, async (input) => {
-    return crawlPage(input.url);
+    const html = await crawlPage(input.url);
+    return extractTextFromHtml(html);
 });
 
 
@@ -58,9 +60,9 @@ const extractionPrompt = ai.definePrompt({
     output: { schema: AutonomousProspectingOutputSchema },
     prompt: `
       You are an expert data extraction agent.
-      First, use the crawlUrlForProspects tool to get the HTML content of the following URL: {{{url}}}
+      First, use the crawlUrlForProspects tool to get the text content of the following URL: {{{url}}}
 
-      Then, from the resulting HTML content, extract structured data about companies and people.
+      Then, from the resulting article text, extract structured data about companies and people.
       Specifically, look for:
       - The primary company name.
       - A list of people, including their full name and their role or job title.

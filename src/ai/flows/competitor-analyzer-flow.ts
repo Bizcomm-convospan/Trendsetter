@@ -38,9 +38,9 @@ const competitorAnalyzerPrompt = ai.definePrompt({
   prompt: `
     You are a world-class SEO analyst and content strategist. Your task is to analyze a competitor's article and create a "Competitor Report Card".
 
-    First, use the crawlUrlForAnalysis tool to get the HTML content of the following URL: {{{url}}}
+    First, use the crawlUrlForAnalysis tool to get the main text content of the following URL: {{{url}}}
 
-    Then, analyze the resulting HTML content and provide the following report:
+    Then, analyze the resulting article text and provide the following report:
     1.  **Key Topics**: What are the primary topics and keywords this article seems to be targeting?
     2.  **Content Grade**: Give the article an overall grade from A to F, based on its readability, structure (use of headings, lists), and perceived on-page SEO quality.
     3.  **Content Gaps**: What related, important sub-topics did the author miss? Identify 3-5 opportunities to create a more comprehensive article.
