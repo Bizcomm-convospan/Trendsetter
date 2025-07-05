@@ -17,6 +17,7 @@ const GenerateSeoArticleInputSchema = z.object({
   topic: z
     .string()
     .describe('The topic or keyword to generate an article about.'),
+  language: z.string().optional().describe('The language for the article (e.g., en, es, fr).'),
 });
 export type GenerateSeoArticleInput = z.infer<typeof GenerateSeoArticleInputSchema>;
 
@@ -45,6 +46,9 @@ const prompt = ai.definePrompt({
   input: {schema: GenerateSeoArticleInputSchema},
   output: {schema: GenerateSeoArticleOutputSchema},
   prompt: `You are an expert SEO content writer. Generate an SEO-optimized article about the following topic or keyword. The article should be 300-500 words.
+{{#if language}}
+The article must be written in the following language: {{{language}}}.
+{{/if}}
 
 Topic/Keyword: {{{topic}}}
 

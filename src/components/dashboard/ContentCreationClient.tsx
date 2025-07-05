@@ -22,6 +22,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Progress } from '../ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 interface Article {
   id: string;
@@ -237,21 +238,39 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
             </CardDescription>
           </CardHeader>
           <form action={generateArticleAction}>
-            <CardContent>
-              <Label htmlFor="topic" className="text-base font-semibold">Topic or Keyword</Label>
-              <Input
-                id="topic"
-                name="topic"
-                placeholder="e.g., 'AI innovations in 2025' or 'sustainable energy'"
-                required
-                className="text-base"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                disabled={isGenerating}
-              />
-              {generateState?.validationErrors?.topic && (
-                  <p className="text-sm text-destructive mt-2">{generateState.validationErrors.topic.join(', ')}</p>
-                )}
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2 space-y-2">
+                  <Label htmlFor="topic" className="font-semibold">Topic or Keyword</Label>
+                  <Input
+                    id="topic"
+                    name="topic"
+                    placeholder="e.g., 'AI innovations in 2025' or 'sustainable energy'"
+                    required
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    disabled={isGenerating}
+                  />
+                  {generateState?.validationErrors?.topic && (
+                      <p className="text-sm text-destructive mt-2">{generateState.validationErrors.topic.join(', ')}</p>
+                    )}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="language" className="font-semibold">Language</Label>
+                    <Select name="language" defaultValue="en" disabled={isGenerating}>
+                        <SelectTrigger id="language">
+                            <SelectValue placeholder="Select a language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="en">English</SelectItem>
+                            <SelectItem value="es">Spanish</SelectItem>
+                            <SelectItem value="fr">French</SelectItem>
+                            <SelectItem value="de">German</SelectItem>
+                            <SelectItem value="it">Italian</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+              </div>
             </CardContent>
             <CardFooter className="border-t pt-6">
               <GenerateArticleButton />

@@ -46,9 +46,9 @@ export function HeaderControls() {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+          <Button variant="ghost" className="relative h-10 w-10 rounded-full" aria-label="Open user menu">
             <Avatar className="h-9 w-9">
-              <AvatarImage src="https://placehold.co/100x100.png" alt="@user" data-ai-hint="profile avatar" />
+              <AvatarImage src="https://placehold.co/100x100.png" alt="User profile avatar" data-ai-hint="profile avatar" />
               <AvatarFallback>TP</AvatarFallback>
             </Avatar>
           </Button>

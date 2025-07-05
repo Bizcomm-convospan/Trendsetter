@@ -56,6 +56,7 @@ const GenerateArticleSchema = z.object({
   topic: z
     .string()
     .min(3, 'Topic or keyword must be at least 3 characters long.'),
+  language: z.string().optional(),
 });
 
 const DiscoverTrendsSchema = z.object({
@@ -117,6 +118,7 @@ export async function handleGenerateArticle(
 ): Promise<ActionResponse<GenerateSeoArticleOutput>> {
   const rawFormData = {
     topic: formData.get('topic') as string,
+    language: (formData.get('language') as string) || undefined,
   };
 
   const validatedFields = GenerateArticleSchema.safeParse(rawFormData);
@@ -129,8 +131,7 @@ export async function handleGenerateArticle(
   }
 
   try {
-    const input: GenerateSeoArticleInput = { topic: validatedFields.data.topic };
-    const article = await generateSeoArticle(input);
+    const article = await generateSeoArticle(validatedFields.data);
     return { data: article };
   } catch (e: any) {
     console.error('Error generating article:', e);

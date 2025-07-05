@@ -51,7 +51,7 @@ export function ProfileClient() {
             <Card className="shadow-lg">
                 <CardHeader className="text-center items-center">
                     <Avatar className="h-24 w-24 mb-4 border-4 border-primary/20">
-                        <AvatarImage src="https://placehold.co/100x100.png" alt="@user" data-ai-hint="profile avatar" />
+                        <AvatarImage src="https://placehold.co/100x100.png" alt="User profile avatar" data-ai-hint="profile avatar" />
                         <AvatarFallback>TP</AvatarFallback>
                     </Avatar>
                     <CardTitle className="text-2xl">Test User</CardTitle>
