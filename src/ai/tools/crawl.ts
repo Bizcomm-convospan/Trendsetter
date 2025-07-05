@@ -7,6 +7,8 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { extractTextFromHtml } from '../lib/text-extractor';
 
+const MAX_INPUT_CHARACTERS = 16000; // Approx 4k tokens, a safe limit for cost control.
+
 async function crawlPage(url: string): Promise<string> {
   // IMPORTANT: This CRAWLER_SERVICE_URL must be configured in your environment.
   // For local development, this will be http://localhost:8080/crawl if you are running the crawler service.
@@ -59,5 +61,8 @@ export const crawlUrlTool = ai.defineTool({
         return "Failed to crawl or find content at the URL.";
     }
     const cleanText = await extractTextFromHtml(htmlContent);
-    return cleanText;
+    // Truncate the text to control token usage and cost.
+    const truncatedText = cleanText.substring(0, MAX_INPUT_CHARACTERS);
+    console.log(`[Crawl Tool] Truncated content from ${cleanText.length} to ${truncatedText.length} characters for cost optimization.`);
+    return truncatedText;
 });

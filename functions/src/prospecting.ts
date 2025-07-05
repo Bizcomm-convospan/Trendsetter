@@ -14,6 +14,8 @@ import { crawlPage } from './lib/crawl';
 import { extractTextFromHtml } from './lib/text-extractor';
 import * as admin from 'firebase-admin';
 
+const MAX_INPUT_CHARACTERS = 16000; // Approx 4k tokens, a safe limit for cost control.
+
 const AutonomousProspectingInputSchema = z.object({
   url: z.string().url().describe('The URL of the website to crawl and extract prospects from.'),
   jobId: z.string().describe('The ID of the prospecting job document in Firestore for logging/tracing.'),
@@ -48,7 +50,11 @@ const crawlUrlTool = ai.defineTool({
     outputSchema: z.string().describe('The clean, extracted text content of the page.'),
 }, async (input) => {
     const html = await crawlPage(input.url);
-    return extractTextFromHtml(html);
+    const cleanText = await extractTextFromHtml(html);
+    // Truncate the text to control token usage and cost.
+    const truncatedText = cleanText.substring(0, MAX_INPUT_CHARACTERS);
+    console.log(`[Prospecting Crawl] Truncated content from ${cleanText.length} to ${truncatedText.length} characters for cost optimization.`);
+    return truncatedText;
 });
 
 
