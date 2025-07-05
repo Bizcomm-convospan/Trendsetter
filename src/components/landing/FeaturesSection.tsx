@@ -1,12 +1,17 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Wand2, ScanText, FileText, UploadCloud, BarChart3, Rocket } from 'lucide-react';
+import { Wand2, ScanText, FileText, UploadCloud, BarChart3, BrainCircuit } from 'lucide-react';
 
 const features = [
   {
     icon: <BarChart3 className="mb-4 h-10 w-10 text-primary" />,
     title: 'Trend Discovery',
     description: 'Identify emerging trends and hot topics in your industry before they peak. Stay ahead of the curve.',
+  },
+   {
+    icon: <BrainCircuit className="mb-4 h-10 w-10 text-primary" />,
+    title: 'Answer the AI',
+    description: 'Go beyond keywords. Generate strategic content angles (Who, What, When, Where, How) to create comprehensive articles.',
   },
   {
     icon: <FileText className="mb-4 h-10 w-10 text-primary" />,
@@ -27,11 +32,6 @@ const features = [
     icon: <UploadCloud className="mb-4 h-10 w-10 text-primary" />,
     title: 'One-Click Publishing',
     description: 'Seamlessly publish your generated and refined articles directly to your WordPress site with a single click.',
-  },
-  {
-    icon: <Rocket className="mb-4 h-10 w-10 text-primary" />,
-    title: 'Automated Workflows',
-    description: 'Streamline your content creation process from trend discovery to final publication to save time and scale your efforts.',
   },
 ];
 

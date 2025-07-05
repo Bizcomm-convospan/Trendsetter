@@ -1,21 +1,20 @@
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
-import { handleDiscoverTrends, handleAnswerTheAI, type ActionResponse } from '@/app/actions';
+import { handleDiscoverTrends, type ActionResponse } from '@/app/actions';
 import type { DiscoverTrendsOutput } from '@/ai/flows/discover-trends-flow';
-import type { AnswerTheAIOutput } from '@/ai/flows/answer-the-ai-flow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, TrendingUp, BarChart3, FileText, HelpCircle } from 'lucide-react';
+import { Loader2, TrendingUp, BarChart3, FileText, HelpCircle, BrainCircuit } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AnswerTheAiClient } from './AnswerTheAiClient';
 import { Skeleton } from '../ui/skeleton';
+import { useRouter } from 'next/navigation';
 
 function SubmitButton({ pending }: { pending: boolean }) {
   return (
@@ -29,16 +28,13 @@ function SubmitButton({ pending }: { pending: boolean }) {
 export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic: string) => void }) {
   const [trendsData, setTrendsData] = useState<DiscoverTrendsOutput | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   const [isDiscovering, startDiscovering] = useTransition();
   const [state, setState] = useState<ActionResponse<DiscoverTrendsOutput>>({});
 
-  const [answerTheAiData, setAnswerTheAiData] = useState<AnswerTheAIOutput | null>(null);
-  const [isAnswering, startAnswering] = useTransition();
-
   const formAction = (formData: FormData) => {
     setTrendsData(null); // Clear previous results
-    setAnswerTheAiData(null); // Also clear the angles
     startDiscovering(async () => {
       const result = await handleDiscoverTrends(formData);
       setState(result);
@@ -75,24 +71,13 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
 
   const handleGetContentAngles = () => {
     if (!trendsData?.discoveredTrends) return;
-    setAnswerTheAiData(null); // Clear previous results
-    startAnswering(async () => {
-      const result = await handleAnswerTheAI(JSON.stringify(trendsData.discoveredTrends));
-      if (result.data) {
-        setAnswerTheAiData(result.data);
-        toast({
-          title: "Content Angles Generated!",
-          description: "The AI has generated questions to inspire your content.",
-        });
-      }
-      if (result.error) {
-        toast({
-          variant: "destructive",
-          title: "Error Generating Angles",
-          description: result.error,
-        });
-      }
-    });
+    try {
+      localStorage.setItem('answer-the-ai-trends', JSON.stringify(trendsData.discoveredTrends));
+      router.push('/dashboard/answer-the-ai');
+    } catch (error) {
+      console.error("Error writing to localStorage", error);
+      toast({ variant: 'destructive', title: 'Could not navigate', description: 'There was an issue passing trend data.' });
+    }
   };
 
   return (
@@ -114,7 +99,7 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
                 name="topic"
                 placeholder="e.g., technology, marketing, finance"
                 className="text-base"
-                disabled={isDiscovering || isAnswering}
+                disabled={isDiscovering}
               />
               {state?.validationErrors?.topic && (
                 <p className="text-sm text-destructive">{state.validationErrors.topic.join(', ')}</p>
@@ -124,7 +109,7 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="geography">Geography</Label>
-                    <Select name="geography" defaultValue="US" disabled={isDiscovering || isAnswering}>
+                    <Select name="geography" defaultValue="US" disabled={isDiscovering}>
                         <SelectTrigger id="geography">
                             <SelectValue placeholder="Select a country" />
                         </SelectTrigger>
@@ -139,7 +124,7 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="language">Language</Label>
-                    <Select name="language" defaultValue="en" disabled={isDiscovering || isAnswering}>
+                    <Select name="language" defaultValue="en" disabled={isDiscovering}>
                         <SelectTrigger id="language">
                             <SelectValue placeholder="Select a language" />
                         </SelectTrigger>
@@ -153,7 +138,7 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="category">Category</Label>
-                    <Select name="category" defaultValue="all" disabled={isDiscovering || isAnswering}>
+                    <Select name="category" defaultValue="all" disabled={isDiscovering}>
                         <SelectTrigger id="category">
                             <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
@@ -183,7 +168,7 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
             </div>
           </CardContent>
           <CardFooter className="border-t pt-6">
-            <SubmitButton pending={isDiscovering || isAnswering} />
+            <SubmitButton pending={isDiscovering} />
           </CardFooter>
         </form>
       </Card>
@@ -240,8 +225,8 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
                         Discovered Trends ({trendsData.discoveredTrends.length} found)
                     </h2>
                     {trendsData.discoveredTrends.length > 0 && (
-                        <Button onClick={handleGetContentAngles} disabled={isAnswering}>
-                            {isAnswering ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <HelpCircle className="mr-2 h-4 w-4" />}
+                        <Button onClick={handleGetContentAngles}>
+                            <BrainCircuit className="mr-2 h-4 w-4" />
                             Generate Content Angles
                         </Button>
                     )}
@@ -295,17 +280,6 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
                     </Card>
                 )}
             </div>
-
-            {isAnswering && (
-                <div className="space-y-4">
-                    <Skeleton className="h-8 w-1/3" />
-                    <Skeleton className="h-24 w-full" />
-                    <Skeleton className="h-24 w-full" />
-                </div>
-            )}
-            
-            {answerTheAiData && <AnswerTheAiClient data={answerTheAiData} />}
-
         </section>
       )}
     </div>

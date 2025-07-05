@@ -12,6 +12,7 @@ const pricingPlans = [
     description: 'For individuals and small teams starting out.',
     features: [
       'Trend Discovery (10 searches/mo)',
+      "'Answer the AI' Content Angles (10/mo)",
       'Content Generation (5 articles/mo)',
       'AI Humanizer & Detector (10 analyses/mo)',
       'WordPress Publishing (5 articles/mo)',
@@ -28,6 +29,7 @@ const pricingPlans = [
     description: 'For growing businesses and professionals.',
     features: [
       'Trend Discovery (Unlimited)',
+      "'Answer the AI' Content Angles (Unlimited)",
       'Content Generation (25 articles/mo)',
       'AI Humanizer & Detector (Unlimited)',
       'WordPress Publishing (Unlimited)',

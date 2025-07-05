@@ -36,7 +36,11 @@ const AiDetectorSchema = z.object({
 
 // Using a raw string because parsing server-side can be tricky with complex objects.
 // Client will JSON.stringify
-const AnswerTheAISchema = z.string().min(10, "Trend data is required.");
+const AnswerTheAITrendsSchema = z.string().min(10, "Trend data is required.");
+
+const AnswerTheAITextSchema = z.object({
+    text: z.string().min(10, "Please provide some text to generate angles from."),
+});
 
 
 export interface ActionResponse<T> {
@@ -219,7 +223,7 @@ export async function handlePublishArticle(articleId: string): Promise<ActionRes
 }
 
 export async function handleAnswerTheAI(trendsJson: string): Promise<ActionResponse<AnswerTheAIOutput>> {
-    const validatedField = AnswerTheAISchema.safeParse(trendsJson);
+    const validatedField = AnswerTheAITrendsSchema.safeParse(trendsJson);
 
     if (!validatedField.success) {
         return {
@@ -234,6 +238,34 @@ export async function handleAnswerTheAI(trendsJson: string): Promise<ActionRespo
         return { data: result };
     } catch (e: any) {
         console.error("Error in Answer the AI:", e);
+        return { error: e.message || "Failed to generate content angles. Please try again." };
+    }
+}
+
+export async function handleAnswerTheAIFromText(formData: FormData): Promise<ActionResponse<AnswerTheAIOutput>> {
+    const rawFormData = {
+        text: formData.get('text') as string,
+    };
+
+    const validatedFields = AnswerTheAITextSchema.safeParse(rawFormData);
+    if (!validatedFields.success) {
+        return {
+            validationErrors: validatedFields.error.flatten().fieldErrors,
+            error: "Validation failed: Invalid text input.",
+        };
+    }
+
+    try {
+        // Convert the raw text into a format the answerTheAI flow can understand.
+        const trends: AnswerTheAIInput = [{
+            title: "Custom User Topic",
+            description: validatedFields.data.text,
+            keywords: [],
+        }];
+        const result = await answerTheAI(trends);
+        return { data: result };
+    } catch (e: any) {
+        console.error("Error in Answer the AI from text:", e);
         return { error: e.message || "Failed to generate content angles. Please try again." };
     }
 }
