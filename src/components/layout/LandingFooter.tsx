@@ -9,12 +9,15 @@ export function LandingFooter() {
         <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
           &copy; {currentYear} Trendsetter Pro. All rights reserved.
         </p>
-        <nav className="flex gap-4">
+        <nav className="flex flex-wrap justify-center gap-4">
           <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary">
             Terms of Service
           </Link>
           <Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary">
             Privacy Policy
+          </Link>
+           <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary">
+            Contact Us
           </Link>
         </nav>
       </div>
