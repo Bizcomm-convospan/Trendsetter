@@ -9,6 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { DiscoveredTrend, DiscoveredTrendSchema } from './schemas';
 
 const DiscoverTrendsInputSchema = z.object({
   topic: z.string().optional().describe('An optional topic to focus the trend discovery.'),
@@ -18,12 +19,7 @@ const DiscoverTrendsInputSchema = z.object({
 });
 export type DiscoverTrendsInput = z.infer<typeof DiscoverTrendsInputSchema>;
 
-const DiscoveredTrendSchema = z.object({
-  title: z.string().describe('The title of the trending topic.'),
-  description: z.string().describe('A brief (1-2 sentence) explanation of why this topic is currently trending.'),
-  keywords: z.array(z.string()).describe('A list of 3-5 related keywords for SEO.'),
-});
-export type DiscoveredTrend = z.infer<typeof DiscoveredTrendSchema>;
+export type { DiscoveredTrend };
 
 const DiscoverTrendsOutputSchema = z.object({
   discoveredTrends: z.array(DiscoveredTrendSchema).describe('A list of discovered trends.'),

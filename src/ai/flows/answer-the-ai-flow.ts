@@ -9,12 +9,12 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { DiscoveredTrendSchema } from './discover-trends-flow';
+import { DiscoveredTrendSchema } from './schemas';
 
-export const AnswerTheAIInputSchema = z.array(DiscoveredTrendSchema);
+const AnswerTheAIInputSchema = z.array(DiscoveredTrendSchema);
 export type AnswerTheAIInput = z.infer<typeof AnswerTheAIInputSchema>;
 
-export const AnswerTheAIOutputSchema = z.object({
+const AnswerTheAIOutputSchema = z.object({
   who: z.array(z.string().describe("Questions starting with 'Who'")).describe("Questions exploring the people involved or affected."),
   what: z.array(z.string().describe("Questions starting with 'What'")).describe("Questions exploring the events, concepts, or details."),
   when: z.array(z.string().describe("Questions starting with 'When'")).describe("Questions exploring the timeline and urgency."),
