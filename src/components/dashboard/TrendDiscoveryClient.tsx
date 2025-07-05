@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -11,7 +12,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, TrendingUp, BarChart3, FileText, HelpCircle, BrainCircuit } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '../ui/skeleton';
 import { useRouter } from 'next/navigation';
@@ -25,7 +25,7 @@ function SubmitButton({ pending }: { pending: boolean }) {
   );
 }
 
-export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic: string) => void }) {
+export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend: (topic: string) => void }) {
   const [trendsData, setTrendsData] = useState<DiscoverTrendsOutput | null>(null);
   const { toast } = useToast();
   const router = useRouter();
@@ -84,10 +84,9 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
     <div className="space-y-8">
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Trend Discovery Engine</CardTitle>
+          <CardTitle className="text-2xl font-bold">Step 1: Discover Trending Topics</CardTitle>
           <CardDescription>
-            Enter an optional topic to focus the trend discovery, or leave blank for general trends.
-            The AI will analyze various sources to provide actionable insights.
+            Start your content creation process here. Enter a topic to focus the trend discovery, or leave it blank for general trends. The results can then be used to generate articles.
           </CardDescription>
         </CardHeader>
         <form action={formAction}>
@@ -154,18 +153,6 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
                     </Select>
                 </div>
             </div>
-
-             <div className="space-y-2">
-              <Label htmlFor="simulatedSources" className="text-base font-semibold">Simulated Trend Sources</Label>
-              <Textarea
-                id="simulatedSources"
-                name="simulatedSources"
-                readOnly
-                rows={3}
-                className="bg-muted/50 text-sm"
-                value={`For this demonstration, the AI will simulate checking real-time data from sources like Google Trends, top news sites, and social media to identify current trends.`}
-              />
-            </div>
           </CardContent>
           <CardFooter className="border-t pt-6">
             <SubmitButton pending={isDiscovering} />
@@ -175,8 +162,8 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
 
       {isDiscovering && (
         <section className="animate-fadeIn">
-          <h2 className="text-2xl font-bold mb-4 flex items-center text-muted-foreground">
-            <BarChart3 className="mr-3 h-7 w-7 text-primary animate-spin" />
+          <h2 className="text-xl font-bold mb-4 flex items-center text-muted-foreground">
+            <BarChart3 className="mr-3 h-6 w-6 text-primary animate-spin" />
             Awaiting AI output...
           </h2>
           <Card className="shadow-md">
@@ -186,28 +173,23 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
                   <TableHead className="w-[25%]">Trend Title</TableHead>
                   <TableHead className="w-[40%]">Description</TableHead>
                   <TableHead>Keywords</TableHead>
-                  {onSelectTrend && <TableHead className="text-right">Action</TableHead>}
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {[...Array(3)].map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell className="font-medium text-muted-foreground">Analyzing emerging trends...</TableCell>
-                    <TableCell className="text-muted-foreground">The AI is currently processing data to provide a detailed description for this potential trend.</TableCell>
+                    <TableCell><Skeleton className="h-4 w-3/4"/></TableCell>
+                    <TableCell><Skeleton className="h-4 w-full"/></TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                          <Badge variant="secondary">evaluating</Badge>
-                          <Badge variant="secondary">keywords</Badge>
-                      </div>
+                      <div className="flex gap-1"><Skeleton className="h-5 w-16"/><Skeleton className="h-5 w-16"/></div>
                     </TableCell>
-                    {onSelectTrend && (
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" disabled>
+                    <TableCell className="text-right">
+                       <Button variant="ghost" size="sm" disabled>
                           <FileText className="mr-2 h-4 w-4" />
-                          Generate Article
+                          Use this Topic
                         </Button>
-                      </TableCell>
-                    )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -217,69 +199,65 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend?: (topic
       )}
 
       {trendsData && !isDiscovering && (
-        <section className="animate-fadeIn space-y-8">
-            <div>
-                <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                    <h2 className="text-2xl font-bold flex items-center">
-                        <BarChart3 className="mr-3 h-7 w-7 text-primary" />
-                        Discovered Trends ({trendsData.discoveredTrends.length} found)
-                    </h2>
-                    {trendsData.discoveredTrends.length > 0 && (
-                        <Button onClick={handleGetContentAngles}>
-                            <BrainCircuit className="mr-2 h-4 w-4" />
-                            Generate Content Angles
-                        </Button>
-                    )}
-                </div>
-
-                {trendsData.discoveredTrends.length > 0 ? (
-                    <Card className="shadow-md">
-                    <Table>
-                        <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[25%]">Trend Title</TableHead>
-                            <TableHead className="w-[40%]">Description</TableHead>
-                            <TableHead>Keywords</TableHead>
-                            {onSelectTrend && <TableHead className="text-right">Action</TableHead>}
-                        </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {trendsData.discoveredTrends.map((trend) => (
-                            <TableRow key={trend.title}>
-                            <TableCell className="font-medium text-foreground">{trend.title}</TableCell>
-                            <TableCell className="text-muted-foreground">{trend.description}</TableCell>
-                            <TableCell>
-                                <div className="flex flex-wrap gap-1">
-                                {trend.keywords.map(keyword => (
-                                    <Badge key={keyword} variant="secondary">{keyword}</Badge>
-                                ))}
-                                </div>
-                            </TableCell>
-                            {onSelectTrend && (
-                                <TableCell className="text-right">
-                                <Button variant="ghost" size="sm" onClick={() => onSelectTrend(trend.title)}>
-                                    <FileText className="mr-2 h-4 w-4" />
-                                    Generate Article
-                                </Button>
-                                </TableCell>
-                            )}
-                            </TableRow>
-                        ))}
-                        </TableBody>
-                    </Table>
-                    </Card>
-                ) : (
-                    <Card className="shadow-md">
-                    <CardContent className="py-10 text-center">
-                        <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                        <p className="text-xl font-semibold text-foreground">No Trends Found</p>
-                        <p className="text-muted-foreground mt-2">
-                        The AI couldn't find any trends for the given topic. Please try another one.
-                        </p>
-                    </CardContent>
-                    </Card>
+        <section className="animate-fadeIn space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+                <h2 className="text-xl font-bold flex items-center">
+                    <BarChart3 className="mr-3 h-6 w-6 text-primary" />
+                    Discovered Trends ({trendsData.discoveredTrends.length} found)
+                </h2>
+                {trendsData.discoveredTrends.length > 0 && (
+                    <Button onClick={handleGetContentAngles}>
+                        <BrainCircuit className="mr-2 h-4 w-4" />
+                        Generate Content Angles for All
+                    </Button>
                 )}
             </div>
+
+            {trendsData.discoveredTrends.length > 0 ? (
+                <Card className="shadow-md">
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead className="w-[25%]">Trend Title</TableHead>
+                        <TableHead className="w-[40%]">Description</TableHead>
+                        <TableHead>Keywords</TableHead>
+                        <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {trendsData.discoveredTrends.map((trend) => (
+                        <TableRow key={trend.title}>
+                        <TableCell className="font-medium text-foreground">{trend.title}</TableCell>
+                        <TableCell className="text-muted-foreground">{trend.description}</TableCell>
+                        <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                            {trend.keywords.map(keyword => (
+                                <Badge key={keyword} variant="secondary">{keyword}</Badge>
+                            ))}
+                            </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                            <Button variant="ghost" size="sm" onClick={() => onSelectTrend(trend.title)}>
+                                <FileText className="mr-2 h-4 w-4" />
+                                Use this Topic
+                            </Button>
+                        </TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+                </Card>
+            ) : (
+                <Card className="shadow-md">
+                <CardContent className="py-10 text-center">
+                    <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="text-xl font-semibold text-foreground">No Trends Found</p>
+                    <p className="text-muted-foreground mt-2">
+                    The AI couldn't find any trends for the given topic. Please try another one.
+                    </p>
+                </CardContent>
+                </Card>
+            )}
         </section>
       )}
     </div>

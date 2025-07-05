@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, FileText, ArrowRight, BrainCircuit, UploadCloud } from "lucide-react";
+import { TrendingUp, Wand2, ArrowRight, Target, Users as UsersIcon } from "lucide-react";
 
 interface WorkflowStep {
   icon: React.ReactNode;
@@ -17,40 +17,40 @@ interface WorkflowStep {
 const steps: WorkflowStep[] = [
   {
     icon: <TrendingUp className="h-8 w-8 text-primary" />,
-    title: 'Step 1: Discover Trends',
-    description: 'Identify emerging topics and stay ahead of the curve. Find the fuel for your content engine.',
-    cta: 'Discover Now',
-    href: '/dashboard/trends'
-  },
-  {
-    icon: <BrainCircuit className="h-8 w-8 text-accent" />,
-    title: 'Step 2: Get Content Angles',
-    description: 'Use "Answer the AI" to generate strategic questions (Who, What, etc.) to ensure comprehensive coverage.',
-    cta: 'Get Angles',
-    href: '/dashboard/answer-the-ai'
-  },
-  {
-    icon: <FileText className="h-8 w-8 text-purple-500" />,
-    title: 'Step 3: Generate Article',
-    description: 'Transform your topic into a high-quality, SEO-optimized article in minutes.',
-    cta: 'Create Content',
+    title: 'Step 1: Ideation & Discovery',
+    description: 'Find emerging topics with the Trend Agent or uncover questions your audience is asking with the Question Spy.',
+    cta: 'Start Research',
     href: '/dashboard/content-creation'
   },
   {
-    icon: <UploadCloud className="h-8 w-8 text-green-500" />,
-    title: 'Step 4: Refine & Publish',
-    description: 'Analyze, humanize, and then publish your completed article directly to WordPress with one click.',
-    cta: 'Go to Publisher',
+    icon: <Target className="h-8 w-8 text-accent" />,
+    title: 'Step 2: Strategy & Analysis',
+    description: 'Analyze competitors to find content gaps or generate strategic angles for your topic with Answer the AI.',
+    cta: 'Build Strategy',
+    href: '/dashboard/competitor-analyzer'
+  },
+  {
+    icon: <Wand2 className="h-8 w-8 text-purple-500" />,
+    title: 'Step 3: Create & Refine',
+    description: 'Generate, humanize, optimize headlines, and publish your SEO-ready article from one unified hub.',
+    cta: 'Go to Creator Hub',
     href: '/dashboard/content-creation'
+  },
+  {
+    icon: <UsersIcon className="h-8 w-8 text-green-500" />,
+    title: 'Step 4: Prospect & Outreach',
+    description: 'Switch to sales mode. Extract company and contact data from any website to find new leads.',
+    cta: 'Find Prospects',
+    href: '/dashboard/prospecting'
   }
 ];
 
-export function WorkflowGuide({ onTabChange }: { onTabChange: (tab: string) => void }) {
+export function WorkflowGuide() {
   return (
     <Card className="shadow-lg animate-fadeIn">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Your Path to Growth</CardTitle>
-        <CardDescription>Follow this workflow to get the most out of Trendsetter Pro.</CardDescription>
+        <CardDescription>Follow this workflow to get the most out of Trendsetter Pro's AI agents.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">

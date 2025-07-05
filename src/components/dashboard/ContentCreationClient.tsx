@@ -23,6 +23,7 @@ import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Progress } from '../ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { TrendDiscoveryClient } from './TrendDiscoveryClient';
 
 interface Article {
   id: string;
@@ -192,49 +193,15 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   return (
     <Dialog open={isHeadlineDialogOpen} onOpenChange={onHeadlineDialogOpenChange}>
       <div className="space-y-8">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="text-primary"/>
-              WordPress Integration Status
-            </CardTitle>
-            <CardDescription>
-              This module manages publishing content to your WordPress site. Status is based on your environment configuration.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <div className="flex items-start gap-4 rounded-lg border p-4">
-              <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold">Webhook URL</h3>
-                <p className="text-sm text-muted-foreground">
-                  The application is ready to send data to the URL configured in your <code>.env</code> file (<code>WP_WEBHOOK_URL</code>).
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 rounded-lg border p-4">
-              <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold">Authentication Token</h3>
-                <p className="text-sm text-muted-foreground">
-                  A security token is correctly sent in the <code>x-ai-token</code> header, based on your <code>.env</code> file (<code>WP_WEBHOOK_TOKEN</code>).
-                </p>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-              <p className="text-xs text-muted-foreground">
-                  If publishing fails, ensure the URL is correct (e.g., using a valid ngrok link for local testing) and the token matches your WordPress plugin's settings.
-              </p>
-          </CardFooter>
-        </Card>
+        {/* Trend Discovery is now the first step, integrated here */}
+        <TrendDiscoveryClient onSelectTrend={setTopic} />
         
         {/* Article Generation Card */}
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">Generate a New Article</CardTitle>
+            <CardTitle className="text-2xl font-bold">Step 2: Generate a New Article</CardTitle>
             <CardDescription>
-              Enter a topic or keyword to generate an SEO-optimized article. It will appear in your drafts below, ready for publishing.
+              Enter a topic or select one from the trends above. The AI will generate an SEO-optimized article, which will appear in your drafts below.
             </CardDescription>
           </CardHeader>
           <form action={generateArticleAction}>
@@ -281,7 +248,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
         {/* Drafts Card */}
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><UploadCloud className="text-primary"/>Drafts Ready to Publish</CardTitle>
+            <CardTitle className="flex items-center gap-2"><UploadCloud className="text-primary"/>Step 3: Refine & Publish Drafts</CardTitle>
             <CardDescription>These articles are generated and waiting to be published to your website.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -353,8 +320,8 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
         {/* Published Articles Card */}
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><FileCheck2 className="text-green-600"/>Published Articles</CardTitle>
-            <CardDescription>A log of all articles successfully published to your website.</CardDescription>
+            <CardTitle className="flex items-center gap-2"><FileCheck2 className="text-green-600"/>Published Articles Log</CardTitle>
+            <CardDescription>A log of all articles successfully published to your website via the integrated webhook.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -386,6 +353,42 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
               </TableBody>
             </Table>
           </CardContent>
+        </Card>
+         <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="text-primary"/>
+              WordPress Integration Status
+            </CardTitle>
+            <CardDescription>
+              This module manages publishing content to your WordPress site. Status is based on your environment configuration.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-2">
+            <div className="flex items-start gap-4 rounded-lg border p-4">
+              <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold">Webhook URL</h3>
+                <p className="text-sm text-muted-foreground">
+                  The application is ready to send data to the URL configured in your <code>.env</code> file (<code>WP_WEBHOOK_URL</code>).
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4 rounded-lg border p-4">
+              <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold">Authentication Token</h3>
+                <p className="text-sm text-muted-foreground">
+                  A security token is correctly sent in the <code>x-ai-token</code> header, based on your <code>.env</code> file (<code>WP_WEBHOOK_TOKEN</code>).
+                </p>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter>
+              <p className="text-xs text-muted-foreground">
+                  If publishing fails, ensure the URL is correct (e.g., using a valid ngrok link for local testing) and the token matches your WordPress plugin's settings.
+              </p>
+          </CardFooter>
         </Card>
       </div>
 

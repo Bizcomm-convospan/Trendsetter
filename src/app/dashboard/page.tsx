@@ -5,15 +5,15 @@ import { WorkflowGuide } from '@/components/dashboard/WorkflowGuide';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { TrendingUp, MessageCircleQuestion, Target, BrainCircuit, Wand2, ScanText, UploadCloud, ArrowRight } from 'lucide-react';
+import { TrendingUp, MessageCircleQuestion, Target, BrainCircuit, Wand2, ScanText, Users, ArrowRight } from 'lucide-react';
 
 const toolCards = [
   {
-    href: '/dashboard/trends',
-    icon: TrendingUp,
-    title: 'Trend Discovery',
-    description: 'Find emerging topics and keywords before they become mainstream.',
-    cta: 'Discover Trends',
+    href: '/dashboard/content-creation',
+    icon: Wand2,
+    title: 'Content Creation Hub',
+    description: 'Unified hub to discover trends, generate articles, and publish to your website.',
+    cta: 'Start Creating',
   },
   {
     href: '/dashboard/question-spy',
@@ -29,12 +29,12 @@ const toolCards = [
     description: 'Analyze competitor articles to find content gaps and strategic opportunities.',
     cta: 'Analyze Competitors',
   },
-  {
-    href: '/dashboard/content-creation',
-    icon: UploadCloud,
-    title: 'WordPress Publisher',
-    description: 'Generate and publish SEO-optimized articles directly to your website.',
-    cta: 'Go to Publisher',
+   {
+    href: '/dashboard/prospecting',
+    icon: Users,
+    title: 'Autonomous Prospecting',
+    description: 'Extract company and contact data from any website to find new sales leads.',
+    cta: 'Find Prospects',
   },
   {
     href: '/dashboard/answer-the-ai',
@@ -45,7 +45,7 @@ const toolCards = [
   },
   {
     href: '/dashboard/ai-detector',
-    icon: Wand2,
+    icon: ScanText,
     title: 'AI Detector & Humanizer',
     description: 'Analyze content for a "humanization score" and rewrite text to sound natural.',
     cta: 'Analyze Content',
@@ -54,12 +54,6 @@ const toolCards = [
 
 
 export default function DashboardPage() {
-  const handleTabChange = (tab: string) => {
-    // This function is a placeholder now that the guide uses direct links.
-    // It could be used in the future to scroll to specific sections if the dashboard becomes a single long page.
-    console.log(`Navigation requested for: ${tab}`);
-  };
-
   return (
     <div className="space-y-8">
       <header className="space-y-2">
@@ -69,7 +63,7 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <WorkflowGuide onTabChange={handleTabChange} />
+      <WorkflowGuide />
 
       <section>
         <h2 className="text-2xl font-bold tracking-tight text-foreground mb-4">Your AI Agents</h2>
