@@ -4,6 +4,7 @@ import { generateSeoArticle, GenerateSeoArticleInput, GenerateSeoArticleOutput }
 import { discoverTrends, DiscoverTrendsInput, DiscoverTrendsOutput } from '@/ai/flows/discover-trends-flow';
 import { generateHumanizedContent, type HumanizedContentInput } from '@/ai/flows/humanized-content';
 import { detectAiContent, type AiDetectorInput, type AiDetectorOutput } from '@/ai/flows/ai-detector-flow';
+import { answerTheAI, AnswerTheAIInput, AnswerTheAIOutput } from '@/ai/flows/answer-the-ai-flow';
 import { z } from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -32,6 +33,10 @@ const HumanizeArticleSchema = z.object({
 const AiDetectorSchema = z.object({
     content: z.string().min(50, "Content must be at least 50 characters to analyze effectively."),
 });
+
+// Using a raw string because parsing server-side can be tricky with complex objects.
+// Client will JSON.stringify
+const AnswerTheAISchema = z.string().min(10, "Trend data is required.");
 
 
 export interface ActionResponse<T> {
@@ -211,4 +216,24 @@ export async function handlePublishArticle(articleId: string): Promise<ActionRes
     console.error(`Error publishing article ${articleId}:`, e);
     return { error: e.message || "Failed to publish article. Please try again." };
   }
+}
+
+export async function handleAnswerTheAI(trendsJson: string): Promise<ActionResponse<AnswerTheAIOutput>> {
+    const validatedField = AnswerTheAISchema.safeParse(trendsJson);
+
+    if (!validatedField.success) {
+        return {
+            validationErrors: validatedField.error.flatten().fieldErrors,
+            error: "Validation failed: Invalid trends data.",
+        };
+    }
+
+    try {
+        const trends: AnswerTheAIInput = JSON.parse(validatedField.data);
+        const result = await answerTheAI(trends);
+        return { data: result };
+    } catch (e: any) {
+        console.error("Error in Answer the AI:", e);
+        return { error: e.message || "Failed to generate content angles. Please try again." };
+    }
 }
