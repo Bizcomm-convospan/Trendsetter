@@ -5,6 +5,9 @@ import { discoverTrends, DiscoverTrendsInput, DiscoverTrendsOutput } from '@/ai/
 import { generateHumanizedContent, type HumanizedContentInput } from '@/ai/flows/humanized-content';
 import { detectAiContent, type AiDetectorInput, type AiDetectorOutput } from '@/ai/flows/ai-detector-flow';
 import { answerTheAI, AnswerTheAIInput, AnswerTheAIOutput } from '@/ai/flows/answer-the-ai-flow';
+import { generateHeadlines, GenerateHeadlinesOutput } from '@/ai/flows/generate-headlines-flow';
+import { questionSpy, QuestionSpyOutput } from '@/ai/flows/question-spy-flow';
+import { analyzeCompetitor, CompetitorAnalyzerOutput } from '@/ai/flows/competitor-analyzer-flow';
 import { z } from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -40,6 +43,18 @@ const AnswerTheAITrendsSchema = z.string().min(10, "Trend data is required.");
 
 const AnswerTheAITextSchema = z.object({
     text: z.string().min(10, "Please provide some text to generate angles from."),
+});
+
+const GenerateHeadlinesSchema = z.object({
+  articleContent: z.string().min(100, "Article content must be at least 100 characters long."),
+});
+
+const QuestionSpySchema = z.object({
+  topic: z.string().min(2, "Topic must be at least 2 characters long."),
+});
+
+const CompetitorAnalyzerSchema = z.object({
+    url: z.string().url("Please provide a valid URL."),
 });
 
 
@@ -268,4 +283,70 @@ export async function handleAnswerTheAIFromText(formData: FormData): Promise<Act
         console.error("Error in Answer the AI from text:", e);
         return { error: e.message || "Failed to generate content angles. Please try again." };
     }
+}
+
+export async function handleGenerateHeadlines(formData: FormData): Promise<ActionResponse<GenerateHeadlinesOutput>> {
+  const rawFormData = {
+    articleContent: formData.get('articleContent') as string,
+  };
+
+  const validatedFields = GenerateHeadlinesSchema.safeParse(rawFormData);
+  if (!validatedFields.success) {
+    return {
+      validationErrors: validatedFields.error.flatten().fieldErrors,
+      error: "Validation failed.",
+    };
+  }
+
+  try {
+    const result = await generateHeadlines(validatedFields.data);
+    return { data: result };
+  } catch (e: any) {
+    console.error("Error generating headlines:", e);
+    return { error: e.message || "Failed to generate headlines." };
+  }
+}
+
+export async function handleQuestionSpy(formData: FormData): Promise<ActionResponse<QuestionSpyOutput>> {
+  const rawFormData = {
+    topic: formData.get('topic') as string,
+  };
+
+  const validatedFields = QuestionSpySchema.safeParse(rawFormData);
+  if (!validatedFields.success) {
+    return {
+      validationErrors: validatedFields.error.flatten().fieldErrors,
+      error: "Validation failed.",
+    };
+  }
+
+  try {
+    const result = await questionSpy(validatedFields.data);
+    return { data: result };
+  } catch (e: any) {
+    console.error("Error in Question Spy:", e);
+    return { error: e.message || "Failed to find questions." };
+  }
+}
+
+export async function handleCompetitorAnalysis(formData: FormData): Promise<ActionResponse<CompetitorAnalyzerOutput>> {
+  const rawFormData = {
+    url: formData.get('url') as string,
+  };
+
+  const validatedFields = CompetitorAnalyzerSchema.safeParse(rawFormData);
+  if (!validatedFields.success) {
+    return {
+      validationErrors: validatedFields.error.flatten().fieldErrors,
+      error: "Validation failed.",
+    };
+  }
+
+  try {
+    const result = await analyzeCompetitor(validatedFields.data);
+    return { data: result };
+  } catch (e: any) {
+    console.error("Error in Competitor Analyzer:", e);
+    return { error: e.message || "Failed to analyze competitor." };
+  }
 }

@@ -1,6 +1,6 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Wand2, ScanText, FileText, UploadCloud, BarChart3, BrainCircuit } from 'lucide-react';
+import { Wand2, ScanText, FileText, UploadCloud, BarChart3, BrainCircuit, MessageCircleQuestion, Target } from 'lucide-react';
 
 const features = [
   {
@@ -8,30 +8,30 @@ const features = [
     title: 'Trend Discovery',
     description: 'Identify emerging trends and hot topics in your industry before they peak. Stay ahead of the curve.',
   },
-   {
+  {
+    icon: <MessageCircleQuestion className="mb-4 h-10 w-10 text-primary" />,
+    title: 'Question Spy',
+    description: "Discover the real questions your audience is asking on Google, Reddit, and Quora to create content that resonates.",
+  },
+  {
+    icon: <Target className="mb-4 h-10 w-10 text-primary" />,
+    title: 'Competitor Analyzer',
+    description: 'Analyze competitor articles to find content gaps and strategic opportunities to outperform them in search rankings.',
+  },
+  {
     icon: <BrainCircuit className="mb-4 h-10 w-10 text-primary" />,
     title: 'Answer the AI',
     description: 'Go beyond keywords. Generate strategic content angles (Who, What, When, Where, How) to create comprehensive articles.',
   },
   {
     icon: <FileText className="mb-4 h-10 w-10 text-primary" />,
-    title: 'AI Content Generation',
-    description: 'Craft engaging, SEO-friendly articles, blog posts, and social media content in minutes.',
+    title: 'Content Generation',
+    description: 'Craft engaging, SEO-friendly articles, complete with a Headline Optimizer to maximize click-through rates.',
   },
-    {
+  {
     icon: <Wand2 className="mb-4 h-10 w-10 text-primary" />,
-    title: 'AI Humanizer',
-    description: 'Refine AI-generated text to sound more natural and engaging. Adjust the tone to match your brand voice.',
-  },
-  {
-    icon: <ScanText className="mb-4 h-10 w-10 text-primary" />,
-    title: 'AI Detector',
-    description: "Analyze content for AI patterns. Get a 'humanization score' and suggestions for improvement.",
-  },
-  {
-    icon: <UploadCloud className="mb-4 h-10 w-10 text-primary" />,
-    title: 'One-Click Publishing',
-    description: 'Seamlessly publish your generated and refined articles directly to your WordPress site with a single click.',
+    title: 'AI Humanizer & Detector',
+    description: "Refine AI text to sound natural and analyze content for a 'humanization score' with improvement suggestions.",
   },
 ];
 

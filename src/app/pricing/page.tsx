@@ -12,6 +12,8 @@ const pricingPlans = [
     description: 'For individuals and small teams starting out.',
     features: [
       'Trend Discovery (10 searches/mo)',
+      "Question Spy (10 searches/mo)",
+      "Competitor Analyzer (5 reports/mo)",
       "'Answer the AI' Content Angles (10/mo)",
       'Content Generation (5 articles/mo)',
       'AI Humanizer & Detector (10 analyses/mo)',
@@ -29,6 +31,8 @@ const pricingPlans = [
     description: 'For growing businesses and professionals.',
     features: [
       'Trend Discovery (Unlimited)',
+      "Question Spy (Unlimited)",
+      "Competitor Analyzer (Unlimited)",
       "'Answer the AI' Content Angles (Unlimited)",
       'Content Generation (25 articles/mo)',
       'AI Humanizer & Detector (Unlimited)',
