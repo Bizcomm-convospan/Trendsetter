@@ -12,10 +12,11 @@ jest.mock('firebase-admin', () => ({
   })),
 }));
 
+// We now mock the entire prospecting module
 jest.mock('./prospecting', () => ({
   autonomousProspecting: jest.fn().mockResolvedValue({
     summary: 'Mock AI summary',
-    prospects: [],
+    prospects: [{ companyName: 'Test Co' }],
   }),
 }));
 
@@ -78,7 +79,7 @@ describe('onProspectingJobCreated Cloud Function', () => {
     // 3. Verifies status is updated to 'complete' with data from the AI flow
     expect(docUpdateMock).toHaveBeenCalledWith({
       status: 'complete',
-      result: { summary: 'Mock AI summary', prospects: [] },
+      result: { summary: 'Mock AI summary', prospects: [{ companyName: 'Test Co' }] },
       updatedAt: 'MOCK_TIMESTAMP',
     });
   });

@@ -32,21 +32,23 @@ export async function analyzeCompetitor(input: CompetitorAnalyzerInput): Promise
 
 const competitorAnalyzerPrompt = ai.definePrompt({
   name: 'competitorAnalyzerPrompt',
-  tools: [crawlUrlTool],
-  input: { schema: CompetitorAnalyzerInputSchema },
+  input: { schema: z.object({ content: z.string() }) }, // Receives clean text content
   output: { schema: CompetitorAnalyzerOutputSchema },
   prompt: `
-    You are a world-class SEO analyst and content strategist. Your task is to analyze a competitor's article and create a "Competitor Report Card".
+    You are a world-class SEO analyst and content strategist. Your task is to analyze the following article text and create a "Competitor Report Card".
 
-    First, use the crawlUrlForAnalysis tool to get the main text content of the following URL: {{{url}}}
-
-    Then, analyze the resulting article text and provide the following report:
+    Analyze the text and provide the following report:
     1.  **Key Topics**: What are the primary topics and keywords this article seems to be targeting?
-    2.  **Content Grade**: Give the article an overall grade from A to F, based on its readability, structure (use of headings, lists), and perceived on-page SEO quality.
+    2.  **Content Grade**: Give the article an overall grade from A to F, based on its readability and structure.
     3.  **Content Gaps**: What related, important sub-topics did the author miss? Identify 3-5 opportunities to create a more comprehensive article.
     4.  **Tone Analysis**: Describe the writing style and tone of the article.
 
     Return the report in the specified JSON format.
+
+    Article Text to Analyze:
+    ---
+    {{{content}}}
+    ---
   `,
 });
 
@@ -58,7 +60,15 @@ const competitorAnalyzerFlow = ai.defineFlow(
     outputSchema: CompetitorAnalyzerOutputSchema,
   },
   async (input) => {
-    const { output } = await competitorAnalyzerPrompt(input);
+    // Step 1: Crawl the URL to get the clean text content using the tool.
+    const cleanContent = await crawlUrlTool(input);
+
+    if (!cleanContent) {
+      throw new Error("Failed to retrieve content from the URL.");
+    }
+
+    // Step 2: Pass the clean content to the analysis prompt.
+    const { output } = await competitorAnalyzerPrompt({ content: cleanContent });
     return output!;
   }
 );

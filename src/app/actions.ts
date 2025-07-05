@@ -43,7 +43,6 @@ import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { createHash } from 'crypto';
 import { addHours, isFuture } from 'date-fns';
-import { extractTextFromHtml } from '@/ai/lib/text-extractor';
 
 // Helper for caching
 const CACHE_COLLECTION = 'ai_cache';
@@ -381,8 +380,8 @@ export async function handleGenerateHeadlines(
   }
 
   try {
-    const cleanContent = await extractTextFromHtml(validatedFields.data.articleContent);
-    const result = await generateHeadlines({ articleContent: cleanContent });
+    // The model is good at handling HTML, so we don't need to extract text here.
+    const result = await generateHeadlines({ articleContent: validatedFields.data.articleContent });
     return { data: result };
   } catch (e: any) {
     console.error('Error generating headlines:', e);

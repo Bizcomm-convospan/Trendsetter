@@ -27,11 +27,12 @@ export async function crawlPage(url: string): Promise<string> {
     }
 
     const data = await response.json();
-    if (typeof data.html !== 'string') {
-      throw new Error('Crawler service response did not contain valid HTML content.');
+    if (typeof data.text !== 'string') {
+      throw new Error('Crawler service response did not contain valid text content.');
     }
     
-    return data.html;
+    // The crawler now returns clean text directly
+    return data.text;
   } catch (error: any) {
     console.error(`Error calling crawler service for URL ${url}:`, error);
     throw new Error(`Failed to crawl URL ${url}. Error: ${error.message}`);

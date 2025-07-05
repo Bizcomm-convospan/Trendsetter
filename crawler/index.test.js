@@ -8,7 +8,8 @@ jest.mock('playwright', () => ({
     launch: jest.fn().mockResolvedValue({
       newPage: jest.fn().mockResolvedValue({
         goto: jest.fn().mockResolvedValue(null),
-        content: jest.fn().mockResolvedValue('<html><body>Mocked Page Content</body></html>'),
+        // Return a mock HTML with various tags for the extractor to handle
+        content: jest.fn().mockResolvedValue('<html><head><title>Test</title><style>.ad{display:none}</style></head><body><header>Nav</header><main><h1>Main Title</h1><p>Mocked Page Content</p></main><footer>Footer</footer></body></html>'),
         close: jest.fn().mockResolvedValue(null),
       }),
       close: jest.fn().mockResolvedValue(null),
@@ -29,13 +30,15 @@ describe('Crawler Service API', () => {
         expect(response.body.error).toBe('URL is required');
     });
 
-    it('should return 200 OK with HTML content for a valid URL', async () => {
+    it('should return 200 OK with clean text content for a valid URL', async () => {
         const response = await request(app)
             .post('/crawl')
             .send({ url: 'https://example.com' });
         
         expect(response.status).toBe(200);
-        expect(response.body.html).toBe('<html><body>Mocked Page Content</body></html>');
+        expect(response.body).toHaveProperty('text');
+        // The mock extractor should strip header/footer and return main content text
+        expect(response.body.text).toBe('Main Title Mocked Page Content');
     });
 
     it('should return 500 Internal Server Error if page.goto fails', async () => {

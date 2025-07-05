@@ -11,7 +11,6 @@
 import {ai} from './genkit';
 import {z} from 'zod';
 import { crawlPage } from './lib/crawl';
-import { extractTextFromHtml } from './lib/text-extractor';
 import * as admin from 'firebase-admin';
 
 const MAX_INPUT_CHARACTERS = 16000; // Approx 4k tokens, a safe limit for cost control.
@@ -43,32 +42,16 @@ const AutonomousProspectingOutputSchema = z.object({
 export type AutonomousProspectingOutput = z.infer<typeof AutonomousProspectingOutputSchema>;
 
 
-const crawlUrlTool = ai.defineTool({
-    name: 'crawlUrlForProspects',
-    description: 'Crawls the given URL to retrieve its main text content for analysis.',
-    inputSchema: z.object({ url: z.string().url() }),
-    outputSchema: z.string().describe('The clean, extracted text content of the page.'),
-}, async (input) => {
-    const html = await crawlPage(input.url);
-    const cleanText = await extractTextFromHtml(html);
-    // Truncate the text to control token usage and cost.
-    const truncatedText = cleanText.substring(0, MAX_INPUT_CHARACTERS);
-    console.log(`[Prospecting Crawl] Truncated content from ${cleanText.length} to ${truncatedText.length} characters for cost optimization.`);
-    return truncatedText;
-});
-
-
 const extractionPrompt = ai.definePrompt({
     name: 'prospectExtractionPrompt',
-    tools: [crawlUrlTool],
-    // The input for the prompt itself doesn't need the jobId
-    input: { schema: z.object({ url: z.string().url() }) },
+    input: { schema: z.object({ 
+        url: z.string().url(),
+        content: z.string().describe("The main text content of the webpage.")
+    }) },
     output: { schema: AutonomousProspectingOutputSchema },
     prompt: `
       You are an expert data extraction agent.
-      First, use the crawlUrlForProspects tool to get the text content of the following URL: {{{url}}}
-
-      Then, from the resulting article text, extract structured data about companies and people.
+      From the following text content, which was extracted from {{{url}}}, extract structured data about companies and people.
       Specifically, look for:
       - The primary company name.
       - A list of people, including their full name and their role or job title.
@@ -79,6 +62,11 @@ const extractionPrompt = ai.definePrompt({
       Finally, provide a brief summary of your findings and format the extracted data as an array of prospects.
       If you cannot find any specific prospects, return an empty list for prospects, but still provide a summary.
       Return the information in the specified JSON format.
+
+      Page Content:
+      ---
+      {{{content}}}
+      ---
     `,
 });
 
@@ -92,11 +80,16 @@ const autonomousProspectingFlow = ai.defineFlow(
   async (input) => {
     const db = admin.firestore();
 
-    // 1. Run the extraction prompt which will use the tool internally
-    const {output} = await extractionPrompt({ url: input.url });
+    // 1. Crawl the page to get clean text content.
+    const cleanText = await crawlPage(input.url);
+    const truncatedText = cleanText.substring(0, MAX_INPUT_CHARACTERS);
+    console.log(`[Prospecting Flow] Truncated content from ${cleanText.length} to ${truncatedText.length} characters for cost optimization.`);
+
+    // 2. Run the extraction prompt with the clean text.
+    const {output} = await extractionPrompt({ url: input.url, content: truncatedText });
     const prospects = output?.prospects || [];
 
-    // 2. Save valid prospects to the 'prospects' collection
+    // 3. Save valid prospects to the 'prospects' collection
     if (prospects.length > 0) {
         const batch = db.batch();
         
@@ -114,7 +107,7 @@ const autonomousProspectingFlow = ai.defineFlow(
         await batch.commit();
     }
     
-    // 3. Return the final data to the calling function, which will handle the job status update.
+    // 4. Return the final data to the calling function, which will handle the job status update.
     return output!;
   }
 );

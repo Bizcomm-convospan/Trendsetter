@@ -1,6 +1,7 @@
 
 const express = require('express');
 const { chromium } = require('playwright');
+const { parse } = require('node-html-parser');
 
 const app = express();
 app.use(express.json());
@@ -32,6 +33,28 @@ async function initializeBrowser() {
   }
 }
 
+/**
+ * Extracts the main content text from an HTML string.
+ * This is a simplified, non-AI approach to reduce tokens for analysis.
+ * @param {string} html The raw HTML content of a webpage.
+ * @returns {string} The cleaned text of the main content.
+ */
+function extractMainContent(html) {
+    if (!html) return '';
+    const root = parse(html);
+    
+    // Remove common non-content elements to clean up the text
+    root.querySelectorAll('script, style, nav, footer, aside, header, .ad, .advertisement, .sidebar, .menu, .ad-container').forEach(node => node.remove());
+    
+    // Get the text from the body, which should now primarily be the main content
+    const body = root.querySelector('body');
+    if (!body) return '';
+
+    // Replace consecutive whitespace characters with a single space and trim
+    return body.structuredText.replace(/\s\s+/g, ' ').trim();
+}
+
+
 app.post('/crawl', async (req, res) => {
   const { url } = req.body;
   if (!url) {
@@ -52,9 +75,15 @@ app.post('/crawl', async (req, res) => {
     page = await browser.newPage();
     // Add a generous timeout to prevent hanging on slow pages
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    const content = await page.content();
-    console.log(`Successfully crawled URL: ${url}`);
-    res.send({ html: content });
+    const rawHtml = await page.content();
+    console.log(`Successfully crawled URL: ${url}. Now extracting text.`);
+
+    // Extract clean text content
+    const cleanText = extractMainContent(rawHtml);
+    console.log(`Text extraction complete for ${url}. Text length: ${cleanText.length}`);
+
+    // Return the clean text instead of the full HTML
+    res.send({ text: cleanText });
   } catch (error) {
     console.error(`Crawling error for ${url}:`, error.message);
     res.status(500).send({ error: `Failed to crawl the URL. Error: ${error.message}` });
