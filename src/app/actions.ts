@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -42,6 +43,7 @@ import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { createHash } from 'crypto';
 import { addHours, isFuture } from 'date-fns';
+import { extractTextFromHtml } from '@/ai/lib/text-extractor';
 
 // Helper for caching
 const CACHE_COLLECTION = 'ai_cache';
@@ -281,6 +283,7 @@ export async function handlePublishArticle(
         const errorBody = await response.text();
         const errorMessage = `WordPress webhook failed with status ${response.status}: ${errorBody}`;
         console.error(errorMessage);
+        // Important: Return an error and do NOT proceed to update Firestore.
         return { error: errorMessage };
       } else {
         console.log(`Successfully pushed article ${articleId} to WordPress.`);
@@ -291,7 +294,7 @@ export async function handlePublishArticle(
       console.warn(warningMessage);
     }
 
-    // Update status regardless of webhook for testing purposes, but production might handle this differently.
+    // This will now only be reached if the webhook call was successful or skipped due to config.
     await articleRef.update({
       status: 'published',
       publishedAt: FieldValue.serverTimestamp(),
@@ -378,7 +381,8 @@ export async function handleGenerateHeadlines(
   }
 
   try {
-    const result = await generateHeadlines(validatedFields.data);
+    const cleanContent = await extractTextFromHtml(validatedFields.data.articleContent);
+    const result = await generateHeadlines({ articleContent: cleanContent });
     return { data: result };
   } catch (e: any) {
     console.error('Error generating headlines:', e);
