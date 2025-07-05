@@ -9,3 +9,4 @@ import '@/ai/flows/answer-the-ai-flow.ts';
 import '@/ai/flows/generate-headlines-flow.ts';
 import '@/ai/flows/question-spy-flow.ts';
 import '@/ai/flows/competitor-analyzer-flow.ts';
+import '@/ai/flows/generate-image-flow.ts';

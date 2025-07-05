@@ -3,7 +3,8 @@
 
 import { useState, useEffect, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
-import { handleGenerateArticle, handlePublishArticle, handleGenerateHeadlines, type ActionResponse } from '@/app/actions';
+import Image from 'next/image';
+import { handleGenerateArticle, handlePublishArticle, handleGenerateHeadlines, handleGenerateImage, type ActionResponse } from '@/app/actions';
 import type { GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import type { GenerateHeadlinesOutput } from '@/ai/flows/generate-headlines-flow';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, TrendingUp } from 'lucide-react';
+import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, TrendingUp, Image as ImageIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
@@ -30,6 +31,8 @@ interface Article {
   createdAt: Timestamp;
   publishedAt?: Timestamp;
   topic: string;
+  featuredImagePrompt: string;
+  featuredImageUrl?: string;
 }
 
 function GenerateArticleButton() {
@@ -47,7 +50,7 @@ function ArticleRowSkeleton() {
     <TableRow>
       <TableCell><Skeleton className="h-4 w-3/4" /></TableCell>
       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-      <TableCell><Skeleton className="h-10 w-full" /></TableCell>
+      <TableCell className="text-right"><Skeleton className="h-10 w-48" /></TableCell>
     </TableRow>
   );
 }
@@ -64,6 +67,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   const [publishedArticles, setPublishedArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [publishingId, setPublishingId] = useState<string | null>(null);
+  const [generatingImageId, setGeneratingImageId] = useState<string | null>(null);
 
   // State for Headline Optimizer
   const [isGeneratingHeadlines, startGeneratingHeadlines] = useTransition();
@@ -140,6 +144,17 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
       toast({ title: 'Article Published!', description: 'Your article has been sent to WordPress.' });
     }
     setPublishingId(null);
+  };
+  
+  const onGenerateImage = async (article: Article) => {
+    setGeneratingImageId(article.id);
+    const result = await handleGenerateImage(article.id, article.featuredImagePrompt);
+    if (result.error) {
+      toast({ variant: 'destructive', title: 'Image Generation Failed', description: result.error });
+    } else {
+      toast({ title: 'Image Generated!', description: 'A new featured image has been created for your article.' });
+    }
+    setGeneratingImageId(null);
   };
 
   const handleHumanizeClick = (content: string) => {
@@ -254,7 +269,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
+                  <TableHead>Article</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -268,9 +283,27 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                 ) : draftArticles.length > 0 ? (
                   draftArticles.map(article => (
                     <TableRow key={article.id}>
-                      <TableCell className="font-medium text-foreground">{article.title}</TableCell>
+                      <TableCell className="font-medium text-foreground flex items-center gap-4">
+                        {article.featuredImageUrl ? (
+                          <Image src={article.featuredImageUrl} alt={`Featured image for ${article.title}`} width={64} height={64} className="rounded-md aspect-square object-cover" />
+                        ) : (
+                          <div className="w-16 h-16 bg-muted rounded-md flex items-center justify-center text-muted-foreground">
+                            <ImageIcon className="h-6 w-6"/>
+                          </div>
+                        )}
+                        <span>{article.title}</span>
+                      </TableCell>
                       <TableCell>{article.createdAt ? format(article.createdAt.toDate(), 'PP') : 'N/A'}</TableCell>
-                      <TableCell className="text-right space-x-2">
+                      <TableCell className="text-right space-x-2 whitespace-nowrap">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onGenerateImage(article)}
+                          disabled={generatingImageId === article.id || !!article.featuredImageUrl}
+                        >
+                          {generatingImageId === article.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ImageIcon className="mr-2 h-4 w-4" />}
+                          {article.featuredImageUrl ? "Generated" : "Gen Image"}
+                        </Button>
                         <Button variant="outline" size="sm" onClick={() => onGenerateHeadlines(article)}>
                            <Lightbulb className="mr-2 h-4 w-4" /> Headlines
                         </Button>
@@ -322,7 +355,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                   publishedArticles.map(article => (
                     <TableRow key={article.id}>
                       <TableCell className="font-medium">{article.title}</TableCell>
-                      <TableCell><Badge variant="outline" className="text-green-600 border-green-500 bg-green-50">Published</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="text-green-600 border-green-500 bg-green-50 dark:bg-green-900/20">Published</Badge></TableCell>
                       <TableCell className="text-right">{article.publishedAt ? format(article.publishedAt.toDate(), 'PPp') : 'N/A'}</TableCell>
                     </TableRow>
                   ))

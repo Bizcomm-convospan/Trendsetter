@@ -1,6 +1,11 @@
 
 import { ProspectingClient } from '@/components/dashboard/ProspectingClient';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 export default function ProspectingPage() {
-  return <ProspectingClient />;
+  return (
+    <AppLayout>
+      <ProspectingClient />
+    </AppLayout>
+  );
 }

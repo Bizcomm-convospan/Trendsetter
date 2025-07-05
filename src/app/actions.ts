@@ -33,6 +33,10 @@ import {
   analyzeCompetitor,
   CompetitorAnalyzerOutput,
 } from '@/ai/flows/competitor-analyzer-flow';
+import {
+  generateImage,
+  GenerateImageOutput
+} from '@/ai/flows/generate-image-flow';
 import { z } from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -95,6 +99,10 @@ const QuestionSpySchema = z.object({
 });
 
 const CompetitorAnalyzerSchema = z.object({
+  url: z.string().url('Please provide a valid URL.'),
+});
+
+const ProspectingJobSchema = z.object({
   url: z.string().url('Please provide a valid URL.'),
 });
 
@@ -264,6 +272,7 @@ export async function handlePublishArticle(
           title: articleData?.title,
           content: articleData?.content,
           meta: articleData?.meta,
+          featuredImageUrl: articleData?.featuredImageUrl, // Send image URL
         }),
       });
 
@@ -472,5 +481,73 @@ export async function handleCompetitorAnalysis(
   } catch (e: any) {
     console.error('Error in Competitor Analyzer:', e);
     return { error: e.message || 'Failed to analyze competitor.' };
+  }
+}
+
+export async function handleGenerateImage(
+  articleId: string,
+  prompt: string
+): Promise<ActionResponse<GenerateImageOutput>> {
+  if (!articleId || !prompt) {
+    return { error: 'Article ID and prompt are required.' };
+  }
+
+  try {
+    const result = await generateImage({ prompt });
+
+    if (result.imageUrl) {
+      const articleRef = adminDb.collection('articles').doc(articleId);
+      await articleRef.update({
+        featuredImageUrl: result.imageUrl,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
+
+    return { data: result };
+  } catch (e: any) {
+    console.error(`Error generating image for article ${articleId}:`, e);
+    return { error: e.message || 'Failed to generate image.' };
+  }
+}
+
+export async function handleProspectingJob(
+  formData: FormData
+): Promise<ActionResponse<{ jobId: string }>> {
+  const rawFormData = {
+    url: formData.get('url') as string,
+  };
+
+  const validatedFields = ProspectingJobSchema.safeParse(rawFormData);
+  if (!validatedFields.success) {
+    return {
+      validationErrors: validatedFields.error.flatten().fieldErrors,
+      error: 'Validation failed.',
+    };
+  }
+
+  try {
+    // This server action calls our own API route, acting as a secure gateway
+    const rootUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : 'http://localhost:3000';
+    
+    const apiRoute = new URL('/api/prospect', rootUrl);
+
+    const response = await fetch(apiRoute.toString(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: validatedFields.data.url }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to submit prospecting job.');
+    }
+
+    return { data: data };
+  } catch (e: any) {
+    console.error('Error submitting prospecting job:', e);
+    return { error: e.message || 'Failed to submit job.' };
   }
 }
