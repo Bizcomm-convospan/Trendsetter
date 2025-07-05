@@ -1,9 +1,8 @@
-
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Wand2, ScanText, User, BrainCircuit, MessageCircleQuestion, ClipboardCheck, Target, Users as UsersIcon, FileText } from 'lucide-react';
+import { LayoutDashboard, Wand2, ScanText, User, BrainCircuit, MessageCircleQuestion, ClipboardCheck, Target, Users as UsersIcon, Mail } from 'lucide-react';
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -27,6 +26,7 @@ export function SidebarNav() {
     { href: '/dashboard/prospecting', label: t('sidebar.prospecting'), icon: ClipboardCheck },
     { href: '/dashboard/prospects', label: t('sidebar.viewProspects'), icon: UsersIcon },
     { href: '/dashboard/profile', label: t('sidebar.myProfile'), icon: User },
+    { href: '/contact', label: 'Contact Us', icon: Mail },
   ];
 
   return (
