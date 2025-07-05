@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, FileText, ArrowRight, Wand2, UploadCloud } from "lucide-react";
+import { TrendingUp, FileText, ArrowRight, BrainCircuit, UploadCloud } from "lucide-react";
 
 interface WorkflowStep {
   icon: React.ReactNode;
@@ -23,23 +23,23 @@ const steps: WorkflowStep[] = [
     tabValue: 'trends'
   },
   {
-    icon: <FileText className="h-8 w-8 text-accent" />,
-    title: 'Step 2: Generate Content',
-    description: 'Transform a trending topic into a high-quality, SEO-optimized article in minutes.',
+    icon: <BrainCircuit className="h-8 w-8 text-accent" />,
+    title: 'Step 2: Get Content Angles',
+    description: 'Use "Answer the AI" to generate strategic questions (Who, What, etc.) to ensure comprehensive coverage.',
+    cta: 'Get Angles',
+    href: '/dashboard/answer-the-ai'
+  },
+  {
+    icon: <FileText className="h-8 w-8 text-purple-500" />,
+    title: 'Step 3: Generate Article',
+    description: 'Transform your topic into a high-quality, SEO-optimized article in minutes.',
     cta: 'Create Content',
     tabValue: 'content'
   },
   {
-    icon: <Wand2 className="h-8 w-8 text-purple-500" />,
-    title: 'Step 3: Refine & Analyze',
-    description: 'Use the AI Detector to score, analyze, and humanize your article for maximum impact and quality.',
-    cta: 'Analyze Content',
-    href: '/dashboard/ai-detector'
-  },
-  {
     icon: <UploadCloud className="h-8 w-8 text-green-500" />,
-    title: 'Step 4: Publish Content',
-    description: 'Review your drafts and publish them directly to your integrated WordPress website with one click.',
+    title: 'Step 4: Refine & Publish',
+    description: 'Analyze, humanize, and then publish your completed article directly to WordPress with one click.',
     cta: 'Publish Now',
     tabValue: 'content'
   }
