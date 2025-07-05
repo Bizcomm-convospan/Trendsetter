@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -10,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
-import { User, CreditCard, BarChart2, KeyRound, Copy, RefreshCw, Loader2, FileText, TrendingUp, ScanText, Cpu, BrainCircuit } from 'lucide-react';
+import { User, CreditCard, BarChart2, KeyRound, Copy, RefreshCw, Loader2, FileText, TrendingUp, ScanText, Cpu, BrainCircuit, MessageCircleQuestion, Target } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function ProfileClient() {
@@ -112,6 +113,18 @@ export function ProfileClient() {
                         <Label className="flex items-center gap-2 font-medium"><TrendingUp className="h-4 w-4" /> Trend Discoveries</Label>
                         <Progress value={25} />
                         <p className="text-sm text-muted-foreground">5 of 20 searches used.</p>
+                    </div>
+                    <Separator />
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-2 font-medium"><MessageCircleQuestion className="h-4 w-4" /> Question Spy Searches</Label>
+                        <Progress value={60} />
+                        <p className="text-sm text-muted-foreground">6 of 10 searches used.</p>
+                    </div>
+                    <Separator />
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-2 font-medium"><Target className="h-4 w-4" /> Competitor Analyses</Label>
+                        <Progress value={20} />
+                        <p className="text-sm text-muted-foreground">1 of 5 reports used.</p>
                     </div>
                     <Separator />
                     <div className="space-y-2">

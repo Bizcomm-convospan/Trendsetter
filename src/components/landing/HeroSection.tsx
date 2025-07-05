@@ -39,22 +39,22 @@ export function HeroSection() {
                     <li className="flex items-start">
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
-                            <span className="font-semibold text-foreground">Instantly Discover What People Want:</span>
-                            <span className="text-muted-foreground"> Our AI finds trending topics so you can create content that people are guaranteed to search for.</span>
+                            <span className="font-semibold text-foreground">Discover What Your Audience Wants:</span>
+                            <span className="text-muted-foreground"> Use Trend Discovery and Question Spy to find hot topics and the exact questions people are asking online.</span>
                         </div>
                     </li>
                     <li className="flex items-start">
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
-                            <span className="font-semibold text-foreground">Go from Idea to Published Article in 3 Minutes:</span>
-                            <span className="text-muted-foreground"> Generate high-quality, human-like SEO articles and publish them directly to your site.</span>
+                            <span className="font-semibold text-foreground">Outsmart Your Competition:</span>
+                            <span className="text-muted-foreground"> Analyze competitor articles to find strategic gaps and generate superior content that ranks higher.</span>
                         </div>
                     </li>
                     <li className="flex items-start">
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
-                            <span className="font-semibold text-foreground">Eliminate Content That Fails:</span>
-                            <span className="text-muted-foreground"> Our tools ensure your content is high-quality, trustworthy, and ready to convert readers into customers.</span>
+                            <span className="font-semibold text-foreground">Automate High-Quality Content:</span>
+                            <span className="text-muted-foreground"> Go from idea to a human-like, SEO-optimized article with compelling headlines and publish directly to your site.</span>
                         </div>
                     </li>
                 </ul>

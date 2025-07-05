@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -10,8 +11,7 @@ interface WorkflowStep {
   title: string;
   description: string;
   cta: string;
-  tabValue?: string;
-  href?: string;
+  href: string;
 }
 
 const steps: WorkflowStep[] = [
@@ -20,7 +20,7 @@ const steps: WorkflowStep[] = [
     title: 'Step 1: Discover Trends',
     description: 'Identify emerging topics and stay ahead of the curve. Find the fuel for your content engine.',
     cta: 'Discover Now',
-    tabValue: 'trends'
+    href: '/dashboard/trends'
   },
   {
     icon: <BrainCircuit className="h-8 w-8 text-accent" />,
@@ -34,14 +34,14 @@ const steps: WorkflowStep[] = [
     title: 'Step 3: Generate Article',
     description: 'Transform your topic into a high-quality, SEO-optimized article in minutes.',
     cta: 'Create Content',
-    tabValue: 'content'
+    href: '/dashboard/content-creation'
   },
   {
     icon: <UploadCloud className="h-8 w-8 text-green-500" />,
     title: 'Step 4: Refine & Publish',
     description: 'Analyze, humanize, and then publish your completed article directly to WordPress with one click.',
-    cta: 'Publish Now',
-    tabValue: 'content'
+    cta: 'Go to Publisher',
+    href: '/dashboard/content-creation'
   }
 ];
 
@@ -61,17 +61,11 @@ export function WorkflowGuide({ onTabChange }: { onTabChange: (tab: string) => v
               </div>
               <h3 className="text-lg font-semibold text-foreground">{step.title}</h3>
               <p className="mt-2 flex-grow text-sm text-muted-foreground">{step.description}</p>
-              {step.href ? (
-                <Button asChild variant="ghost" className="mt-4 text-primary hover:text-primary/90">
-                  <Link href={step.href}>
-                    {step.cta} <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              ) : (
-                <Button onClick={() => onTabChange(step.tabValue!)} variant="ghost" className="mt-4 text-primary hover:text-primary/90">
+              <Button asChild variant="ghost" className="mt-4 text-primary hover:text-primary/90">
+                <Link href={step.href}>
                   {step.cta} <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              )}
+                </Link>
+              </Button>
             </div>
           ))}
         </div>
