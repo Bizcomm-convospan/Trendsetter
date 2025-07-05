@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTheme } from "next-themes";
+import { useTranslation } from 'react-i18next';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,20 +10,39 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuPortal,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, UserCircle, Moon, Sun } from 'lucide-react';
+import { LogOut, UserCircle, Moon, Sun, Languages } from 'lucide-react';
 
 export function HeaderControls() {
   const { setTheme } = useTheme();
+  const { i18n, t } = useTranslation();
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
+
 
   return (
     <div className="flex items-center gap-4">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <Languages className="h-[1.2rem] w-[1.2rem]" />
+            <span className="sr-only">Change language</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => changeLanguage('en')}>
+            English
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => changeLanguage('es')}>
+            Español
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon">
@@ -66,14 +86,14 @@ export function HeaderControls() {
           <Link href="/dashboard/profile" passHref>
             <DropdownMenuItem>
               <UserCircle className="mr-2 h-4 w-4" />
-              <span>Profile</span>
+              <span>{t('header.profile')}</span>
             </DropdownMenuItem>
           </Link>
           <DropdownMenuSeparator />
           <Link href="/" passHref>
             <DropdownMenuItem>
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+              <span>{t('header.logout')}</span>
             </DropdownMenuItem>
           </Link>
         </DropdownMenuContent>

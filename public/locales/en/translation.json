@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "home": "Home",
+    "pricing": "Pricing",
+    "login": "Login",
+    "goToApp": "Go to App"
+  },
+  "header": {
+    "profile": "Profile",
+    "logout": "Log out"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "trendDiscovery": "Trend Discovery",
+    "questionSpy": "Question Spy",
+    "competitorAnalyzer": "Competitor Analyzer",
+    "answerTheAI": "Answer the AI",
+    "aiHumanizer": "AI Humanizer",
+    "aiDetector": "AI Detector",
+    "wpPublisher": "WordPress Publisher",
+    "prospecting": "Autonomous Prospecting",
+    "viewProspects": "View Prospects",
+    "myProfile": "My Profile"
+  },
+  "login": {
+    "title": "Welcome Back!",
+    "description": "Log in to access your Trendsetter Pro dashboard.",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "submitButton": "Log In",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up"
+  },
+  "pricing": {
+    "title": "Simple, Transparent Pricing",
+    "description": "Choose the plan that fits your needs. No hidden fees, cancel anytime."
+  }
+}

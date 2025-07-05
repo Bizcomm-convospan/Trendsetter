@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button';
 import { TrendsetterProLogo } from '@/components/icons';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function LandingHeader() {
+  const { t } = useTranslation();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
@@ -19,16 +22,16 @@ export function LandingHeader() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-4">
           <Link href="/" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-            Home
+            {t('nav.home')}
           </Link>
           <Link href="/pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-            Pricing
+            {t('nav.pricing')}
           </Link>
           <Button asChild>
-            <Link href="/login">Login</Link>
+            <Link href="/login">{t('nav.login')}</Link>
           </Button>
            <Button asChild variant="outline">
-            <Link href="/dashboard">Go to App</Link>
+            <Link href="/dashboard">{t('nav.goToApp')}</Link>
           </Button>
         </nav>
 
@@ -44,17 +47,17 @@ export function LandingHeader() {
             <SheetContent side="right">
               <nav className="flex flex-col gap-6 p-6">
                 <Link href="/" className="text-lg font-medium text-foreground transition-colors hover:text-primary">
-                  Home
+                  {t('nav.home')}
                 </Link>
                 <Link href="/pricing" className="text-lg font-medium text-foreground transition-colors hover:text-primary">
-                  Pricing
+                  {t('nav.pricing')}
                 </Link>
                 <div className="flex flex-col gap-4 mt-4">
                   <Button asChild>
-                    <Link href="/login">Login</Link>
+                    <Link href="/login">{t('nav.login')}</Link>
                   </Button>
                   <Button asChild variant="outline">
-                    <Link href="/dashboard">Go to App</Link>
+                    <Link href="/dashboard">{t('nav.goToApp')}</Link>
                   </Button>
                 </div>
               </nav>

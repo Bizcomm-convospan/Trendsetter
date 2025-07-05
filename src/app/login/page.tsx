@@ -11,10 +11,12 @@ import { Label } from '@/components/ui/label';
 import { LandingLayout } from '@/components/layout/LandingLayout';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -54,13 +56,13 @@ export default function LoginPage() {
       <section className="container flex min-h-[calc(100vh-10rem)] items-center justify-center py-12">
         <Card className="w-full max-w-md shadow-xl">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold">Welcome Back!</CardTitle>
-            <CardDescription>Log in to access your Trendsetter Pro dashboard.</CardDescription>
+            <CardTitle className="text-3xl font-bold">{t('login.title')}</CardTitle>
+            <CardDescription>{t('login.description')}</CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('login.emailLabel')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -72,7 +74,7 @@ export default function LoginPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('login.passwordLabel')}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -86,12 +88,12 @@ export default function LoginPage() {
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Log In'}
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : t('login.submitButton')}
               </Button>
               <p className="text-center text-sm text-muted-foreground">
-                Don&apos;t have an account?{' '}
+                {t('login.noAccount')}{' '}
                 <Link href="/pricing" className="font-medium text-primary hover:underline">
-                  Sign up
+                  {t('login.signUp')}
                 </Link>
               </p>
             </CardFooter>

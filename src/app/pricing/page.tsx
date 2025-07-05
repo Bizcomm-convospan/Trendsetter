@@ -1,7 +1,10 @@
 
+'use client';
+
 import { LandingLayout } from '@/components/layout/LandingLayout';
 import { PricingCard } from '@/components/pricing/PricingCard';
 import { CheckCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const pricingPlans = [
   {
@@ -62,15 +65,16 @@ const pricingPlans = [
 ];
 
 export default function PricingPage() {
+  const { t } = useTranslation();
   return (
     <LandingLayout>
       <section className="container py-12 md:py-20">
         <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center mb-12">
           <h1 className="font-bold text-4xl leading-[1.1] sm:text-4xl md:text-6xl text-foreground">
-            Simple, Transparent Pricing
+            {t('pricing.title')}
           </h1>
           <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-            Choose the plan that fits your needs. No hidden fees, cancel anytime.
+            {t('pricing.description')}
           </p>
         </div>
         <div className="grid gap-8 md:grid-cols-3">

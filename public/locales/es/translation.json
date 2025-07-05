@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "pricing": "Precios",
+    "login": "Iniciar Sesión",
+    "goToApp": "Ir a la App"
+  },
+  "header": {
+    "profile": "Perfil",
+    "logout": "Cerrar Sesión"
+  },
+  "sidebar": {
+    "dashboard": "Panel",
+    "trendDiscovery": "Descubrir Tendencias",
+    "questionSpy": "Espía de Preguntas",
+    "competitorAnalyzer": "Análisis de Competencia",
+    "answerTheAI": "Responder a la IA",
+    "aiHumanizer": "Humanizador de IA",
+    "aiDetector": "Detector de IA",
+    "wpPublisher": "Publicador de WordPress",
+    "prospecting": "Prospección Autónoma",
+    "viewProspects": "Ver Prospectos",
+    "myProfile": "Mi Perfil"
+  },
+  "login": {
+    "title": "¡Bienvenido de Nuevo!",
+    "description": "Inicia sesión para acceder a tu panel de Trendsetter Pro.",
+    "emailLabel": "Correo Electrónico",
+    "passwordLabel": "Contraseña",
+    "submitButton": "Iniciar Sesión",
+    "noAccount": "¿No tienes una cuenta?",
+    "signUp": "Regístrate"
+  },
+  "pricing": {
+    "title": "Precios Simples y Transparentes",
+    "description": "Elige el plan que se adapte a tus necesidades. Sin cargos ocultos, cancela en cualquier momento."
+  }
+}
