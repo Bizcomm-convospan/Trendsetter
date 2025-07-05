@@ -9,15 +9,14 @@ export function HeroSection() {
     <section className="container grid gap-12 lg:grid-cols-2 lg:gap-16 py-12 md:py-20 lg:py-24">
       <div className="flex flex-col items-start gap-6 lg:gap-8">
         <h1 className="text-4xl font-extrabold leading-tight tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl text-foreground">
-          Automate Your Growth with <br className="hidden sm:inline" />
-          <span className="text-primary">AI-Powered Insights</span>
+          Unlock Agentic AI to Supercharge Your <span className="text-primary">Content & SEO</span>
         </h1>
         <p className="max-w-[600px] text-lg text-muted-foreground sm:text-xl">
-          Discover trends, generate compelling content, and find your ideal customers effortlessly. Trendsetter Pro is your all-in-one AI platform for marketing and sales automation.
+          Deploy a team of specialized AI Agents to discover trends, create high-ranking content, and find your ideal customers. Trendsetter Pro is your all-in-one platform for agent-based marketing and sales automation.
         </p>
         <div className="flex flex-wrap gap-4">
           <Button asChild size="lg">
-            <Link href="/dashboard">Get Started Now</Link>
+            <Link href="/dashboard">Deploy Your AI Agents</Link>
           </Button>
           <Button asChild variant="outline" size="lg">
             <Link href="/pricing">View Pricing</Link>
@@ -31,7 +30,7 @@ export function HeroSection() {
                     The Unfair Advantage for Growth
                 </CardTitle>
                 <CardDescription className="text-center text-md">
-                    We help you acquire customers profitably by doing the work of an entire marketing team.
+                    We help you acquire customers profitably by deploying specialized AI agents to do the work of an entire marketing team.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -40,28 +39,28 @@ export function HeroSection() {
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
                             <span className="font-semibold text-foreground">Discover What Your Audience Wants:</span>
-                            <span className="text-muted-foreground"> Use Trend Discovery and Question Spy to find hot topics and the exact questions people are asking online.</span>
+                            <span className="text-muted-foreground"> Deploy our Trend and Question Spy agents to find hot topics and the exact questions people are asking.</span>
                         </div>
                     </li>
                     <li className="flex items-start">
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
                             <span className="font-semibold text-foreground">Outsmart Your Competition:</span>
-                            <span className="text-muted-foreground"> Analyze competitor articles to find strategic gaps and generate superior content that ranks higher.</span>
+                            <span className="text-muted-foreground"> Use the Competitor Agent to find strategic gaps and generate superior content that ranks higher.</span>
                         </div>
                     </li>
                     <li className="flex items-start">
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
                             <span className="font-semibold text-foreground">Automate High-Quality Content:</span>
-                            <span className="text-muted-foreground"> Go from idea to a human-like, SEO-optimized article with compelling headlines and publish directly to your site.</span>
+                            <span className="text-muted-foreground"> Chain multiple AI agents to go from idea to a human-like, SEO-optimized article ready to publish.</span>
                         </div>
                     </li>
                 </ul>
             </CardContent>
             <CardFooter>
                 <Button asChild size="lg" className="w-full text-lg py-6">
-                    <Link href="/pricing">Start Printing Customers</Link>
+                    <Link href="/pricing">Unleash Your AI Agents</Link>
                 </Button>
             </CardFooter>
         </Card>

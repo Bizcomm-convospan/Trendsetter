@@ -71,10 +71,10 @@ export default function PricingPage() {
       <section className="container py-12 md:py-20">
         <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center mb-12">
           <h1 className="font-bold text-4xl leading-[1.1] sm:text-4xl md:text-6xl text-foreground">
-            {t('pricing.title')}
+            Pricing Plans for Your AI Agent Workforce
           </h1>
           <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-            {t('pricing.description')}
+            Choose the right plan and deploy your team of AI agents today. Cancel anytime.
           </p>
         </div>
         <div className="grid gap-8 md:grid-cols-3">
@@ -85,8 +85,8 @@ export default function PricingPage() {
         <div className="mt-16 text-center">
           <h3 className="text-2xl font-semibold mb-4 text-foreground">All Plans Include:</h3>
           <ul className="space-y-2 text-muted-foreground max-w-md mx-auto">
-            <li className="flex items-center justify-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-500" /> AI-Powered Tools
+             <li className="flex items-center justify-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500" /> A Full Suite of AI Agents
             </li>
             <li className="flex items-center justify-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-500" /> Regular Feature Updates

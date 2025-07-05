@@ -57,7 +57,7 @@ export default function LoginPage() {
         <Card className="w-full max-w-md shadow-xl">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-bold">{t('login.title')}</CardTitle>
-            <CardDescription>{t('login.description')}</CardDescription>
+            <CardDescription>Sign in to access your suite of AI Agents for Content & SEO.</CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">

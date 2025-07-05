@@ -65,14 +65,14 @@ export default function DashboardPage() {
       <header className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome to Trendsetter Pro</h1>
         <p className="text-lg text-muted-foreground">
-          Your AI-powered toolkit for dominating content strategy and SEO.
+          Your toolkit of specialized AI agents for dominating content strategy and SEO.
         </p>
       </header>
 
       <WorkflowGuide onTabChange={handleTabChange} />
 
       <section>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground mb-4">Your Tools</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-foreground mb-4">Your AI Agents</h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {toolCards.map((tool) => {
             const Icon = tool.icon;
