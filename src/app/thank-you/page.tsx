@@ -7,19 +7,25 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { LandingLayout } from '@/components/layout/LandingLayout';
 import { CheckCircle2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-
-import { Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
 
 function ThankYouContentInner() {
-  const planNames: Record<string, string> = {
- basic: 'Basic Plan',
-    pro: 'Pro Plan',
-  };
   const searchParams = useSearchParams();
-  const planId = searchParams.get('plan');
-  const planName = planId ? (planNames as any)[planId] || 'your selected plan' : 'your selected plan';
+  const [planName, setPlanName] = useState('your selected plan');
+
+  // This useEffect will only run on the client, after hydration.
+  // This prevents the server from rendering one thing and the client another.
+  useEffect(() => {
+    const planNames: Record<string, string> = {
+      basic: 'Basic Plan',
+      pro: 'Pro Plan',
+    };
+    const planId = searchParams.get('plan');
+    const name = planId ? planNames[planId] || 'your selected plan' : 'your selected plan';
+    setPlanName(name);
+  }, [searchParams]);
+
   return (
     <Card className="w-full max-w-lg text-center shadow-xl">
       <CardHeader>
