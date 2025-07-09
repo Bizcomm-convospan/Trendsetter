@@ -16,6 +16,9 @@ export function LandingFooter() {
           <Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary">
             Privacy Policy
           </Link>
+           <Link href="/faq" className="text-sm text-muted-foreground hover:text-primary">
+            FAQ
+          </Link>
            <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary">
             Contact Us
           </Link>
