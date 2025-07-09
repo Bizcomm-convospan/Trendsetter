@@ -27,8 +27,8 @@ export function LandingHeader() {
           <Link href="/pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
             {t('nav.pricing')}
           </Link>
-          <Link href="/faq" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-            FAQ
+          <Link href="/contact" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+            Contact
           </Link>
           <Button asChild>
             <Link href="/login">{t('nav.login')}</Link>
@@ -55,8 +55,8 @@ export function LandingHeader() {
                 <Link href="/pricing" className="text-lg font-medium text-foreground transition-colors hover:text-primary">
                   {t('nav.pricing')}
                 </Link>
-                <Link href="/faq" className="text-lg font-medium text-foreground transition-colors hover:text-primary">
-                  FAQ
+                <Link href="/contact" className="text-lg font-medium text-foreground transition-colors hover:text-primary">
+                  Contact
                 </Link>
                 <div className="flex flex-col gap-4 mt-4">
                   <Button asChild>
