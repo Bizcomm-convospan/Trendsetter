@@ -252,6 +252,9 @@ export async function handlePublishArticle(
     }
 
     const articleData = articleDoc.data();
+    if (!articleData) {
+        return { error: 'Article data is missing.' };
+    }
 
     const webhookUrl = process.env.WP_WEBHOOK_URL;
     const webhookToken = process.env.WP_WEBHOOK_TOKEN;
@@ -264,18 +267,21 @@ export async function handlePublishArticle(
       console.log(
         `Sending article ${articleId} to WordPress webhook: ${webhookUrl}`
       );
+      
+      const payload = {
+          title: articleData.title,
+          content: articleData.content,
+          meta: articleData.meta,
+          featuredImageUrl: articleData.featuredImageUrl || '', // Ensure it's always a string
+      };
+
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-ai-token': webhookToken,
         },
-        body: JSON.stringify({
-          title: articleData?.title,
-          content: articleData?.content,
-          meta: articleData?.meta,
-          featuredImageUrl: articleData?.featuredImageUrl, // Send image URL
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -555,3 +561,5 @@ export async function handleProspectingJob(
     return { error: e.message || 'Failed to submit job.' };
   }
 }
+
+    
