@@ -5,7 +5,7 @@ import { WorkflowGuide } from '@/components/dashboard/WorkflowGuide';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { TrendingUp, MessageCircleQuestion, Target, BrainCircuit, Wand2, ScanText, Users, ArrowRight } from 'lucide-react';
+import { MessageCircleQuestion, BrainCircuit, Wand2, ScanText, Users, ArrowRight, Target } from 'lucide-react';
 
 const toolCards = [
   {
