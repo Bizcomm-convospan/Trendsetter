@@ -1,4 +1,4 @@
-import { CompetitorAnalyzerClient } from '@/components/dashboard/CompetitorAnalyzerClient';
+import { CompetitorAnalyzerClient } from '@/components/dashboard/competitor-analyzer/CompetitorAnalyzerClient';
 import { AppLayout } from '@/components/layout/AppLayout';
 
 export default function CompetitorAnalyzerPage() {
