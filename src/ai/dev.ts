@@ -10,3 +10,6 @@ import '@/ai/flows/generate-headlines-flow.ts';
 import '@/ai/flows/question-spy-flow.ts';
 import '@/ai/flows/competitor-analyzer-flow.ts';
 import '@/ai/flows/generate-image-flow.ts';
+import '@/ai/flows/keyword-strategy-flow.ts';
+import '@/ai/flows/social-media-flow.ts';
+import '@/ai/flows/email-outreach-flow.ts';
