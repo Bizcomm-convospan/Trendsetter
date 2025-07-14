@@ -35,7 +35,7 @@ import type { Request, Response } from 'firebase-functions/v2/https';
 
 // A helper to get the mocked firestore instance
 const mockDb = admin.firestore() as jest.Mocked<any>;
-mockDb.FieldValue = {
+(mockDb as any).FieldValue = {
   serverTimestamp: () => 'MOCK_TIMESTAMP',
 };
 
@@ -49,7 +49,7 @@ describe('onProspectingJobCreated Cloud Function', () => {
 
     // Create a mock Firestore event
     const mockSnapshot = {
-      data: () => ({ url: 'https://example.com', status: 'queued' }),
+      data: () => ({ url: 'https://example.com', status: 'queued', webhookUrl: 'https://webhook.site/test' }),
       id: 'test-job-123',
     } as unknown as DocumentSnapshot;
 
@@ -59,7 +59,9 @@ describe('onProspectingJobCreated Cloud Function', () => {
     } as Event<any>;
   });
 
-  it('should successfully process a valid job', async () => {
+  it('should successfully process a valid job and call the webhook', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true }); // Mock successful fetch
+    
     await onProspectingJobCreated(mockEvent);
 
     const docUpdateMock = mockDb.doc().update;
@@ -76,7 +78,18 @@ describe('onProspectingJobCreated Cloud Function', () => {
       jobId: 'test-job-123',
     });
 
-    // 3. Verifies status is updated to 'complete' with data from the AI flow
+    // 3. Verifies the webhook is called with the correct payload
+    expect(global.fetch).toHaveBeenCalledWith('https://webhook.site/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            jobId: 'test-job-123',
+            status: 'complete',
+            result: { summary: 'Mock AI summary', prospects: [{ companyName: 'Test Co' }] },
+        })
+    });
+
+    // 4. Verifies status is updated to 'complete' with data from the AI flow
     expect(docUpdateMock).toHaveBeenCalledWith({
       status: 'complete',
       result: { summary: 'Mock AI summary', prospects: [{ companyName: 'Test Co' }] },
@@ -86,7 +99,9 @@ describe('onProspectingJobCreated Cloud Function', () => {
 
   it('should fail the job if rate limit is exceeded', async () => {
     // Make the firestore query mock return a high number of recent jobs
-    mockDb.collection().where().get.mockResolvedValueOnce({ size: 100 });
+    (mockDb.collection('prospecting_jobs').where as jest.Mock).mockReturnValue({
+        get: jest.fn().mockResolvedValue({ size: 100 })
+    });
 
     await onProspectingJobCreated(mockEvent);
 
@@ -189,7 +204,7 @@ describe('prospect HTTP Function', () => {
         // Check if a job was added to firestore
         expect(mockDb.collection('prospecting_jobs').add).toHaveBeenCalledWith({
             url: validUrl,
-            status: 'queued',
+            status: 'queued', // Initial status
             createdAt: 'MOCK_TIMESTAMP',
             updatedAt: 'MOCK_TIMESTAMP',
         });
@@ -232,7 +247,7 @@ describe('prospect HTTP Function', () => {
 
         expect(mockResponse.status).toHaveBeenCalledWith(500);
         expect(mockResponse.json).toHaveBeenCalledWith({
-            error: 'Firestore write failed',
+            error: 'Failed to create prospecting job.',
         });
     });
 });

@@ -81,7 +81,7 @@ describe('/api/prospect Endpoint with Structured Logging', () => {
         );
 
         const mockRequest = {
-            json: () => Promise.resolve({ url: 'https://example.com' }),
+            json: () => Promise.resolve({ url: 'https://example.com', webhookUrl: 'https://webhook.site/test' }),
             ip: '127.0.0.1',
         };
 
@@ -91,7 +91,7 @@ describe('/api/prospect Endpoint with Structured Logging', () => {
         expect(fetch).toHaveBeenCalledTimes(1);
         expect(fetch).toHaveBeenCalledWith('http://fake-function-url.com/prospect', {
             method: 'POST',
-            body: JSON.stringify({ url: 'https://example.com' }),
+            body: JSON.stringify({ url: 'https://example.com', webhookUrl: 'https://webhook.site/test' }),
             headers: { 'Content-Type': 'application/json' },
         });
         
