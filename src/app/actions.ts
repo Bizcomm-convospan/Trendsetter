@@ -38,6 +38,21 @@ import {
   generateImage,
   GenerateImageOutput
 } from '@/ai/flows/generate-image-flow';
+import {
+  generateKeywordStrategy,
+  KeywordStrategyInput,
+  KeywordStrategyOutput,
+} from '@/ai/flows/keyword-strategy-flow';
+import {
+  generateSocialMediaContent,
+  SocialMediaInput,
+  SocialMediaOutput,
+} from '@/ai/flows/social-media-flow';
+import {
+  generateOutreachEmail,
+  EmailOutreachInput,
+  EmailOutreachOutput,
+} from '@/ai/flows/email-outreach-flow';
 import { z } from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -106,6 +121,21 @@ const CompetitorAnalyzerSchema = z.object({
 
 const ProspectingJobSchema = z.object({
   url: z.string().url('Please provide a valid URL.'),
+});
+
+const KeywordStrategySchema = z.object({
+    topic: z.string().min(3, 'Topic must be at least 3 characters long.'),
+});
+
+const SocialMediaSchema = z.object({
+    articleTitle: z.string().min(3, 'Article title is required.'),
+    articleContent: z.string().min(100, 'Article content must be at least 100 characters.'),
+});
+
+const EmailOutreachSchema = z.object({
+    prospectJson: z.string().min(10, "Prospect data is required."),
+    ourCompanyOffer: z.string().min(10, "Your company's offer is required."),
+    senderName: z.string().min(2, "Sender name is required."),
 });
 
 export interface ActionResponse<T> {
@@ -562,4 +592,82 @@ export async function handleProspectingJob(
   }
 }
 
+export async function handleKeywordStrategy(
+  formData: FormData
+): Promise<ActionResponse<KeywordStrategyOutput>> {
+  const rawFormData = {
+    topic: formData.get('topic') as string,
+  };
+
+  const validatedFields = KeywordStrategySchema.safeParse(rawFormData);
+  if (!validatedFields.success) {
+    return {
+      validationErrors: validatedFields.error.flatten().fieldErrors,
+      error: 'Validation failed.',
+    };
+  }
+
+  try {
+    const result = await generateKeywordStrategy(validatedFields.data);
+    return { data: result };
+  } catch (e: any) {
+    console.error('Error in Keyword Strategy:', e);
+    return { error: e.message || 'Failed to generate keyword strategy.' };
+  }
+}
+
+export async function handleSocialMedia(
+    formData: FormData
+): Promise<ActionResponse<SocialMediaOutput>> {
+    const rawFormData = {
+        articleTitle: formData.get('articleTitle') as string,
+        articleContent: formData.get('articleContent') as string,
+    };
+
+    const validatedFields = SocialMediaSchema.safeParse(rawFormData);
+    if (!validatedFields.success) {
+        return {
+            validationErrors: validatedFields.error.flatten().fieldErrors,
+            error: 'Validation failed.',
+        };
+    }
     
+    try {
+        const result = await generateSocialMediaContent(validatedFields.data);
+        return { data: result };
+    } catch (e: any) {
+        console.error('Error generating social media content:', e);
+        return { error: e.message || 'Failed to generate social media content.' };
+    }
+}
+
+export async function handleEmailOutreach(
+    formData: FormData
+): Promise<ActionResponse<EmailOutreachOutput>> {
+    const rawFormData = {
+        prospectJson: formData.get('prospectJson') as string,
+        ourCompanyOffer: formData.get('ourCompanyOffer') as string,
+        senderName: formData.get('senderName') as string,
+    };
+    
+    const validatedFields = EmailOutreachSchema.safeParse(rawFormData);
+    if (!validatedFields.success) {
+        return {
+            validationErrors: validatedFields.error.flatten().fieldErrors,
+            error: 'Validation failed.',
+        };
+    }
+
+    try {
+        const input: EmailOutreachInput = {
+            prospect: JSON.parse(validatedFields.data.prospectJson),
+            ourCompanyOffer: validatedFields.data.ourCompanyOffer,
+            senderName: validatedFields.data.senderName,
+        };
+        const result = await generateOutreachEmail(input);
+        return { data: result };
+    } catch (e: any) {
+        console.error('Error generating outreach email:', e);
+        return { error: e.message || 'Failed to generate email.' };
+    }
+}

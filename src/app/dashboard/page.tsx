@@ -5,7 +5,7 @@ import { WorkflowGuide } from '@/components/dashboard/WorkflowGuide';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { MessageCircleQuestion, BrainCircuit, Wand2, ScanText, Users, ArrowRight, Target } from 'lucide-react';
+import { MessageCircleQuestion, BrainCircuit, Wand2, ScanText, Users, ArrowRight, Target, Key } from 'lucide-react';
 
 const toolCards = [
   {
@@ -14,6 +14,13 @@ const toolCards = [
     title: 'Content Creation Hub',
     description: 'Unified hub to discover trends, generate articles, and publish to your website.',
     cta: 'Start Creating',
+  },
+  {
+    href: '/dashboard/keyword-strategy',
+    icon: Key,
+    title: 'Keyword Strategy Agent',
+    description: 'Generate keyword clusters, long-tail variations, and related questions for any topic.',
+    cta: 'Build Strategy',
   },
   {
     href: '/dashboard/question-spy',

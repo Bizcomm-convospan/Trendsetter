@@ -1,8 +1,9 @@
+
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Wand2, ScanText, User, BrainCircuit, MessageCircleQuestion, ClipboardCheck, Target, Users as UsersIcon, Mail } from 'lucide-react';
+import { LayoutDashboard, Wand2, ScanText, User, BrainCircuit, MessageCircleQuestion, ClipboardCheck, Target, Users as UsersIcon, Mail, Key } from 'lucide-react';
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -18,6 +19,7 @@ export function SidebarNav() {
   const navItems = [
     { href: '/dashboard', label: t('sidebar.dashboard'), icon: LayoutDashboard },
     { href: '/dashboard/content-creation', label: 'Content Creation', icon: Wand2 },
+    { href: '/dashboard/keyword-strategy', label: 'Keyword Strategy', icon: Key },
     { href: '/dashboard/question-spy', label: t('sidebar.questionSpy'), icon: MessageCircleQuestion },
     { href: '/dashboard/competitor-analyzer', label: t('sidebar.competitorAnalyzer'), icon: Target },
     { href: '/dashboard/answer-the-ai', label: t('sidebar.answerTheAI'), icon: BrainCircuit },

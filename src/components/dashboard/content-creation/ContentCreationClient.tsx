@@ -1,17 +1,19 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
-import { handleGenerateArticle, handlePublishArticle, handleGenerateHeadlines, handleGenerateImage, type ActionResponse } from '@/app/actions';
+import { handleGenerateArticle, handlePublishArticle, handleGenerateHeadlines, handleGenerateImage, handleSocialMedia, type ActionResponse } from '@/app/actions';
 import type { GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import type { GenerateHeadlinesOutput } from '@/ai/flows/generate-headlines-flow';
+import type { SocialMediaOutput } from '@/ai/flows/social-media-flow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, TrendingUp, Image as ImageIcon, Tooltip } from 'lucide-react';
+import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
@@ -23,7 +25,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Progress } from '../ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { TrendDiscoveryClient } from './TrendDiscoveryClient';
-import { TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { Textarea } from '../ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
 interface Article {
   id: string;
@@ -57,6 +61,68 @@ function ArticleRowSkeleton() {
   );
 }
 
+function SocialMediaDialog({ article, open, onOpenChange }: { article: Article | null, open: boolean, onOpenChange: (open: boolean) => void }) {
+    const [isGenerating, startGenerating] = useTransition();
+    const [result, setResult] = useState<ActionResponse<SocialMediaOutput>>({});
+    const { toast } = useToast();
+
+    useEffect(() => {
+        if (open && article) {
+            setResult({}); // Clear previous results when opening
+            startGenerating(async () => {
+                const formData = new FormData();
+                formData.append('articleTitle', article.title);
+                formData.append('articleContent', article.content);
+                const response = await handleSocialMedia(formData);
+                setResult(response);
+                if (response.error) {
+                    toast({ variant: "destructive", title: "Error", description: response.error });
+                }
+            });
+        }
+    }, [open, article, toast]);
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                    <DialogTitle>Social Media Content</DialogTitle>
+                    <DialogDescription>
+                        {isGenerating ? "AI is crafting social media posts for your article..." : `Showing social media posts for: "${article?.title}"`}
+                    </DialogDescription>
+                </DialogHeader>
+                {isGenerating && (
+                    <div className="flex items-center justify-center p-8">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                )}
+                {result.data && (
+                    <Tabs defaultValue="twitter" className="w-full pt-4">
+                        <TabsList className="grid w-full grid-cols-3">
+                            <TabsTrigger value="twitter"><Twitter className="mr-2 h-4 w-4" />Twitter</TabsTrigger>
+                            <TabsTrigger value="linkedin"><Linkedin className="mr-2 h-4 w-4" />LinkedIn</TabsTrigger>
+                            <TabsTrigger value="facebook"><Facebook className="mr-2 h-4 w-4" />Facebook</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="twitter" className="mt-4">
+                            <div className="space-y-3">
+                                {result.data.twitterThread.map((tweet, index) => (
+                                    <Textarea key={index} value={tweet} readOnly className="bg-muted/50" rows={4} />
+                                ))}
+                            </div>
+                        </TabsContent>
+                        <TabsContent value="linkedin" className="mt-4">
+                            <Textarea value={result.data.linkedInPost} readOnly className="bg-muted/50" rows={8} />
+                        </TabsContent>
+                        <TabsContent value="facebook" className="mt-4">
+                           <Textarea value={result.data.facebookPost} readOnly className="bg-muted/50" rows={8} />
+                        </TabsContent>
+                    </Tabs>
+                )}
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 export function ContentCreationClient({ initialTopic }: { initialTopic?: string }) {
   const { toast } = useToast();
   const router = useRouter();
@@ -76,6 +142,10 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   const [headlineResults, setHeadlineResults] = useState<GenerateHeadlinesOutput | null>(null);
   const [selectedArticleForHeadlines, setSelectedArticleForHeadlines] = useState<Article | null>(null);
   const [isHeadlineDialogOpen, setIsHeadlineDialogOpen] = useState(false);
+  
+  // State for Social Media
+  const [selectedArticleForSocial, setSelectedArticleForSocial] = useState<Article | null>(null);
+  const [isSocialDialogOpen, setIsSocialDialogOpen] = useState(false);
 
   // Effect for initial topic passed from another component
   useEffect(() => {
@@ -188,6 +258,11 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
         onHeadlineDialogOpenChange(false); // Close dialog on error
       }
     });
+  };
+
+  const onGenerateSocial = (article: Article) => {
+    setSelectedArticleForSocial(article);
+    setIsSocialDialogOpen(true);
   };
 
   return (
@@ -305,6 +380,15 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                             </TooltipTrigger>
                             <TooltipContent><p>Optimize Headlines</p></TooltipContent>
                         </Tooltip>
+                         <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="outline" size="icon" onClick={() => onGenerateSocial(article)}>
+                                    <span className="sr-only">Generate Social Posts</span>
+                                    <MessageSquare className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>Generate Social Posts</p></TooltipContent>
+                        </Tooltip>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button variant="outline" size="icon" onClick={() => handleHumanizeClick(article.content)}>
@@ -414,7 +498,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
           </CardFooter>
         </Card>
       </div>
-
+      <SocialMediaDialog article={selectedArticleForSocial} open={isSocialDialogOpen} onOpenChange={setIsSocialDialogOpen} />
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Headline Optimizer</DialogTitle>
