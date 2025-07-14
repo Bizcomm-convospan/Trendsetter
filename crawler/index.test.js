@@ -24,6 +24,11 @@ describe('Crawler Service API', () => {
         await initializeBrowser();
     });
 
+    afterAll(done => {
+      // Close the server instance after all tests
+      closeServer(done);
+    });
+
     it('should return 400 Bad Request if URL is not provided', async () => {
         const response = await request(app).post('/crawl').send({});
         expect(response.status).toBe(400);

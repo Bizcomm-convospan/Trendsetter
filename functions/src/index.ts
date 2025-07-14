@@ -1,9 +1,9 @@
 
-import { onRequest } from "firebase-functions/v2/https";
+import { onRequest } from "firebase-functions/v2/onRequest";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { autonomousProspecting, AutonomousProspectingInput, AutonomousProspectingOutput } from "./prospecting";
+import { autonomousProspecting, AutonomousProspectingInput } from "./prospecting";
 import { z } from "zod";
 
 admin.initializeApp();
@@ -64,7 +64,7 @@ export const prospect = onRequest({ cors: true }, async (request, response) => {
 
   } catch (e: any) {
     logger.error("Error creating prospecting job", e);
-    response.status(500).json({ error: e.message || "Failed to create prospecting job." });
+    response.status(500).json({ error: "Failed to create prospecting job." });
   }
 });
 

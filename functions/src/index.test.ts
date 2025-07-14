@@ -247,7 +247,7 @@ describe('prospect HTTP Function', () => {
 
         expect(mockResponse.status).toHaveBeenCalledWith(500);
         expect(mockResponse.json).toHaveBeenCalledWith({
-            error: 'Failed to create prospecting job.',
+            error: "Failed to create prospecting job.",
         });
     });
 });
