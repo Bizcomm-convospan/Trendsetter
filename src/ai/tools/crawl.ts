@@ -51,7 +51,7 @@ async function crawlPageAndGetText(url: string): Promise<string> {
 
 export const crawlUrlTool = ai.defineTool({
     name: 'crawlUrlForAnalysis',
-    description: 'Crawls the given URL and returns its main text content. Use this to get the content of a competitor page for analysis.',
+    description: 'Crawls the given URL and returns its main text content, stripped of HTML. Use this to get the content of a web page for analysis.',
     inputSchema: z.object({ url: z.string().url() }),
     outputSchema: z.string().describe('The clean, extracted text content of the page, stripped of HTML, scripts, and other boilerplate.'),
 }, async (input) => {

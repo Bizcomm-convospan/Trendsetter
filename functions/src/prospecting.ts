@@ -11,7 +11,7 @@
 
 import {ai} from './genkit';
 import {z} from 'zod';
-import { crawlUrlTool } from './tools/crawl';
+import { crawlPage } from './lib/crawl';
 import * as admin from 'firebase-admin';
 import { AutonomousProspectingOutputSchema, ExtractedProspectSchema, ExtractedProspect, AutonomousProspectingOutput } from './schemas/prospecting';
 
@@ -85,9 +85,12 @@ const autonomousProspectingFlow = ai.defineFlow(
   },
   async (input) => {
     const db = admin.firestore();
+    const MAX_INPUT_CHARACTERS = 16000;
 
-    // Step 1: Crawl the page to get clean text content using a tool.
-    const cleanText = await crawlUrlTool({ url: input.url });
+    // Step 1: Crawl the page to get clean text content using a helper function.
+    const rawText = await crawlPage(input.url);
+    const cleanText = rawText.substring(0, MAX_INPUT_CHARACTERS);
+    
     if (!cleanText) {
         throw new Error("Crawling failed to return content.");
     }
