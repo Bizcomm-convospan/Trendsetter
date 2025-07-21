@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -10,9 +11,9 @@ import { Loader2, Search, Target, FileSearch, BarChart, FlaskConical, CircleAler
 import { useToast } from '@/hooks/use-toast';
 import { type ActionResponse, handleCompetitorAnalysis } from '@/app/actions';
 import { type CompetitorAnalyzerOutput } from '@/ai/flows/competitor-analyzer-flow';
-import { Skeleton } from '../ui/skeleton';
-import { Badge } from '../ui/badge';
-import { Separator } from '../ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
