@@ -18,16 +18,16 @@ import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
-import { Skeleton } from '../ui/skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-import { Badge } from '../ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Progress } from '../ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendDiscoveryClient } from './TrendDiscoveryClient';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import { Textarea } from '../ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Article {
   id: string;
@@ -241,7 +241,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
       setHeadlineResults(null);
       setSelectedArticleForHeadlines(null);
     }
-  }
+  };
 
   const onGenerateHeadlines = (article: Article) => {
     setSelectedArticleForHeadlines(article);
@@ -266,274 +266,276 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   };
 
   return (
-    <Dialog open={isHeadlineDialogOpen} onOpenChange={onHeadlineDialogOpenChange}>
-      <TooltipProvider>
-      <div className="space-y-8">
-        {/* Trend Discovery is now the first step, integrated here */}
-        <TrendDiscoveryClient onSelectTrend={setTopic} />
-        
-        {/* Article Generation Card */}
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">Step 2: Generate a New Article</CardTitle>
-            <CardDescription>
-              Enter a topic or select one from the trends above. The AI will generate an SEO-optimized article, which will appear in your drafts below.
-            </CardDescription>
-          </CardHeader>
-          <form action={generateArticleAction}>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2 space-y-2">
-                  <Label htmlFor="topic" className="font-semibold">Topic or Keyword</Label>
-                  <Input
-                    id="topic"
-                    name="topic"
-                    placeholder="e.g., 'The future of AI in marketing' or 'sustainable energy innovations'"
-                    required
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
-                    disabled={isGenerating}
-                  />
-                  {generateState?.validationErrors?.topic && (
-                      <p className="text-sm text-destructive mt-2">{generateState.validationErrors.topic.join(', ')}</p>
-                    )}
+    <>
+      <Dialog open={isHeadlineDialogOpen} onOpenChange={onHeadlineDialogOpenChange}>
+        <TooltipProvider>
+        <div className="space-y-8">
+          {/* Trend Discovery is now the first step, integrated here */}
+          <TrendDiscoveryClient onSelectTrend={setTopic} />
+          
+          {/* Article Generation Card */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold">Step 2: Generate a New Article</CardTitle>
+              <CardDescription>
+                Enter a topic or select one from the trends above. The AI will generate an SEO-optimized article, which will appear in your drafts below.
+              </CardDescription>
+            </CardHeader>
+            <form action={generateArticleAction}>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-2 space-y-2">
+                    <Label htmlFor="topic" className="font-semibold">Topic or Keyword</Label>
+                    <Input
+                      id="topic"
+                      name="topic"
+                      placeholder="e.g., 'The future of AI in marketing' or 'sustainable energy innovations'"
+                      required
+                      value={topic}
+                      onChange={(e) => setTopic(e.target.value)}
+                      disabled={isGenerating}
+                    />
+                    {generateState?.validationErrors?.topic && (
+                        <p className="text-sm text-destructive mt-2">{generateState.validationErrors.topic.join(', ')}</p>
+                      )}
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="language" className="font-semibold">Language</Label>
+                      <Select name="language" defaultValue="en" disabled={isGenerating}>
+                          <SelectTrigger id="language">
+                              <SelectValue placeholder="Select a language" />
+                          </SelectTrigger>
+                          <SelectContent>
+                              <SelectItem value="en">English</SelectItem>
+                              <SelectItem value="es">Spanish</SelectItem>
+                              <SelectItem value="fr">French</SelectItem>
+                              <SelectItem value="de">German</SelectItem>
+                              <SelectItem value="it">Italian</SelectItem>
+                          </SelectContent>
+                      </Select>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="language" className="font-semibold">Language</Label>
-                    <Select name="language" defaultValue="en" disabled={isGenerating}>
-                        <SelectTrigger id="language">
-                            <SelectValue placeholder="Select a language" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="en">English</SelectItem>
-                            <SelectItem value="es">Spanish</SelectItem>
-                            <SelectItem value="fr">French</SelectItem>
-                            <SelectItem value="de">German</SelectItem>
-                            <SelectItem value="it">Italian</SelectItem>
-                        </SelectContent>
-                    </Select>
+              </CardContent>
+              <CardFooter className="border-t pt-6">
+                <GenerateArticleButton />
+              </CardFooter>
+            </form>
+          </Card>
+
+          {/* Drafts Card */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><UploadCloud className="text-primary"/>Step 3: Refine & Publish Drafts</CardTitle>
+              <CardDescription>These articles are generated and waiting to be published to your website. Use the action buttons to improve them before sending.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Article</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <>
+                      <ArticleRowSkeleton />
+                      <ArticleRowSkeleton />
+                    </>
+                  ) : draftArticles.length > 0 ? (
+                    draftArticles.map(article => (
+                      <TableRow key={article.id}>
+                        <TableCell className="font-medium text-foreground flex items-center gap-4">
+                          {article.featuredImageUrl ? (
+                            <Image src={article.featuredImageUrl} alt={`Featured image for ${article.title}`} width={64} height={64} className="rounded-md aspect-square object-cover" />
+                          ) : (
+                            <div className="w-16 h-16 bg-muted rounded-md flex items-center justify-center text-muted-foreground">
+                              <ImageIcon className="h-6 w-6"/>
+                            </div>
+                          )}
+                          <span>{article.title}</span>
+                        </TableCell>
+                        <TableCell>{article.createdAt ? format(article.createdAt.toDate(), 'PP') : 'N/A'}</TableCell>
+                        <TableCell className="text-right space-x-1">
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => onGenerateImage(article)}
+                                  disabled={generatingImageId === article.id}
+                                  >
+                                  <span className="sr-only">Generate Image</span>
+                                  {generatingImageId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Generate Featured Image</p></TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="outline" size="icon" onClick={() => onGenerateHeadlines(article)}>
+                                      <span className="sr-only">Optimize Headlines</span>
+                                      <Lightbulb className="h-4 w-4" />
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Optimize Headlines</p></TooltipContent>
+                          </Tooltip>
+                           <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="outline" size="icon" onClick={() => onGenerateSocial(article)}>
+                                      <span className="sr-only">Generate Social Posts</span>
+                                      <MessageSquare className="h-4 w-4" />
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Generate Social Posts</p></TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="outline" size="icon" onClick={() => handleHumanizeClick(article.content)}>
+                                  <span className="sr-only">Humanize Content</span>
+                                  <Wand2 className="h-4 w-4" />
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Rewrite with AI Humanizer</p></TooltipContent>
+                          </Tooltip>
+                           <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button
+                                  size="icon"
+                                  onClick={() => handlePublish(article.id)}
+                                  disabled={publishingId === article.id}
+                                  >
+                                  <span className="sr-only">Publish to WordPress</span>
+                                  {publishingId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Publish to WordPress</p></TooltipContent>
+                          </Tooltip>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">No drafts found. Generate an article to get started.</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+          
+          {/* Published Articles Card */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><FileCheck2 className="text-green-600"/>Published Articles Log</CardTitle>
+              <CardDescription>A log of all articles successfully published to your website via the integrated webhook.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Published</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <>
+                      <ArticleRowSkeleton />
+                    </>
+                  ) : publishedArticles.length > 0 ? (
+                    publishedArticles.map(article => (
+                      <TableRow key={article.id}>
+                        <TableCell className="font-medium">{article.title}</TableCell>
+                        <TableCell><Badge variant="outline" className="text-green-600 border-green-500 bg-green-50 dark:bg-green-900/20">Published</Badge></TableCell>
+                        <TableCell className="text-right">{article.publishedAt ? format(article.publishedAt.toDate(), 'PPp') : 'N/A'}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">No articles have been published yet.</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+           <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="text-primary"/>
+                WordPress Integration Status
+              </CardTitle>
+              <CardDescription>
+                This module manages publishing content to your WordPress site. Status is based on your environment configuration.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-2">
+              <div className="flex items-start gap-4 rounded-lg border p-4">
+                <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold">Webhook URL</h3>
+                  <p className="text-sm text-muted-foreground">
+                    The application is ready to send data to the URL configured in your <code>.env</code> file (<code>WP_WEBHOOK_URL</code>).
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 rounded-lg border p-4">
+                <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold">Authentication Token</h3>
+                  <p className="text-sm text-muted-foreground">
+                    A security token is correctly sent in the <code>x-ai-token</code> header, based on your <code>.env</code> file (<code>WP_WEBHOOK_TOKEN</code>).
+                  </p>
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="border-t pt-6">
-              <GenerateArticleButton />
+            <CardFooter>
+                <p className="text-xs text-muted-foreground">
+                    If publishing fails, ensure the URL is correct (e.g., using a valid ngrok link for local testing) and the token matches your WordPress plugin's settings.
+                </p>
             </CardFooter>
-          </form>
-        </Card>
-
-        {/* Drafts Card */}
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><UploadCloud className="text-primary"/>Step 3: Refine & Publish Drafts</CardTitle>
-            <CardDescription>These articles are generated and waiting to be published to your website. Use the action buttons to improve them before sending.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Article</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <>
-                    <ArticleRowSkeleton />
-                    <ArticleRowSkeleton />
-                  </>
-                ) : draftArticles.length > 0 ? (
-                  draftArticles.map(article => (
-                    <TableRow key={article.id}>
-                      <TableCell className="font-medium text-foreground flex items-center gap-4">
-                        {article.featuredImageUrl ? (
-                          <Image src={article.featuredImageUrl} alt={`Featured image for ${article.title}`} width={64} height={64} className="rounded-md aspect-square object-cover" />
-                        ) : (
-                          <div className="w-16 h-16 bg-muted rounded-md flex items-center justify-center text-muted-foreground">
-                            <ImageIcon className="h-6 w-6"/>
-                          </div>
-                        )}
-                        <span>{article.title}</span>
-                      </TableCell>
-                      <TableCell>{article.createdAt ? format(article.createdAt.toDate(), 'PP') : 'N/A'}</TableCell>
-                      <TableCell className="text-right space-x-1">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => onGenerateImage(article)}
-                                disabled={generatingImageId === article.id}
-                                >
-                                <span className="sr-only">Generate Image</span>
-                                {generatingImageId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Generate Featured Image</p></TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="outline" size="icon" onClick={() => onGenerateHeadlines(article)}>
-                                    <span className="sr-only">Optimize Headlines</span>
-                                    <Lightbulb className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Optimize Headlines</p></TooltipContent>
-                        </Tooltip>
-                         <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="outline" size="icon" onClick={() => onGenerateSocial(article)}>
-                                    <span className="sr-only">Generate Social Posts</span>
-                                    <MessageSquare className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Generate Social Posts</p></TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="outline" size="icon" onClick={() => handleHumanizeClick(article.content)}>
-                                <span className="sr-only">Humanize Content</span>
-                                <Wand2 className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Rewrite with AI Humanizer</p></TooltipContent>
-                        </Tooltip>
-                         <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                size="icon"
-                                onClick={() => handlePublish(article.id)}
-                                disabled={publishingId === article.id}
-                                >
-                                <span className="sr-only">Publish</span>
-                                {publishingId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Publish to WordPress</p></TooltipContent>
-                        </Tooltip>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">No drafts found. Generate an article to get started.</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-        
-        {/* Published Articles Card */}
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><FileCheck2 className="text-green-600"/>Published Articles Log</CardTitle>
-            <CardDescription>A log of all articles successfully published to your website via the integrated webhook.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Published</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <>
-                    <ArticleRowSkeleton />
-                  </>
-                ) : publishedArticles.length > 0 ? (
-                  publishedArticles.map(article => (
-                    <TableRow key={article.id}>
-                      <TableCell className="font-medium">{article.title}</TableCell>
-                      <TableCell><Badge variant="outline" className="text-green-600 border-green-500 bg-green-50 dark:bg-green-900/20">Published</Badge></TableCell>
-                      <TableCell className="text-right">{article.publishedAt ? format(article.publishedAt.toDate(), 'PPp') : 'N/A'}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">No articles have been published yet.</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-         <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="text-primary"/>
-              WordPress Integration Status
-            </CardTitle>
-            <CardDescription>
-              This module manages publishing content to your WordPress site. Status is based on your environment configuration.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <div className="flex items-start gap-4 rounded-lg border p-4">
-              <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold">Webhook URL</h3>
-                <p className="text-sm text-muted-foreground">
-                  The application is ready to send data to the URL configured in your <code>.env</code> file (<code>WP_WEBHOOK_URL</code>).
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 rounded-lg border p-4">
-              <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold">Authentication Token</h3>
-                <p className="text-sm text-muted-foreground">
-                  A security token is correctly sent in the <code>x-ai-token</code> header, based on your <code>.env</code> file (<code>WP_WEBHOOK_TOKEN</code>).
-                </p>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-              <p className="text-xs text-muted-foreground">
-                  If publishing fails, ensure the URL is correct (e.g., using a valid ngrok link for local testing) and the token matches your WordPress plugin's settings.
-              </p>
-          </CardFooter>
-        </Card>
-      </div>
-      <SocialMediaDialog article={selectedArticleForSocial} open={isSocialDialogOpen} onOpenChange={setIsSocialDialogOpen} />
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>Headline Optimizer</DialogTitle>
-           <DialogDescription>
-            {isGeneratingHeadlines
-              ? "The AI is brainstorming compelling headlines for your article..."
-              : `Showing ${headlineResults?.headlines.length || 0} headline ideas for: "${selectedArticleForHeadlines?.title}"`}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="py-4">
-          {isGeneratingHeadlines && (
-             <div className="flex items-center justify-center p-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-             </div>
-          )}
-          {headlineResults && (
-            <div className="space-y-4">
-              {headlineResults.headlines.map((item, index) => (
-                <div key={index} className="p-4 border rounded-lg space-y-2">
-                  <p className="text-lg font-semibold text-foreground">{item.headline}</p>
-                  <div className="flex items-center justify-between text-sm">
-                    <Badge variant="outline">{item.angle}</Badge>
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor={`score-${index}`} className="text-muted-foreground">Click-Through Score:</Label>
-                      <Progress id={`score-${index}`} value={item.clickThroughScore} className="w-24 h-2" />
-                      <span className="font-semibold">{item.clickThroughScore}</span>
+          </Card>
+        </div>
+        <SocialMediaDialog article={selectedArticleForSocial} open={isSocialDialogOpen} onOpenChange={setIsSocialDialogOpen} />
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Headline Optimizer</DialogTitle>
+             <DialogDescription>
+              {isGeneratingHeadlines
+                ? "The AI is brainstorming compelling headlines for your article..."
+                : `Showing ${headlineResults?.headlines.length || 0} headline ideas for: "${selectedArticleForHeadlines?.title}"`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {isGeneratingHeadlines && (
+               <div className="flex items-center justify-center p-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+               </div>
+            )}
+            {headlineResults && (
+              <div className="space-y-4">
+                {headlineResults.headlines.map((item, index) => (
+                  <div key={index} className="p-4 border rounded-lg space-y-2">
+                    <p className="text-lg font-semibold text-foreground">{item.headline}</p>
+                    <div className="flex items-center justify-between text-sm">
+                      <Badge variant="outline">{item.angle}</Badge>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor={`score-${index}`} className="text-muted-foreground">Click-Through Score:</Label>
+                        <Progress id={`score-${index}`} value={item.clickThroughScore} className="w-24 h-2" />
+                        <span className="font-semibold">{item.clickThroughScore}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </DialogContent>
-      </TooltipProvider>
-    </Dialog>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+        </TooltipProvider>
+      </Dialog>
+    </>
   );
 }
