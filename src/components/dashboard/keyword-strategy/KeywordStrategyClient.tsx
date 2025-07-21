@@ -12,9 +12,9 @@ import { Loader2, Key, Lightbulb, UserCheck, Search, HelpCircle } from 'lucide-r
 import { useToast } from '@/hooks/use-toast';
 import { type ActionResponse, handleKeywordStrategy } from '@/app/actions';
 import { type KeywordStrategyOutput } from '@/ai/flows/keyword-strategy-flow';
-import { Skeleton } from '../ui/skeleton';
-import { Badge } from '../ui/badge';
-import { Separator } from '../ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
