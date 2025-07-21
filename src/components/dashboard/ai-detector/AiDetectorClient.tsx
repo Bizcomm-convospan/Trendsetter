@@ -34,6 +34,19 @@ export function AiDetectorClient() {
   const [isAnalyzing, startTransition] = useTransition();
   const [state, setState] = useState<ActionResponse<AiDetectorOutput>>({});
 
+  useEffect(() => {
+    // This logic must be in useEffect to avoid hydration errors
+    try {
+      const initialContent = localStorage.getItem('humanizer-initial-content');
+      if (initialContent) {
+        setContent(initialContent);
+        localStorage.removeItem('humanizer-initial-content'); // Clean up
+      }
+    } catch (error) {
+        console.error("Could not access localStorage:", error);
+    }
+  }, []);
+
   const formAction = (formData: FormData) => {
     setState({}); // Clear previous results
     startTransition(async () => {
