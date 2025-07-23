@@ -1,6 +1,7 @@
 
 import { onRequest } from "firebase-functions/v2/onRequest";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { autonomousProspecting, AutonomousProspectingInput } from "./prospecting";
@@ -246,5 +247,54 @@ export const analyze = onRequest({ cors: true }, async (request, response) => {
   } catch (e: any) {
     logger.error(`Error during competitor analysis for ${url}`, e);
     response.status(500).json({ error: `Failed to analyze competitor: ${e.message}` });
+  }
+});
+
+
+/**
+ * A scheduled function that runs periodically to find and fail stale jobs.
+ * This acts as a safety net for jobs that might get stuck in a 'processing' state
+ * due to function timeouts or unexpected errors.
+ */
+export const monitorStaleJobs = onSchedule("every 15 minutes", async () => {
+  logger.info("Running scheduled job monitor for stale 'processing' jobs.");
+
+  const STALE_TIMEOUT_MINUTES = 10;
+  const timeout = new Date(Date.now() - STALE_TIMEOUT_MINUTES * 60 * 1000);
+
+  const staleJobsQuery = db.collection('prospecting_jobs')
+    .where('status', '==', 'processing')
+    .where('updatedAt', '<=', admin.firestore.Timestamp.fromDate(timeout));
+
+  try {
+    const staleJobsSnapshot = await staleJobsQuery.get();
+
+    if (staleJobsSnapshot.empty) {
+      logger.info("No stale jobs found.");
+      return;
+    }
+
+    const batch = db.batch();
+    let staleCount = 0;
+
+    staleJobsSnapshot.forEach(doc => {
+      staleCount++;
+      logger.warn(`Failing stale job ${doc.id} which was last updated at ${doc.data().updatedAt.toDate().toISOString()}`);
+      const jobRef = db.collection('prospecting_jobs').doc(doc.id);
+      batch.update(jobRef, {
+        status: 'failed',
+        error: `Processing timed out after ${STALE_TIMEOUT_MINUTES} minutes.`,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+    });
+
+    await batch.commit();
+    logger.info(`Successfully failed ${staleCount} stale jobs.`);
+
+  } catch (error: any) {
+    logger.error("Error while monitoring for stale jobs:", {
+      message: error.message,
+      stack: error.stack,
+    });
   }
 });

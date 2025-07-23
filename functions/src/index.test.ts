@@ -7,9 +7,13 @@ jest.mock('firebase-admin', () => ({
     doc: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     add: jest.fn(),
-    get: jest.fn().mockResolvedValue({ exists: false, size: 1 }), // Default: not rate-limited, no cache
+    get: jest.fn().mockResolvedValue({ exists: false, size: 1, empty: true, forEach: () => {} }), // Default: not rate-limited, no cache, no stale jobs
     update: jest.fn().mockResolvedValue(true),
     set: jest.fn().mockResolvedValue(true),
+    batch: () => ({
+        update: jest.fn(),
+        commit: jest.fn().mockResolvedValue(true),
+    }),
   })),
 }));
 
@@ -35,7 +39,7 @@ jest.mock('firebase-functions/logger', () => ({
 }));
 
 import * as admin from 'firebase-admin';
-import { onProspectingJobCreated, prospect, analyze } from './index';
+import { onProspectingJobCreated, prospect, analyze, monitorStaleJobs } from './index';
 import { autonomousProspecting } from './prospecting';
 import { analyzeCompetitor } from './competitor-analyzer';
 import type { Event } from 'firebase-functions/v2';
@@ -50,13 +54,16 @@ const mockDb = admin.firestore() as jest.Mocked<any>;
 (mockDb as any).Timestamp = {
   fromMillis: (ms: number) => ({
     toDate: () => new Date(ms)
+  }),
+  fromDate: (date: Date) => ({
+    toDate: () => date
   })
 }
 
 // Reset mocks before each test
 beforeEach(() => {
     jest.clearAllMocks();
-    (mockDb.get as jest.Mock).mockResolvedValue({ exists: false, size: 1 });
+    (mockDb.get as jest.Mock).mockResolvedValue({ exists: false, size: 1, empty: true, forEach: () => {} });
 });
 
 
@@ -354,5 +361,57 @@ describe('analyze HTTP Function', () => {
 
         expect(mockResponse.status).toHaveBeenCalledWith(500);
         expect(mockResponse.json).toHaveBeenCalledWith({ error: `Failed to analyze competitor: ${error.message}` });
+    });
+});
+
+describe('monitorStaleJobs Scheduled Function', () => {
+    
+    it('should not update any jobs if none are stale', async () => {
+        // The default mock for `get()` returns an empty snapshot, so this is covered.
+        await monitorStaleJobs({}); // Argument is an empty context object
+        expect(mockDb.collection('prospecting_jobs').where).toHaveBeenCalled();
+        expect(mockDb.batch().commit).not.toHaveBeenCalled();
+    });
+
+    it('should find and fail stale jobs', async () => {
+        const mockBatch = {
+            update: jest.fn(),
+            commit: jest.fn().mockResolvedValue(true),
+        };
+        (mockDb.batch as jest.Mock).mockReturnValue(mockBatch);
+        
+        const staleJobs = [
+            { id: 'stale-job-1', data: () => ({ updatedAt: { toDate: () => new Date(Date.now() - 20 * 60 * 1000) }}) },
+            { id: 'stale-job-2', data: () => ({ updatedAt: { toDate: () => new Date(Date.now() - 15 * 60 * 1000) }}) },
+        ];
+        
+        // Mock the query to return stale jobs
+        (mockDb.get as jest.Mock).mockResolvedValue({
+            empty: false,
+            forEach: (callback: (doc: any) => void) => staleJobs.forEach(callback),
+        });
+
+        await monitorStaleJobs({});
+
+        expect(mockBatch.update).toHaveBeenCalledTimes(2);
+        expect(mockBatch.update).toHaveBeenCalledWith(mockDb.doc('stale-job-1'), {
+            status: 'failed',
+            error: 'Processing timed out after 10 minutes.',
+            updatedAt: 'MOCK_TIMESTAMP',
+        });
+        expect(mockBatch.commit).toHaveBeenCalledTimes(1);
+    });
+
+    it('should log an error if the query fails', async () => {
+        const queryError = new Error("Firestore query failed");
+        (mockDb.get as jest.Mock).mockRejectedValue(queryError);
+        
+        await monitorStaleJobs({});
+        
+        expect(mockDb.batch().commit).not.toHaveBeenCalled();
+        expect(require('firebase-functions/logger').error).toHaveBeenCalledWith(
+            "Error while monitoring for stale jobs:",
+            expect.objectContaining({ message: "Firestore query failed" })
+        );
     });
 });
