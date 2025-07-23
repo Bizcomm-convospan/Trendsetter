@@ -31,10 +31,6 @@ import {
 } from '@/ai/flows/generate-headlines-flow';
 import { questionSpy, QuestionSpyOutput } from '@/ai/flows/question-spy-flow';
 import {
-  analyzeCompetitor,
-  CompetitorAnalyzerOutput,
-} from '@/ai/flows/competitor-analyzer-flow';
-import {
   generateImage,
   GenerateImageOutput
 } from '@/ai/flows/generate-image-flow';
@@ -475,7 +471,7 @@ export async function handleQuestionSpy(
 
 export async function handleCompetitorAnalysis(
   formData: FormData
-): Promise<ActionResponse<CompetitorAnalyzerOutput>> {
+): Promise<ActionResponse<any>> {
   const rawFormData = {
     url: formData.get('url') as string,
   };
@@ -488,38 +484,30 @@ export async function handleCompetitorAnalysis(
     };
   }
 
-  const flowName = 'competitorAnalyzerFlow';
-  const cacheKey = getCacheKey(flowName, validatedFields.data);
-  const cacheRef = adminDb.collection(CACHE_COLLECTION).doc(cacheKey);
-
   try {
-    // Check cache first
-    const cachedDoc = await cacheRef.get();
-    if (cachedDoc.exists) {
-      const data = cachedDoc.data();
-      if (data && data.expiresAt && isFuture(data.expiresAt.toDate())) {
-        console.log(`[Cache Hit] Returning cached result for ${flowName}`);
-        return { data: data.output as CompetitorAnalyzerOutput };
-      }
-    }
-    console.log(`[Cache Miss] Calling flow ${flowName}`);
+    // This server action now calls our own API route for analysis,
+    // which in turn calls the deployed Firebase Function.
+    const rootUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : 'http://localhost:3000';
+    
+    const apiRoute = new URL('/api/analyze', rootUrl);
 
-    // If not in cache, run the flow
-    const result = await analyzeCompetitor(validatedFields.data);
-
-    // Store result in cache
-    const expiresAt = addHours(new Date(), CACHE_DURATION_HOURS);
-    await cacheRef.set({
-      flowName,
-      input: validatedFields.data,
-      output: result,
-      createdAt: new Date(),
-      expiresAt,
+    const response = await fetch(apiRoute.toString(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: validatedFields.data.url }),
     });
 
-    return { data: result };
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to run competitor analysis.');
+    }
+
+    return { data: data };
   } catch (e: any) {
-    console.error('Error in Competitor Analyzer:', e);
+    console.error('Error in Competitor Analyzer action:', e);
     return { error: e.message || 'Failed to analyze competitor.' };
   }
 }

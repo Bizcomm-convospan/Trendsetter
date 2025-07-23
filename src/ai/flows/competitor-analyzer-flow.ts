@@ -1,24 +1,24 @@
+
 'use server';
 /**
- * @fileOverview An AI agent for analyzing a competitor's article.
- *
- * - analyzeCompetitor - A function that analyzes a competitor's URL.
- * - CompetitorAnalyzerInput - The input type for the function.
- * - CompetitorAnalyzerOutput - The return type for the function.
+ * @fileOverview This flow has been moved to the `functions` directory.
+ * @deprecated This file is no longer used and will be removed in a future update.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'zod';
-import { crawlUrlTool } from '../tools/crawl';
+import { z } from 'zod';
 
+// This file is intentionally left mostly blank as the flow now runs in the
+// backend Firebase Functions environment. Keeping the type definitions here
+// can be useful for the frontend if it needs to know about the shape of the data,
+// but the actual flow logic is gone from the Next.js environment.
 
-const CompetitorAnalyzerInputSchema = z.object({
+export const CompetitorAnalyzerInputSchema = z.object({
   url: z.string().url().describe('The URL of the competitor article to analyze.'),
 });
 export type CompetitorAnalyzerInput = z.infer<typeof CompetitorAnalyzerInputSchema>;
 
 
-const CompetitorAnalyzerOutputSchema = z.object({
+export const CompetitorAnalyzerOutputSchema = z.object({
   keyTopics: z.array(z.string()).describe("A list of the main topics and keywords the article is optimized for."),
   contentGrade: z.string().describe("An overall grade (A-F) for the content, assessing readability, structure, and SEO."),
   contentGaps: z.array(z.string()).describe("A list of related sub-topics the competitor failed to cover, representing content opportunities."),
@@ -27,52 +27,7 @@ const CompetitorAnalyzerOutputSchema = z.object({
 export type CompetitorAnalyzerOutput = z.infer<typeof CompetitorAnalyzerOutputSchema>;
 
 export async function analyzeCompetitor(input: CompetitorAnalyzerInput): Promise<CompetitorAnalyzerOutput> {
-  // This flow now demonstrates a case where functionality is deprecated pending migration.
-  throw new Error("The Competitor Analyzer has been temporarily disabled as part of an architectural refactor. Its crawling function has been integrated into the backend services.");
-  // To re-enable, this flow would need to be moved to the `/functions` directory to access the new integrated crawl tool.
+  // This function is now just a stub and should not be called directly from the frontend.
+  // The server action `handleCompetitorAnalysis` now calls the deployed Firebase Function.
+  throw new Error("The 'analyzeCompetitor' flow should not be called directly from the Next.js environment. Use the corresponding server action instead.");
 }
-
-// The rest of the file is kept for reference but is not currently reachable.
-
-const competitorAnalyzerPrompt = ai.definePrompt({
-  name: 'competitorAnalyzerPrompt',
-  input: { schema: z.object({ content: z.string() }) }, // Receives clean text content
-  output: { schema: CompetitorAnalyzerOutputSchema },
-  prompt: `
-    You are a world-class SEO analyst and content strategist. Your task is to analyze the following article text and create a "Competitor Report Card".
-
-    Analyze the text and provide the following report:
-    1.  **Key Topics**: What are the primary topics and keywords this article seems to be targeting?
-    2.  **Content Grade**: Give the article an overall grade from A to F, based on its readability and structure.
-    3.  **Content Gaps**: What related, important sub-topics did the author miss? Identify 3-5 opportunities to create a more comprehensive article.
-    4.  **Tone Analysis**: Describe the writing style and tone of the article.
-
-    Return the report in the specified JSON format.
-
-    Article Text to Analyze:
-    ---
-    {{{content}}}
-    ---
-  `,
-});
-
-
-const competitorAnalyzerFlow = ai.defineFlow(
-  {
-    name: 'competitorAnalyzerFlow',
-    inputSchema: CompetitorAnalyzerInputSchema,
-    outputSchema: CompetitorAnalyzerOutputSchema,
-  },
-  async (input) => {
-    // Step 1: Crawl the URL to get the clean text content using the tool.
-    const cleanContent = await crawlUrlTool(input);
-
-    if (!cleanContent) {
-      throw new Error("Failed to retrieve content from the URL.");
-    }
-
-    // Step 2: Pass the clean content to the analysis prompt.
-    const { output } = await competitorAnalyzerPrompt({ content: cleanContent });
-    return output!;
-  }
-);
