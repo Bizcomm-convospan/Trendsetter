@@ -1,10 +1,10 @@
 # Application Architecture
 
-This document outlines the architecture of the Trendsetter Pro application, which follows a modern, decoupled, three-tier architecture to enhance scalability, reliability, and security.
+This document outlines the architecture of the Trendsetter Pro application, which follows a modern, decoupled, two-tier architecture to enhance scalability, reliability, and security. The previous three-tier architecture involving a standalone crawler service has been simplified for better performance and easier maintenance.
 
-## The Three-Tier Architecture
+## The Two-Tier Architecture
 
-The application consists of three primary components that work together asynchronously.
+The application now consists of two primary components that work together asynchronously.
 
 ### 1. Frontend & API Gateway (The Next.js Application)
 
@@ -22,29 +22,18 @@ The application consists of three primary components that work together asynchro
 ### 2. Asynchronous Backend (Firebase Functions & Firestore)
 
 -   **Role:** An event-driven system for handling heavy, long-running background tasks like AI analysis and web crawling.
--   **Technology:** Firebase Functions (Node.js), Firestore, Genkit AI.
+-   **Technology:** Firebase Functions (Node.js), Firestore, Genkit AI, Playwright.
 -   **Key Features:**
     -   **Decoupled Functions:** The system uses two distinct, single-responsibility functions for prospecting:
         1.  **`prospect` (The Job Creator):** A lightweight HTTP-triggered function that receives a request from the API Gateway. Its only job is to create a "job" document in Firestore and **immediately** return a `jobId`. It does not wait for the long-running task to complete.
-        2.  **`onProspectingJobCreated` (The Background Worker):** A Firestore-triggered function that activates whenever a new job document is created. This "worker" is responsible for executing the entire long-running prospecting flow in the background (calling the crawler, running the Genkit AI flow, etc.).
+        2.  **`onProspectingJobCreated` (The Background Worker):** A Firestore-triggered function that activates whenever a new job document is created. This "worker" is responsible for executing the entire long-running prospecting flow in the background (calling the crawler tool, running the Genkit AI flow, etc.).
+    -   **Integrated Crawler Tool:** The web crawling logic, which uses Playwright, is now a **Genkit Tool** that runs directly within the Firebase Functions environment. This eliminates the need for a separate, standalone crawler service, reducing deployment complexity and removing a network hop. The browser instance is intelligently managed and reused across function invocations for optimal performance.
     -   **Firestore as a Job Queue:** The `prospecting_jobs` collection acts as a simple but effective job queue. The worker function updates the job's status (`queued`, `processing`, `complete`, `failed`) directly in its Firestore document. The frontend listens to these changes in real-time to display live progress updates.
-    -   **Webhook Notifications:** Upon successful job completion, the background worker can send a `POST` request to an optional `webhookUrl` (e.g., to a WordPress plugin), allowing for seamless integration with external systems.
 -   **Benefits:**
     -   **Responsiveness:** The user gets an immediate response with a `jobId`, dramatically improving the user experience.
     -   **Resilience:** If the heavy-lifting worker function fails, it doesn't affect the user-facing API. The job can be retried or marked as failed without the user's session timing out.
     -   **Scalability:** The system can handle a large influx of requests by queuing them in Firestore for the background workers to process at a controlled rate.
-
-### 3. Optimized Crawler Service
-
--   **Role:** A dedicated, standalone service for reliably and efficiently crawling websites.
--   **Technology:** Express.js, Playwright.
--   **Key Features:**
-    -   **Persistent Browser:** The service no longer launches a costly new browser for every request. Instead, it initializes a **single, persistent browser instance** on startup. New requests simply open a new page in the existing browser, which is dramatically faster and less resource-intensive.
-    -   **Content Extraction:** The service uses `node-html-parser` to strip away scripts, styles, and navigation, returning only the clean, main text content of the page. This reduces the amount of data sent to the AI, lowering costs and improving accuracy.
--   **Benefits:**
-    -   **Performance:** Crawl times are significantly reduced.
-    -   **Stability:** Enhanced error handling and timeouts mean that one problematic website won't bring down the entire service.
-    -   **Cost-Effectiveness:** Lower resource consumption and smaller AI payloads translate to lower hosting and API costs.
+    -   **Simplified Operations:** With one fewer service to deploy, manage, and monitor, the overall operational burden is significantly reduced.
 
 ## End-to-End Workflow: An Example
 
@@ -59,7 +48,7 @@ This is how the components work together to fulfill a user request:
 7.  **Background Worker:**
     *   Updates the job status in Firestore to `processing`.
     *   Calls the `autonomousProspecting` Genkit flow.
-    *   The Genkit flow invokes its `crawlUrl` tool, which makes an HTTP request to the **Optimized Crawler Service**.
-    *   The crawler returns clean text, which the AI flow analyzes to extract prospect data.
+    *   The Genkit flow invokes its integrated `crawlUrlTool`, which uses Playwright within the same function environment to crawl the URL and return clean text.
+    *   The AI flow analyzes the text to extract prospect data.
     *   The worker saves the results to the `prospects` collection and updates the job document's status to `complete`.
 8.  **User (Browser):** The listener sees the `complete` status in the jobs table, and the new data appears on the `/dashboard/prospects` page.

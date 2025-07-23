@@ -6,6 +6,11 @@ import * as admin from "firebase-admin";
 import { autonomousProspecting, AutonomousProspectingInput } from "./prospecting";
 import { z } from "zod";
 
+// Initialize the browser instance from the crawl tool when the function warms up.
+import { initializeBrowserOnColdStart } from './tools/crawl';
+initializeBrowserOnColdStart();
+
+
 admin.initializeApp();
 const db = admin.firestore();
 
@@ -123,6 +128,7 @@ export const onProspectingJobCreated = onDocumentCreated('prospecting_jobs/{jobI
         
         const input: AutonomousProspectingInput = { url, jobId };
         // This is a long-running process. The function will wait for it to complete.
+        // The autonomousProspecting flow now handles crawling internally via its tool.
         const output = await autonomousProspecting(input);
         
         if (webhookUrl) {
@@ -134,6 +140,8 @@ export const onProspectingJobCreated = onDocumentCreated('prospecting_jobs/{jobI
             logger.info(`Job ${jobId} has a webhook. Notifying ${webhookUrl}...`, { payload: webhookPayload });
             
             try {
+                // Using undici's fetch if available, otherwise global fetch
+                const fetch = global.fetch;
                 const webhookResponse = await fetch(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -164,7 +172,7 @@ export const onProspectingJobCreated = onDocumentCreated('prospecting_jobs/{jobI
         logger.info(`Prospecting job ${jobId} completed successfully.`);
 
     } catch(e: any) {
-        logger.error(`Prospecting job ${jobId} failed.`, { error: e.message });
+        logger.error(`Prospecting job ${jobId} failed.`, { error: e.message, stack: e.stack });
         await jobRef.update({
           status: 'failed',
           error: `Processing failed: ${e.message}`,

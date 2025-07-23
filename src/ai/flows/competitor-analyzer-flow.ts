@@ -27,8 +27,12 @@ const CompetitorAnalyzerOutputSchema = z.object({
 export type CompetitorAnalyzerOutput = z.infer<typeof CompetitorAnalyzerOutputSchema>;
 
 export async function analyzeCompetitor(input: CompetitorAnalyzerInput): Promise<CompetitorAnalyzerOutput> {
-  return competitorAnalyzerFlow(input);
+  // This flow now demonstrates a case where functionality is deprecated pending migration.
+  throw new Error("The Competitor Analyzer has been temporarily disabled as part of an architectural refactor. Its crawling function has been integrated into the backend services.");
+  // To re-enable, this flow would need to be moved to the `/functions` directory to access the new integrated crawl tool.
 }
+
+// The rest of the file is kept for reference but is not currently reachable.
 
 const competitorAnalyzerPrompt = ai.definePrompt({
   name: 'competitorAnalyzerPrompt',

@@ -1,8 +1,8 @@
 
 'use server';
 /**
- * @fileOverview An AI-powered agent designed to crawl a given URL, extract prospect information, save it to Firestore, and return the structured data.
- * This file uses a multi-agent approach, chaining two AI prompts for higher accuracy.
+ * @fileOverview An AI-powered agent designed to crawl a given URL, extract prospect information, and return structured data.
+ * This flow now uses an integrated Playwright tool for crawling.
  *
  * - autonomousProspecting - A function that handles the prospect extraction from a URL.
  * - AutonomousProspectingInput - The input type for the autonomousProspecting function.
@@ -11,9 +11,9 @@
 
 import {ai} from './genkit';
 import {z} from 'zod';
-import { crawlPage } from './lib/crawl';
 import * as admin from 'firebase-admin';
 import { AutonomousProspectingOutputSchema, ExtractedProspectSchema, ExtractedProspect, AutonomousProspectingOutput } from './schemas/prospecting';
+import { crawlUrlTool } from './tools/crawl';
 
 
 const AutonomousProspectingInputSchema = z.object({
@@ -82,14 +82,15 @@ const autonomousProspectingFlow = ai.defineFlow(
     name: 'autonomousProspectingFlow',
     inputSchema: AutonomousProspectingInputSchema,
     outputSchema: AutonomousProspectingOutputSchema,
+    // The flow now uses the integrated crawl tool.
+    tools: [crawlUrlTool]
   },
   async (input) => {
     const db = admin.firestore();
-    const MAX_INPUT_CHARACTERS = 16000;
 
-    // Step 1: Crawl the page to get clean text content using a helper function.
-    const rawText = await crawlPage(input.url);
-    const cleanText = rawText.substring(0, MAX_INPUT_CHARACTERS);
+    // Step 1: Crawl the page to get clean text content using the integrated tool.
+    console.log(`[Prospecting Flow] Starting crawl for job ${input.jobId}.`);
+    const cleanText = await crawlUrlTool({ url: input.url });
     
     if (!cleanText) {
         throw new Error("Crawling failed to return content.");
