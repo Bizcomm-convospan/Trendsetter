@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -278,7 +279,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
             <CardHeader>
               <CardTitle className="text-2xl font-bold">Step 2: Generate a New Article</CardTitle>
               <CardDescription>
-                Enter a topic or select one from the trends above. The AI will generate an SEO-optimized article, which will appear in your drafts below.
+                Enter a topic or select one from the trends above. The AI will generate a high-quality article aligned with Google's E-E-A-T and helpful content guidelines.
               </CardDescription>
             </CardHeader>
             <form action={generateArticleAction}>

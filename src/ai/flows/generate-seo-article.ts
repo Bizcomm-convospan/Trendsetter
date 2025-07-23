@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -45,7 +46,9 @@ const prompt = ai.definePrompt({
   name: 'generateSeoArticlePrompt',
   input: {schema: GenerateSeoArticleInputSchema},
   output: {schema: GenerateSeoArticleOutputSchema},
-  prompt: `You are an expert SEO content writer. Generate an SEO-optimized article about the following topic or keyword. The article should be 300-500 words.
+  prompt: `You are an expert SEO content writer and subject matter expert on the given topic.
+Your task is to generate a high-quality, helpful, and people-first article that aligns with Google's E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness) guidelines. The article should be 300-500 words.
+
 {{#if language}}
 The article must be written in the following language: {{{language}}}.
 {{/if}}
@@ -53,10 +56,10 @@ The article must be written in the following language: {{{language}}}.
 Topic/Keyword: {{{topic}}}
 
 The response must include:
-1.  A main title for the article.
-2.  The full article content in HTML format. Use appropriate tags like \`<p>\`, \`<h2>\`, \`<h3>\`, \`<ul>\`, \`<li>\`, and \`<strong>\`.
-3.  A suggested prompt for a featured image.
-4.  SEO metadata for both Yoast SEO and All in One SEO plugins. For each, provide a unique, optimized title (around 60 characters) and a meta description (around 155 characters).
+1.  A main title for the article that is engaging and informative.
+2.  The full article content in HTML format. The content should be well-structured, easy to read, and provide real value to the reader. Use appropriate tags like \`<p>\`, \`<h2>\`, \`<h3>\`, \`<ul>\`, \`<li>\`, and \`<strong>\`.
+3.  A suggested prompt for a featured image that visually represents the article's core theme.
+4.  SEO metadata for both Yoast SEO and All in One SEO plugins. For each, provide a unique, optimized title (around 60 characters) and a meta description (around 155 characters) that accurately reflects the content and encourages clicks.
 
 Return the entire response in the specified JSON format.
 `,
