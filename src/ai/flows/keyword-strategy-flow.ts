@@ -9,7 +9,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
+import { z } from 'genkit';
 
 const KeywordStrategyInputSchema = z.object({
   topic: z.string().describe('The core topic for which to generate a keyword strategy.'),

@@ -9,7 +9,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
+import { z } from 'genkit';
 
 const SocialMediaInputSchema = z.object({
   articleContent: z.string().min(100).describe('The full content of the article to generate social media posts from.'),

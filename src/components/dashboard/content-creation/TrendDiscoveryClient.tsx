@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, TrendingUp, BarChart3, FileText, BrainCircuit } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '../ui/skeleton';
 import { useRouter } from 'next/navigation';
 
 function SubmitButton({ pending }: { pending: boolean }) {
