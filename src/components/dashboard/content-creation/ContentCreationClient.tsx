@@ -21,7 +21,7 @@ import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendDiscoveryClient } from './TrendDiscoveryClient';
@@ -366,7 +366,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                                   onClick={() => onGenerateImage(article)}
                                   disabled={generatingImageId === article.id}
                                   >
-                                  <span className="sr-only">Generate Image</span>
+                                  <span className="sr-only">Generate Featured Image</span>
                                   {generatingImageId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
                                   </Button>
                               </TooltipTrigger>
@@ -393,7 +393,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                           <Tooltip>
                               <TooltipTrigger asChild>
                                   <Button variant="outline" size="icon" onClick={() => handleHumanizeClick(article.content)}>
-                                  <span className="sr-only">Humanize Content</span>
+                                  <span className="sr-only">Rewrite with AI Humanizer</span>
                                   <Wand2 className="h-4 w-4" />
                                   </Button>
                               </TooltipTrigger>
@@ -499,7 +499,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
             </CardFooter>
           </Card>
         </div>
-        <SocialMediaDialog article={selectedArticleForSocial} open={isSocialDialogOpen} onOpenChange={setIsSocialDialogOpen} />
+        </TooltipProvider>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Headline Optimizer</DialogTitle>
@@ -534,8 +534,8 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
             )}
           </div>
         </DialogContent>
-        </TooltipProvider>
       </Dialog>
+      <SocialMediaDialog article={selectedArticleForSocial} open={isSocialDialogOpen} onOpenChange={setIsSocialDialogOpen} />
     </>
   );
 }
