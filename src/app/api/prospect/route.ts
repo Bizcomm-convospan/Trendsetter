@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const functionUrl = process.env.PROSPECTING_FUNCTION_URL;
 
     if (!functionUrl || functionUrl.includes('your-firebase-cloud-function')) {
-        const errorMessage = "PROSPECTING_FUNCTION_URL environment variable is not set. Please configure it with your deployed Cloud Function URL in the .env file.";
+        const errorMessage = "The PROSPECTING_FUNCTION_URL environment variable is not set. Please configure it with your deployed Cloud Function URL in the .env file.";
         console.error(JSON.stringify({ message: errorMessage, ...logMetadata }));
         return NextResponse.json({ error: errorMessage }, { status: 500 });
     }

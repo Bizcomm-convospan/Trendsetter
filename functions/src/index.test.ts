@@ -84,7 +84,7 @@ describe('onProspectingJobCreated Cloud Function', () => {
   });
 
   it('should successfully process a valid job and call the webhook', async () => {
-    global.fetch = jest.fn().mockResolvedValue({ ok: true });
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, text: async () => '' });
     
     await onProspectingJobCreated(mockEvent);
 
