@@ -26,8 +26,6 @@ export function SidebarNav() {
     { href: '/dashboard/answer-the-ai', label: t('sidebar.answerTheAI'), icon: BrainCircuit },
     { href: '/dashboard/ai-detector', label: t('sidebar.aiDetector'), icon: ScanText },
     { href: '/dashboard/humanizer', label: t('sidebar.aiHumanizer'), icon: Wand2 },
-    { href: '/dashboard/prospecting', label: t('sidebar.prospecting'), icon: ClipboardCheck },
-    { href: '/dashboard/prospects', label: t('sidebar.viewProspects'), icon: UsersIcon },
     { href: '/dashboard/profile', label: t('sidebar.myProfile'), icon: User },
     { href: '/contact', label: 'Contact Us', icon: Mail },
   ];

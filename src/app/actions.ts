@@ -44,11 +44,6 @@ import {
   SocialMediaInput,
   SocialMediaOutput,
 } from '@/ai/flows/social-media-flow';
-import {
-  generateOutreachEmail,
-  EmailOutreachInput,
-  EmailOutreachOutput,
-} from '@/ai/flows/email-outreach-flow';
 import { z } from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -115,10 +110,6 @@ const CompetitorAnalyzerSchema = z.object({
   url: z.string().url('Please provide a valid URL.'),
 });
 
-const ProspectingJobSchema = z.object({
-  url: z.string().url('Please provide a valid URL.'),
-});
-
 const KeywordStrategySchema = z.object({
     topic: z.string().min(3, 'Topic must be at least 3 characters long.'),
 });
@@ -126,12 +117,6 @@ const KeywordStrategySchema = z.object({
 const SocialMediaSchema = z.object({
     articleTitle: z.string().min(3, 'Article title is required.'),
     articleContent: z.string().min(100, 'Article content must be at least 100 characters.'),
-});
-
-const EmailOutreachSchema = z.object({
-    prospectJson: z.string().min(10, "Prospect data is required."),
-    ourCompanyOffer: z.string().min(10, "Your company's offer is required."),
-    senderName: z.string().min(2, "Sender name is required."),
 });
 
 export interface ActionResponse<T> {
@@ -538,48 +523,6 @@ export async function handleGenerateImage(
   }
 }
 
-export async function handleProspectingJob(
-  formData: FormData
-): Promise<ActionResponse<{ jobId: string }>> {
-  const rawFormData = {
-    url: formData.get('url') as string,
-  };
-
-  const validatedFields = ProspectingJobSchema.safeParse(rawFormData);
-  if (!validatedFields.success) {
-    return {
-      validationErrors: validatedFields.error.flatten().fieldErrors,
-      error: 'Validation failed.',
-    };
-  }
-
-  try {
-    // This server action calls our own API route, acting as a secure gateway
-    const rootUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-      : 'http://localhost:3000';
-    
-    const apiRoute = new URL('/api/prospect', rootUrl);
-
-    const response = await fetch(apiRoute.toString(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: validatedFields.data.url }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to submit prospecting job.');
-    }
-
-    return { data: data };
-  } catch (e: any) {
-    console.error('Error submitting prospecting job:', e);
-    return { error: e.message || 'Failed to submit job.' };
-  }
-}
-
 export async function handleKeywordStrategy(
   formData: FormData
 ): Promise<ActionResponse<KeywordStrategyOutput>> {
@@ -626,36 +569,5 @@ export async function handleSocialMedia(
     } catch (e: any) {
         console.error('Error generating social media content:', e);
         return { error: e.message || 'Failed to generate social media content.' };
-    }
-}
-
-export async function handleEmailOutreach(
-    formData: FormData
-): Promise<ActionResponse<EmailOutreachOutput>> {
-    const rawFormData = {
-        prospectJson: formData.get('prospectJson') as string,
-        ourCompanyOffer: formData.get('ourCompanyOffer') as string,
-        senderName: formData.get('senderName') as string,
-    };
-    
-    const validatedFields = EmailOutreachSchema.safeParse(rawFormData);
-    if (!validatedFields.success) {
-        return {
-            validationErrors: validatedFields.error.flatten().fieldErrors,
-            error: 'Validation failed.',
-        };
-    }
-
-    try {
-        const input: EmailOutreachInput = {
-            prospect: JSON.parse(validatedFields.data.prospectJson),
-            ourCompanyOffer: validatedFields.data.ourCompanyOffer,
-            senderName: validatedFields.data.senderName,
-        };
-        const result = await generateOutreachEmail(input);
-        return { data: result };
-    } catch (e: any) {
-        console.error('Error generating outreach email:', e);
-        return { error: e.message || 'Failed to generate email.' };
     }
 }

@@ -35,13 +35,6 @@ const steps: WorkflowStep[] = [
     description: 'Generate, humanize, optimize headlines, and publish your SEO-ready article from one unified hub.',
     cta: 'Go to Creator Hub',
     href: '/dashboard/content-creation'
-  },
-  {
-    icon: <UsersIcon className="h-8 w-8 text-green-500" />,
-    title: 'Step 4: Prospect & Outreach',
-    description: 'Switch to sales mode. Extract company and contact data from any website to find new leads.',
-    cta: 'Find Prospects',
-    href: '/dashboard/prospecting'
   }
 ];
 
@@ -53,7 +46,7 @@ export function WorkflowGuide() {
         <CardDescription>Follow this workflow to get the most out of Trendsetter Pro's AI agents.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
           {steps.map((step, index) => (
             <div key={index} className="flex flex-col items-center rounded-lg border bg-card p-6 text-center transition-all hover:border-primary hover:shadow-lg">
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">

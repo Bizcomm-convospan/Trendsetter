@@ -36,13 +36,6 @@ const toolCards = [
     description: 'Analyze competitor articles to find content gaps and strategic opportunities.',
     cta: 'Analyze Competitors',
   },
-   {
-    href: '/dashboard/prospecting',
-    icon: Users,
-    title: 'Autonomous Prospecting',
-    description: 'Extract company and contact data from any website to find new sales leads.',
-    cta: 'Find Prospects',
-  },
   {
     href: '/dashboard/answer-the-ai',
     icon: BrainCircuit,
