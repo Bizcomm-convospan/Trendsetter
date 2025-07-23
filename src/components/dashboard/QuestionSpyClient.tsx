@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -36,35 +37,13 @@ export function QuestionSpyClient() {
   const [isSearching, startTransition] = useTransition();
 
   const formAction = (formData: FormData) => {
-    const topic = formData.get('topic') as string;
     setState({});
-
-    // Client-side cache check
-    try {
-      const cacheKey = `question-spy::${topic}`;
-      const cachedResult = sessionStorage.getItem(cacheKey);
-      if (cachedResult) {
-        console.log("Client cache hit for question spy");
-        setState({ data: JSON.parse(cachedResult) });
-        toast({ title: "Questions Found (from cache)!", description: "AI has finished searching for user questions." });
-        return;
-      }
-    } catch (e) {
-      console.error("Could not read from sessionStorage", e);
-    }
     
     startTransition(async () => {
       const result = await handleQuestionSpy(formData);
       setState(result);
       if (result.data) {
         toast({ title: "Questions Found!", description: "AI has finished searching for user questions." });
-        // Save to client cache
-        try {
-            const cacheKey = `question-spy::${topic}`;
-            sessionStorage.setItem(cacheKey, JSON.stringify(result.data));
-        } catch (e) {
-            console.error("Could not write to sessionStorage", e);
-        }
       } else if (result.error) {
         toast({ variant: 'destructive', title: "Error", description: result.error });
       }

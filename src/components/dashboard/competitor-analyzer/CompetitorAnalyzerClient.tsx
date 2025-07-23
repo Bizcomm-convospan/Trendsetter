@@ -31,35 +31,13 @@ export function CompetitorAnalyzerClient() {
   const [isAnalyzing, startTransition] = useTransition();
 
   const formAction = (formData: FormData) => {
-    const url = formData.get('url') as string;
     setState({});
-
-    // Client-side cache check
-    try {
-      const cacheKey = `competitor-analysis::${url}`;
-      const cachedResult = sessionStorage.getItem(cacheKey);
-      if (cachedResult) {
-        console.log("Client cache hit for competitor analysis");
-        setState({ data: JSON.parse(cachedResult) });
-        toast({ title: "Analysis Complete (from cache)!", description: "Competitor report card is ready." });
-        return; // Skip server action
-      }
-    } catch (e) {
-      console.error("Could not read from sessionStorage", e);
-    }
     
     startTransition(async () => {
       const result = await handleCompetitorAnalysis(formData);
       setState(result);
       if (result.data) {
         toast({ title: "Analysis Complete!", description: "Competitor report card is ready." });
-        // Also save to client cache
-        try {
-            const cacheKey = `competitor-analysis::${url}`;
-            sessionStorage.setItem(cacheKey, JSON.stringify(result.data));
-        } catch (e) {
-            console.error("Could not write to sessionStorage", e);
-        }
       } else if (result.error) {
         toast({ variant: 'destructive', title: "Analysis Failed", description: result.error });
       }
