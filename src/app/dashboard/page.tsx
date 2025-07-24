@@ -5,7 +5,7 @@ import { WorkflowGuide } from '@/components/dashboard/WorkflowGuide';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { MessageCircleQuestion, BrainCircuit, Wand2, ScanText, ArrowRight, Target, Key, TrendingUp } from 'lucide-react';
+import { MessageCircleQuestion, BrainCircuit, Wand2, ScanText, ArrowRight, Target, Key, TrendingUp, Search, FileSignature, BarChart2 } from 'lucide-react';
 
 const toolCards = [
   {
@@ -14,6 +14,7 @@ const toolCards = [
     title: 'Content Creation',
     description: 'Unified hub to discover trends, generate articles, and publish to your website.',
     cta: 'Start Creating',
+    group: 'creation'
   },
   {
     href: '/dashboard/performance',
@@ -21,6 +22,7 @@ const toolCards = [
     title: 'Content Performance',
     description: 'Track article performance and use the AI Audit to get actionable recommendations.',
     cta: 'Analyze Performance',
+    group: 'performance'
   },
   {
     href: '/dashboard/keyword-strategy',
@@ -28,6 +30,7 @@ const toolCards = [
     title: 'Keyword Strategy',
     description: 'Generate keyword clusters, long-tail variations, and related questions for any topic.',
     cta: 'Build Strategy',
+    group: 'research'
   },
   {
     href: '/dashboard/question-spy',
@@ -35,6 +38,7 @@ const toolCards = [
     title: 'Question Spy',
     description: 'Uncover the exact questions your audience is asking on Google and Reddit.',
     cta: 'Find Questions',
+    group: 'research'
   },
   {
     href: '/dashboard/competitor-analyzer',
@@ -42,6 +46,7 @@ const toolCards = [
     title: 'Competitor Analyzer',
     description: 'Analyze competitor articles to find content gaps and strategic opportunities.',
     cta: 'Analyze Competitors',
+    group: 'research'
   },
   {
     href: '/dashboard/answer-the-ai',
@@ -49,6 +54,7 @@ const toolCards = [
     title: 'Answer the AI',
     description: 'Turn any topic into a structured set of content angles for comprehensive articles.',
     cta: 'Get Angles',
+    group: 'research'
   },
   {
     href: '/dashboard/ai-detector',
@@ -56,6 +62,7 @@ const toolCards = [
     title: 'AI Detector',
     description: 'Analyze content for a "humanization score" and get suggestions for improvement.',
     cta: 'Analyze Content',
+    group: 'creation'
   },
   {
       href: '/dashboard/humanizer',
@@ -63,8 +70,15 @@ const toolCards = [
       title: 'AI Humanizer',
       description: 'Rewrite and transform existing text to sound more natural and engaging.',
       cta: 'Refine Content',
+      group: 'creation'
   }
 ];
+
+const groups = [
+    { id: 'research', title: 'Content Strategy & Research', icon: Search },
+    { id: 'creation', title: 'Content Creation & Refinement', icon: FileSignature },
+    { id: 'performance', title: 'Performance & Optimization', icon: BarChart2 }
+]
 
 
 export default function DashboardPage() {
@@ -79,35 +93,43 @@ export default function DashboardPage() {
 
       <WorkflowGuide />
 
-      <section>
+      <section className="space-y-8">
         <h2 className="text-2xl font-bold tracking-tight text-foreground mb-4">Your AI Agents</h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {toolCards.map((tool) => {
-            const Icon = tool.icon;
-            return (
-              <Card key={tool.title} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Icon className="h-6 w-6 text-primary" />
-                    {tool.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <CardDescription>{tool.description}</CardDescription>
-                </CardContent>
-                <CardFooter>
-                  <Button asChild variant="secondary" className="w-full">
-                    <Link href={tool.href}>
-                      {tool.cta}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
+        {groups.map(group => (
+            <div key={group.id} className="space-y-4">
+                <h3 className="text-xl font-semibold flex items-center gap-2 text-foreground/90">
+                    <group.icon className="h-6 w-6 text-primary"/>
+                    {group.title}
+                </h3>
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {toolCards.filter(tool => tool.group === group.id).map((tool) => {
+                        const Icon = tool.icon;
+                        return (
+                        <Card key={tool.title} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Icon className="h-6 w-6 text-primary" />
+                                {tool.title}
+                            </CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex-grow">
+                            <CardDescription>{tool.description}</CardDescription>
+                            </CardContent>
+                            <CardFooter>
+                            <Button asChild variant="secondary" className="w-full">
+                                <Link href={tool.href}>
+                                {tool.cta}
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                                </Link>
+                            </Button>
+                            </CardFooter>
+                        </Card>
+                        );
+                    })}
+                </div>
+            </div>
+        ))}
+        </section>
 
     </div>
   );
