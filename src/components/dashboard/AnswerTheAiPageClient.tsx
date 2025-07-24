@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -10,8 +11,7 @@ import { Loader2, Sparkles, BrainCircuit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { handleAnswerTheAIFromText, handleAnswerTheAI, handleDiscoverTrends, type ActionResponse } from '@/app/actions';
 import type { AnswerTheAIOutput } from '@/ai/flows/answer-the-ai-flow';
-import type { DiscoverTrendsOutput } from '@/ai/flows/discover-trends-flow';
-import { AnswerTheAiClient } from './AnswerTheAiClient';
+import { AnswerTheAiResult } from './AnswerTheAiResult';
 import { Skeleton } from '../ui/skeleton';
 
 function SubmitButton({ children, ...props }: { children: React.ReactNode } & React.ComponentProps<typeof Button>) {
@@ -155,7 +155,7 @@ export function AnswerTheAiPageClient() {
         </div>
       )}
 
-      {result && !isProcessing && <AnswerTheAiClient data={result} />}
+      {result && !isProcessing && <AnswerTheAiResult data={result} />}
 
     </div>
   );

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -5,7 +6,7 @@ import type { AnswerTheAIOutput } from "@/ai/flows/answer-the-ai-flow";
 import { Users, HelpCircle, Calendar, MapPin, Wrench, Sparkles } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
 
-interface AnswerTheAiClientProps {
+interface AnswerTheAiResultProps {
   data: AnswerTheAIOutput;
 }
 
@@ -19,7 +20,7 @@ const categoryInfo = {
 
 type CategoryKey = keyof typeof categoryInfo;
 
-export function AnswerTheAiClient({ data }: AnswerTheAiClientProps) {
+export function AnswerTheAiResult({ data }: AnswerTheAiResultProps) {
   return (
     <section className="animate-fadeIn">
       <Card className="shadow-lg">

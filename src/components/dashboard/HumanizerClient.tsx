@@ -13,7 +13,6 @@ import { Loader2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { ActionResponse } from '@/app/actions';
 import { handleGenerateHumanizedContent } from '@/app/actions';
-import type { HumanizedContentOutput } from '@/ai/flows/humanized-content';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -29,16 +28,7 @@ export function HumanizerClient() {
   const [result, setResult] = useState('');
   const [content, setContent] = useState('');
   const { toast } = useToast();
-
   const [isGenerating, startTransition] = useTransition();
-  const [state, setState] = useState<ActionResponse<HumanizedContentOutput>>({});
-  
-  const formAction = (formData: FormData) => {
-    startTransition(async () => {
-      const result = await handleGenerateHumanizedContent(formData);
-      setState(result);
-    });
-  };
 
   useEffect(() => {
     const initialContent = localStorage.getItem('humanizer-initial-content');
@@ -48,22 +38,25 @@ export function HumanizerClient() {
     }
   }, []);
 
-  useEffect(() => {
-    if (state?.data) {
-      setResult(state.data);
-      toast({
-        title: 'Content Generated!',
-        description: 'Your human-like article is ready.',
-      });
-    }
-    if (state?.error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error Generating Content',
-        description: state.error,
-      });
-    }
-  }, [state, toast]);
+  const formAction = (formData: FormData) => {
+    startTransition(async () => {
+      const response = await handleGenerateHumanizedContent(formData);
+      if (response.data) {
+        setResult(response.data);
+        toast({
+          title: 'Content Generated!',
+          description: 'Your human-like article is ready.',
+        });
+      }
+      if (response.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error Generating Content',
+          description: response.error,
+        });
+      }
+    });
+  };
 
   return (
     <div className="space-y-8">
@@ -86,10 +79,8 @@ export function HumanizerClient() {
                 rows={10}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
+                disabled={isGenerating}
               />
-              {state?.validationErrors?.contentToHumanize && (
-                <p className="text-sm text-destructive">{state.validationErrors.contentToHumanize.join(', ')}</p>
-              )}
             </div>
 
             <div className="space-y-3">
@@ -107,11 +98,11 @@ export function HumanizerClient() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="keyword">Keyword (Optional)</Label>
-                <Input id="keyword" name="keyword" placeholder="e.g., solar power" />
+                <Input id="keyword" name="keyword" placeholder="e.g., solar power" disabled={isGenerating}/>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="userInsight">Specific Insight (Optional)</Label>
-                <Input id="userInsight" name="userInsight" placeholder="e.g., Mention the impact on developing nations" />
+                <Input id="userInsight" name="userInsight" placeholder="e.g., Mention the impact on developing nations" disabled={isGenerating}/>
               </div>
             </div>
           </CardContent>

@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
+import { useFormStatus } from 'react-dom';
 import { handleDiscoverTrends, type ActionResponse } from '@/app/actions';
 import type { DiscoverTrendsOutput } from '@/ai/flows/discover-trends-flow';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 
-function SubmitButton({ pending }: { pending: boolean }) {
+function SubmitButton() {
+  const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full sm:w-auto bg-primary hover:bg-primary/90">
       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <TrendingUp className="mr-2 h-4 w-4" />}
@@ -155,7 +157,7 @@ export function TrendDiscoveryClient({ onSelectTopic }: { onSelectTopic: (topic:
             </div>
           </CardContent>
           <CardFooter className="border-t pt-6">
-            <SubmitButton pending={isDiscovering} />
+            <SubmitButton />
           </CardFooter>
         </form>
       </Card>
