@@ -2,8 +2,7 @@
 import { onRequest } from "firebase-functions/v2/onRequest";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { analyzeCompetitor, CompetitorAnalyzerInputSchema, CompetitorAnalyzerInput } from "./competitor-analyzer";
-import { z } from "zod";
+import { analyzeCompetitor, CompetitorAnalyzerInputSchema, CompetitorAnalyzerInput, CompetitorAnalyzerOutput } from "./competitor-analyzer";
 
 // Initialize the browser instance from the crawl tool when the function warms up.
 import { initializeBrowserOnColdStart } from './tools/crawl';
@@ -43,9 +42,9 @@ export const analyze = onRequest({ cors: true }, async (request, response) => {
   const { url } = input;
   const flowName = 'competitorAnalyzerFlow';
   
-
-  // Implement Firestore-based caching
-  const cacheKey = `${flowName}:${url}`;
+  // Use a hash of the URL as the document ID for a deterministic key.
+  const crypto = require('crypto');
+  const cacheKey = crypto.createHash('sha256').update(`${flowName}:${url}`).digest('hex');
   const cacheRef = db.collection('ai_cache').doc(cacheKey);
 
   try {
@@ -58,10 +57,11 @@ export const analyze = onRequest({ cors: true }, async (request, response) => {
         response.status(200).json(cacheData.output);
         return;
       }
+      logger.info(`[Cache Stale] Found expired cache for ${url}. Re-running flow.`);
     }
 
     logger.info(`[Cache Miss] Running competitor analysis for ${url}`);
-    const output = await analyzeCompetitor(input);
+    const output: CompetitorAnalyzerOutput = await analyzeCompetitor(input);
 
     // Store result in cache with a 24-hour expiration
     const expiresAt = new Date();
@@ -75,7 +75,7 @@ export const analyze = onRequest({ cors: true }, async (request, response) => {
     response.status(200).json(output);
 
   } catch (e: any) {
-    logger.error(`Error during competitor analysis for ${url}`, e);
+    logger.error(`Error during competitor analysis for ${url}`, { message: e.message, stack: e.stack });
     response.status(500).json({ error: `Failed to analyze competitor: ${e.message}` });
   }
 });

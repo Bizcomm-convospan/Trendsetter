@@ -41,7 +41,7 @@ async function initializeBrowser(): Promise<Browser> {
 
         return browser;
     } catch (error: any) {
-        logger.error('Failed to launch browser:', { error: error.message });
+        logger.error('Failed to launch browser:', { error: error.message, stack: error.stack });
         // If the browser fails to launch, subsequent calls will fail.
         // This error will be caught by the tool's execution logic.
         throw new Error('Failed to initialize Playwright browser.');
@@ -105,7 +105,7 @@ export const crawlUrlTool = ai.defineTool({
         
         return truncatedText;
     } catch (error: any) {
-        logger.error(`[Crawl Tool] Crawling error for ${input.url}:`, { message: error.message });
+        logger.error(`[Crawl Tool] Crawling error for ${input.url}:`, { message: error.message, stack: error.stack });
         throw new Error(`Failed to crawl or process the URL. Error: ${error.message}`);
     } finally {
         if (page) {

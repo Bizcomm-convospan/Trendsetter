@@ -59,6 +59,7 @@ import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { createHash } from 'crypto';
 import { addHours, isFuture } from 'date-fns';
+import { CompetitorAnalyzerOutput } from '@/ai/flows/competitor-analyzer-flow';
 
 // Helper for caching
 const CACHE_COLLECTION = 'ai_cache';
@@ -483,7 +484,7 @@ export async function handleQuestionSpy(
 
 export async function handleCompetitorAnalysis(
   formData: FormData
-): Promise<ActionResponse<any>> {
+): Promise<ActionResponse<CompetitorAnalyzerOutput>> {
   const rawFormData = {
     url: formData.get('url') as string,
   };
@@ -520,7 +521,7 @@ export async function handleCompetitorAnalysis(
     return { data: data };
   } catch (e: any) {
     console.error('Error in Competitor Analyzer action:', e);
-    return { error: e.message || 'Failed to analyze competitor.' };
+    return { error: `Error from analysis service: ${e.message}` };
   }
 }
 
