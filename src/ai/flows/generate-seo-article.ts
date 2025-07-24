@@ -3,6 +3,7 @@
 
 /**
  * @fileOverview A flow for generating SEO-optimized articles and saving them as drafts in Firestore.
+ * This flow is now optimized to generate headlines and social posts in a single call.
  *
  * - generateSeoArticle - A function that handles the generation of SEO-optimized articles.
  * - GenerateSeoArticleInput - The input type for the generateSeoArticle function.
@@ -27,6 +28,18 @@ const SeoMetaSchema = z.object({
   description: z.string().describe('An SEO-optimized meta description (around 155 characters).'),
 });
 
+const HeadlineSuggestionSchema = z.object({
+    headline: z.string().describe("The suggested headline text."),
+    angle: z.string().describe("The angle or type of the headline (e.g., 'How-To', 'Controversial', 'List-based')."),
+    clickThroughScore: z.number().min(0).max(100).describe("An AI-generated score from 0-100 indicating the headline's potential click-through rate."),
+});
+
+const SocialMediaPostSchema = z.object({
+  twitterThread: z.array(z.string()).describe('A thread of 2-3 tweets, each a maximum of 280 characters, including relevant hashtags.'),
+  linkedInPost: z.string().describe('A professional and engaging post for LinkedIn, including relevant hashtags.'),
+  facebookPost: z.string().describe('A more casual and engaging post for Facebook, including relevant hashtags and possibly a question to drive engagement.'),
+});
+
 const GenerateSeoArticleOutputSchema = z.object({
   title: z.string().describe('The main title of the article.'),
   content: z.string().describe('The SEO-optimized content of the article, in HTML format.'),
@@ -35,6 +48,8 @@ const GenerateSeoArticleOutputSchema = z.object({
     yoast: SeoMetaSchema.describe('SEO metadata for the Yoast SEO plugin.'),
     aioseo: SeoMetaSchema.describe('SEO metadata for the All in One SEO (AIOSEO) plugin.'),
   }).describe('SEO metadata for popular WordPress plugins.'),
+  headlineSuggestions: z.array(HeadlineSuggestionSchema).describe("A list of 5-7 suggested headlines for the article."),
+  socialMediaPosts: SocialMediaPostSchema.describe("A collection of social media posts tailored for different platforms."),
 });
 export type GenerateSeoArticleOutput = z.infer<typeof GenerateSeoArticleOutputSchema>;
 
@@ -46,20 +61,25 @@ const prompt = ai.definePrompt({
   name: 'generateSeoArticlePrompt',
   input: {schema: GenerateSeoArticleInputSchema},
   output: {schema: GenerateSeoArticleOutputSchema},
-  prompt: `You are an expert SEO content writer and subject matter expert on the given topic.
-Your task is to generate a high-quality, helpful, and people-first article that aligns with Google's E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness) guidelines. The article should be 300-500 words.
+  prompt: `You are an expert SEO content writer and social media manager.
+Your task is to generate a comprehensive content package based on the user's topic. This includes a high-quality article, metadata, an image prompt, headline ideas, and social media posts. The article should be 300-500 words and align with Google's E-E-A-T guidelines.
 
 {{#if language}}
-The article must be written in the following language: {{{language}}}.
+The entire output must be in the following language: {{{language}}}.
 {{/if}}
 
 Topic/Keyword: {{{topic}}}
 
-The response must include:
-1.  A main title for the article that is engaging and informative.
-2.  The full article content in HTML format. The content should be well-structured, easy to read, and provide real value to the reader. Use appropriate tags like \`<p>\`, \`<h2>\`, \`<h3>\`, \`<ul>\`, \`<li>\`, and \`<strong>\`.
-3.  A suggested prompt for a featured image that visually represents the article's core theme.
-4.  SEO metadata for both Yoast SEO and All in One SEO plugins. For each, provide a unique, optimized title (around 60 characters) and a meta description (around 155 characters) that accurately reflects the content and encourages clicks.
+The response must include all of the following:
+1.  **Article Title**: An engaging and informative main title for the article.
+2.  **Article Content**: The full article in well-structured HTML format (use <p>, <h2>, <h3>, <ul>, <li>, <strong>).
+3.  **Featured Image Prompt**: A descriptive prompt for an AI image generator to create a relevant featured image.
+4.  **SEO Metadata**: Unique, optimized titles (60 chars) and meta descriptions (155 chars) for both Yoast SEO and AIOSEO plugins.
+5.  **Headline Suggestions**: 5-7 varied and compelling headline ideas. For each, provide its 'angle' (e.g., "Listicle", "How-To") and a 'click-through score' (0-100).
+6.  **Social Media Posts**:
+    *   A 2-3 tweet Twitter thread.
+    *   A professional LinkedIn post.
+    *   An engaging Facebook post.
 
 Return the entire response in the specified JSON format.
 `,
@@ -81,7 +101,7 @@ const generateSeoArticleFlow = ai.defineFlow(
         createdAt: FieldValue.serverTimestamp(),
         topic: input.topic,
       });
-      console.log(`Article "${output.title}" saved as draft in Firestore.`);
+      console.log(`Article "${output.title}" and its assets were saved as a draft in Firestore.`);
     }
 
     return output!;

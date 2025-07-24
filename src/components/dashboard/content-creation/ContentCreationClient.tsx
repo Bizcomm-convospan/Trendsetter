@@ -30,15 +30,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-interface Article {
+interface Article extends GenerateSeoArticleOutput {
   id: string;
-  title: string;
-  content: string;
   status: 'draft' | 'published';
   createdAt: Timestamp;
   publishedAt?: Timestamp;
   topic: string;
-  featuredImagePrompt: string;
   featuredImageUrl?: string;
 }
 
@@ -70,6 +67,12 @@ function SocialMediaDialog({ article, open, onOpenChange }: { article: Article |
     useEffect(() => {
         if (open && article) {
             setResult({}); // Clear previous results when opening
+            // If social media posts are already generated, use them.
+            if (article.socialMediaPosts) {
+                setResult({ data: article.socialMediaPosts });
+                return;
+            }
+            // Otherwise, generate them on-demand.
             startGenerating(async () => {
                 const formData = new FormData();
                 formData.append('articleTitle', article.title);
@@ -246,8 +249,16 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
 
   const onGenerateHeadlines = (article: Article) => {
     setSelectedArticleForHeadlines(article);
-    setHeadlineResults(null);
+    setHeadlineResults(null); // Clear previous results
     setIsHeadlineDialogOpen(true);
+    
+    // If headlines were already generated, display them instantly.
+    if (article.headlineSuggestions) {
+      setHeadlineResults({ headlines: article.headlineSuggestions });
+      return;
+    }
+    
+    // Otherwise, generate them on-demand.
     startGeneratingHeadlines(async () => {
       const formData = new FormData();
       formData.append('articleContent', article.content);
