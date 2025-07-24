@@ -5,20 +5,27 @@ import { WorkflowGuide } from '@/components/dashboard/WorkflowGuide';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { MessageCircleQuestion, BrainCircuit, Wand2, ScanText, Users, ArrowRight, Target, Key } from 'lucide-react';
+import { MessageCircleQuestion, BrainCircuit, Wand2, ScanText, ArrowRight, Target, Key, TrendingUp } from 'lucide-react';
 
 const toolCards = [
   {
     href: '/dashboard/content-creation',
     icon: Wand2,
-    title: 'Content Creation Hub',
+    title: 'Content Creation',
     description: 'Unified hub to discover trends, generate articles, and publish to your website.',
     cta: 'Start Creating',
   },
   {
+    href: '/dashboard/performance',
+    icon: TrendingUp,
+    title: 'Content Performance',
+    description: 'Track article performance and use the AI Audit to get actionable recommendations.',
+    cta: 'Analyze Performance',
+  },
+  {
     href: '/dashboard/keyword-strategy',
     icon: Key,
-    title: 'Keyword Strategy Agent',
+    title: 'Keyword Strategy',
     description: 'Generate keyword clusters, long-tail variations, and related questions for any topic.',
     cta: 'Build Strategy',
   },
@@ -46,10 +53,17 @@ const toolCards = [
   {
     href: '/dashboard/ai-detector',
     icon: ScanText,
-    title: 'AI Detector & Humanizer',
-    description: 'Analyze content for a "humanization score" and rewrite text to sound natural.',
+    title: 'AI Detector',
+    description: 'Analyze content for a "humanization score" and get suggestions for improvement.',
     cta: 'Analyze Content',
   },
+  {
+      href: '/dashboard/humanizer',
+      icon: Wand2,
+      title: 'AI Humanizer',
+      description: 'Rewrite and transform existing text to sound more natural and engaging.',
+      cta: 'Refine Content',
+  }
 ];
 
 
@@ -67,7 +81,7 @@ export default function DashboardPage() {
 
       <section>
         <h2 className="text-2xl font-bold tracking-tight text-foreground mb-4">Your AI Agents</h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {toolCards.map((tool) => {
             const Icon = tool.icon;
             return (
