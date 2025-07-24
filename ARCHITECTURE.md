@@ -12,7 +12,7 @@ The application now consists of two primary components that work together asynch
 -   **Technology:** Next.js, React, Tailwind CSS, ShadCN UI.
 -   **Key Features:**
     -   **UI:** A comprehensive dashboard with specialized "AI Agent" modules for various tasks like content generation, trend discovery, and competitor analysis.
-    -   **`/api/analyze` (API Gateway):** Instead of calling backend functions directly from the frontend, the app uses local API routes that act as a **secure proxy**. The frontend component calls a server action, which in turn calls this API route. The route validates the request, logs it, and then forwards it to the deployed Firebase Function. This prevents the function's URL from being exposed on the client side.
+    -   **API Gateway (`/api/analyze`):** Instead of calling backend functions directly from the frontend, the app uses a local API route that acts as a **secure proxy**. The frontend component calls a Server Action, which in turn calls this API route. The route validates the request, logs it, and then forwards it to the deployed Firebase Function. This prevents the function's URL from being exposed on the client side.
 -   **Benefits:**
     -   **Security:** The actual backend function URLs and other sensitive details are never exposed to the client's browser.
     -   **Centralization:** The API Gateway is the perfect place to add future cross-cutting concerns like user authentication checks, rate limiting, or advanced logging without modifying the frontend client or the backend function.

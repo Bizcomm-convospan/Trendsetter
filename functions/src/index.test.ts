@@ -1,4 +1,3 @@
-
 // Mock dependencies before importing the functions
 jest.mock('firebase-admin', () => ({
   initializeApp: jest.fn(),
@@ -25,7 +24,7 @@ jest.mock('./competitor-analyzer', () => ({
         contentGaps: [],
         toneAnalysis: 'Test Tone'
     }),
-    CompetitorAnalyzerInputSchema: { parse: (x: any) => x } // Mock Zod schema for tests
+    CompetitorAnalyzerInputSchema: { safeParse: (x: any) => ({ success: true, data: x }) } // Mock Zod schema for tests
 }));
 
 jest.mock('firebase-functions/logger', () => ({
@@ -80,6 +79,10 @@ describe('analyze HTTP Function', () => {
     });
 
     it('should return 400 for invalid URL in request body', async () => {
+        // Mock Zod safeParse to fail
+        const { CompetitorAnalyzerInputSchema } = require('./competitor-analyzer');
+        CompetitorAnalyzerInputSchema.safeParse.mockReturnValueOnce({ success: false, error: { flatten: () => ({ fieldErrors: { url: ['Invalid URL'] } }) } });
+        
         mockRequest = { method: 'POST', body: { url: 'invalid' }};
         await analyze(mockRequest as Request, mockResponse as Response);
         expect(mockResponse.status).toHaveBeenCalledWith(400);

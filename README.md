@@ -23,8 +23,7 @@ This application requires several environment variables to connect to Firebase a
     ```
 2.  **Fill in the values in `.env`:**
     -   You will need to create a Firebase project and a service account. Detailed instructions are in the comments of the .env.example file.
-    -   Initially, you can leave `COMPETITOR_ANALYSIS_FUNCTION_URL` as its `http://localhost...` value for local testing.
-    -   The `CRAWLER_SERVICE_URL` and `PROSPECTING_FUNCTION_URL` are no longer needed and can be removed.
+    -   For local testing, you can set `COMPETITOR_ANALYSIS_FUNCTION_URL` to the local emulator URL that the `firebase emulators:start` command outputs.
 
 ### 3. Install Dependencies
 
