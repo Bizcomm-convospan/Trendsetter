@@ -1,10 +1,10 @@
 # Trendsetter Pro: AI-Powered Content & Sales Automation
 
-This is a comprehensive application built with Next.js, Firebase, and Genkit, providing a suite of specialized AI agents for content strategy, SEO, and sales prospecting.
+This is a comprehensive application built with Next.js, Firebase, and Genkit, providing a suite of specialized AI agents for content strategy and SEO.
 
 ## Architecture Overview
 
-The application uses a decoupled, three-tier architecture for scalability and resilience. For a detailed explanation of how the frontend and backend functions work together, please see the [ARCHITECTURE.md](ARCHITECTURE.md) file. The standalone crawler service has been deprecated and its functionality is now integrated directly into the Firebase Functions for improved performance and simpler deployment.
+The application uses a decoupled, two-tier architecture for scalability and resilience. For a detailed explanation of how the frontend and backend functions work together, please see the [ARCHITECTURE.md](ARCHITECTURE.md) file. The standalone crawler service has been deprecated and its functionality is now integrated directly into the Firebase Functions for improved performance and simpler deployment.
 
 ## Getting Started: Local Development
 
@@ -22,9 +22,9 @@ This application requires several environment variables to connect to Firebase a
     cp .env.example .env
     ```
 2.  **Fill in the values in `.env`:**
-    -   You will need to create a Firebase project and a service account. Detailed instructions are in the comments of the `.env.example` file.
-    -   Initially, you can leave `PROSPECTING_FUNCTION_URL` as its `http://localhost...` value for local testing.
-    -   The `CRAWLER_SERVICE_URL` is no longer needed and can be removed.
+    -   You will need to create a Firebase project and a service account. Detailed instructions are in the comments of the .env.example file.
+    -   Initially, you can leave `COMPETITOR_ANALYSIS_FUNCTION_URL` as its `http://localhost...` value for local testing.
+    -   The `CRAWLER_SERVICE_URL` and `PROSPECTING_FUNCTION_URL` are no longer needed and can be removed.
 
 ### 3. Install Dependencies
 
@@ -50,7 +50,7 @@ For the complete application to work locally, you need to run two separate servi
     # Make sure you are in the project's root directory
     firebase emulators:start --only functions,firestore
     ```
-    This starts a local emulation of Firebase Functions and Firestore. The `prospect` function will be available at a local URL shown in the terminal output (this is your `PROSPECTING_FUNCTION_URL` for local dev).
+    This starts a local emulation of Firebase Functions and Firestore. The `analyze` function will be available at a local URL shown in the terminal output (this is your `COMPETITOR_ANALYSIS_FUNCTION_URL` for local dev).
 
 ## Deployment
 
@@ -63,11 +63,11 @@ Deploying this application involves deploying the Firebase Functions and then de
     # From the project root directory
     firebase deploy --only functions
     ```
-2.  The deploy command will output the public URL for your `prospect` function. **Copy this URL.**
+2.  The deploy command will output the public URL for your `analyze` function. **Copy this URL.**
 
 ### Step 2: Deploy the Next.js App
 
-1.  **Update `.env`:** In your `.env` file, update `PROSPECTING_FUNCTION_URL` with the public URL of your `prospect` function from Step 1.
+1.  **Update `.env`:** In your `.env` file, update `COMPETITOR_ANALYSIS_FUNCTION_URL` with the public URL of your `analyze` function from Step 1.
 2.  **Build the Next.js App:**
     ```bash
     npm run build

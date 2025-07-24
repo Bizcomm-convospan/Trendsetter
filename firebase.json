@@ -6,18 +6,8 @@
       "codebase": "default",
       "runtime": "nodejs20",
       "https": [
-        "prospect",
         "analyze"
-      ],
-      "firestore": {
-        "document": "prospecting_jobs/{jobId}",
-        "event": "onDocumentCreated",
-        "entryPoint": "onProspectingJobCreated"
-      },
-      "schedule": {
-        "job": "monitorStaleJobs",
-        "schedule": "every 15 minutes"
-      }
+      ]
     }
   ],
   "firestore": {
