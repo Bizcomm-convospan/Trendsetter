@@ -45,6 +45,11 @@ import {
   SocialMediaOutput,
 } from '@/ai/flows/social-media-flow';
 import {
+  generateEmailOutreach,
+  EmailOutreachInput,
+  EmailOutreachOutput,
+} from '@/ai/flows/email-outreach-flow';
+import {
   analyzeContentPerformance,
   AnalyzePerformanceInput,
   AnalyzePerformanceOutput,
@@ -132,6 +137,13 @@ const AnalyzePerformanceSchema = z.object({
         ctr: z.number(),
         engagementRate: z.number(),
     }),
+});
+
+const EmailOutreachSchema = z.object({
+    recipientProfile: z.string().min(10, 'Recipient profile must be at least 10 characters long.'),
+    goal: z.string().min(10, 'Goal must be at least 10 characters long.'),
+    productInfo: z.string().min(20, 'Product info must be at least 20 characters long.'),
+    tone: z.enum(['formal', 'casual', 'enthusiastic', 'direct']).default('casual'),
 });
 
 export interface ActionResponse<T> {
@@ -586,6 +598,34 @@ export async function handleSocialMedia(
         return { error: e.message || 'Failed to generate social media content.' };
     }
 }
+
+export async function handleEmailOutreach(
+    formData: FormData
+): Promise<ActionResponse<EmailOutreachOutput>> {
+    const rawFormData = {
+        recipientProfile: formData.get('recipientProfile'),
+        goal: formData.get('goal'),
+        productInfo: formData.get('productInfo'),
+        tone: formData.get('tone'),
+    };
+
+    const validatedFields = EmailOutreachSchema.safeParse(rawFormData);
+    if (!validatedFields.success) {
+        return {
+            validationErrors: validatedFields.error.flatten().fieldErrors,
+            error: 'Validation failed.',
+        };
+    }
+
+    try {
+        const result = await generateEmailOutreach(validatedFields.data as EmailOutreachInput);
+        return { data: result };
+    } catch (e: any) {
+        console.error('Error generating email outreach sequence:', e);
+        return { error: e.message || 'Failed to generate email outreach sequence.' };
+    }
+}
+
 
 export async function handleAnalyzePerformance(
   input: AnalyzePerformanceInput
