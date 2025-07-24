@@ -10,7 +10,7 @@ const pricingPlans = [
   {
     id: 'basic',
     name: 'Basic',
-    price: '$29',
+    price: '$27.99',
     frequency: '/month',
     description: 'For individuals and small teams starting out.',
     features: [
