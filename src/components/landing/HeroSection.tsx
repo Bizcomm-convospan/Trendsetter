@@ -12,7 +12,7 @@ export function HeroSection() {
           Deploy a Self-Improving AI that Wins at <span className="text-primary">Content & SEO</span>
         </h1>
         <p className="max-w-[600px] text-lg text-muted-foreground sm:text-xl">
-         Go beyond basic generation. Trendsetter Pro uses a proprietary performance feedback loop, learning from your results to create content that ranks higher and converts better over time.
+         In an era of constant algorithm updates like Google's 'Muvera', Trendsetter Pro helps you dominate by using a proprietary performance feedback loop to create content that ranks higher and converts better over time.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Button asChild size="lg">

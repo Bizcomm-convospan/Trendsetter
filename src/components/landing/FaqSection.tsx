@@ -8,6 +8,10 @@ import {
 
 const faqItems = [
   {
+    question: "How does Trendsetter Pro adapt to Google's updates like the 'Muvera' algorithm?",
+    answer: "This is at the core of our strategy. Updates like 'Muvera' emphasize rich, multi-modal content. Trendsetter Pro directly addresses this by not only creating E-E-A-T aligned articles but also by enabling you to convert that text into engaging videos with a single click. By helping you build a library of both text and video content, we ensure your strategy is aligned with the future of search."
+  },
+  {
     question: "What makes Trendsetter Pro different from other AI writers?",
     answer: "Three things: 1) We focus on the entire content lifecycle, from trend discovery to performance analysis. 2) Our AI is trained to generate content aligned with Google's E-E-A-T guidelines for long-term SEO success. 3) Our core advantage is the 'Performance-Driven Content Loop'—the AI analyzes your content's results and gets smarter, providing recommendations to improve your strategy over time. This creates a competitive moat for your business."
   },
@@ -22,10 +26,6 @@ const faqItems = [
   {
     question: "How does the Competitor Analyzer work?",
     answer: "You provide the URL of a competitor's article, and our agent crawls the page, analyzes the content, and generates a 'report card.' This report includes key topics, a content grade, a summary of the article's tone, and, most importantly, a list of 'content gaps'—related sub-topics the competitor missed that you can use to create a more comprehensive article."
-  },
-  {
-    question: "What is the difference between the Basic and Pro plans?",
-    answer: "The Basic plan is great for individuals and small teams, offering a generous amount of credits for each tool. The Pro plan provides unlimited access to most of our agents, a higher limit for article generation, API access for custom integrations, and unlocks the full power of our performance-driven AI recommendations."
   },
   {
     question: "How do I publish content to my WordPress site?",
