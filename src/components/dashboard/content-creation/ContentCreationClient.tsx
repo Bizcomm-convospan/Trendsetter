@@ -297,8 +297,8 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
     } else {
         toast({ title: 'Video Generated!', description: 'A video has been created for your article.' });
     }
-    // Update local state even if Firestore update is slightly delayed
-    setDraftArticles(prev => prev.map(a => a.id === article.id ? { ...a, videoUrl: result.data?.videoUrl, isGeneratingVideo: false } : a));
+    // This state update is handled by the onSnapshot listener, but we can do it here for immediate UI feedback.
+    setDraftArticles(prev => prev.map(a => a.id === article.id ? { ...a, isGeneratingVideo: false } : a));
     setActiveActionId(null);
   };
 
@@ -449,10 +449,10 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                                   variant="outline"
                                   size="icon"
                                   onClick={() => onGenerateVideo(article)}
-                                  disabled={activeActionId === article.id}
+                                  disabled={activeActionId === article.id || article.isGeneratingVideo}
                                   >
                                   <span className="sr-only">Generate Video</span>
-                                  {activeActionId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
+                                  {activeActionId === article.id && article.isGeneratingVideo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
                                   </Button>
                               </TooltipTrigger>
                               <TooltipContent><p>Generate Video</p></TooltipContent>
@@ -463,7 +463,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                                   variant="outline"
                                   size="icon"
                                   onClick={() => onGenerateImage(article)}
-                                  disabled={activeActionId === article.id}
+                                  disabled={activeActionId === article.id || article.isGeneratingVideo}
                                   >
                                   <span className="sr-only">Generate Featured Image</span>
                                   {activeActionId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
@@ -473,7 +473,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                           </Tooltip>
                           <Tooltip>
                               <TooltipTrigger asChild>
-                                  <Button variant="outline" size="icon" onClick={() => onGenerateHeadlines(article)} disabled={activeActionId === article.id}>
+                                  <Button variant="outline" size="icon" onClick={() => onGenerateHeadlines(article)} disabled={activeActionId === article.id || article.isGeneratingVideo}>
                                       <span className="sr-only">Optimize Headlines</span>
                                       <Lightbulb className="h-4 w-4" />
                                   </Button>
@@ -482,7 +482,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                           </Tooltip>
                            <Tooltip>
                               <TooltipTrigger asChild>
-                                  <Button variant="outline" size="icon" onClick={() => onGenerateSocial(article)} disabled={activeActionId === article.id}>
+                                  <Button variant="outline" size="icon" onClick={() => onGenerateSocial(article)} disabled={activeActionId === article.id || article.isGeneratingVideo}>
                                       <span className="sr-only">Generate Social Posts</span>
                                       <MessageSquare className="h-4 w-4" />
                                   </Button>
@@ -491,7 +491,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                           </Tooltip>
                           <Tooltip>
                               <TooltipTrigger asChild>
-                                  <Button variant="outline" size="icon" onClick={() => handleHumanizeClick(article.content)} disabled={activeActionId === article.id}>
+                                  <Button variant="outline" size="icon" onClick={() => handleHumanizeClick(article.content)} disabled={activeActionId === article.id || article.isGeneratingVideo}>
                                   <span className="sr-only">Rewrite with AI Humanizer</span>
                                   <Wand2 className="h-4 w-4" />
                                   </Button>
@@ -503,7 +503,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                                   <Button
                                   size="icon"
                                   onClick={() => handlePublish(article.id)}
-                                  disabled={activeActionId === article.id}
+                                  disabled={activeActionId === article.id || article.isGeneratingVideo}
                                   >
                                   <span className="sr-only">Publish to WordPress</span>
                                   {activeActionId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
