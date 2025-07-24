@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -184,7 +185,6 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   const router = useRouter();
 
   const [topic, setTopic] = useState(initialTopic || '');
-  const [isGenerating, startGenerating] = useTransition();
   const [generateState, setGenerateState] = useState<ActionResponse<GenerateSeoArticleOutput>>({});
   
   const [draftArticles, setDraftArticles] = useState<Article[]>([]);
@@ -245,10 +245,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
 
   // Action for generating a new article
   const generateArticleAction = (formData: FormData) => {
-    startGenerating(async () => {
-      const result = await handleGenerateArticle(formData);
-      setGenerateState(result);
-    });
+    handleGenerateArticle(formData).then(setGenerateState);
   };
 
   useEffect(() => {
@@ -358,7 +355,6 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                       required
                       value={topic}
                       onChange={(e) => setTopic(e.target.value)}
-                      disabled={isGenerating}
                     />
                     {generateState?.validationErrors?.topic && (
                         <p className="text-sm text-destructive mt-2">{generateState.validationErrors.topic.join(', ')}</p>
@@ -366,7 +362,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                   </div>
                   <div className="space-y-2">
                       <Label htmlFor="language" className="font-semibold">Language</Label>
-                      <Select name="language" defaultValue="en" disabled={isGenerating}>
+                      <Select name="language" defaultValue="en">
                           <SelectTrigger id="language">
                               <SelectValue placeholder="Select a language" />
                           </SelectTrigger>
