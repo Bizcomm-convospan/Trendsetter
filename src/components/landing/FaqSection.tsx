@@ -1,3 +1,4 @@
+
 import {
   Accordion,
   AccordionContent,
@@ -7,8 +8,8 @@ import {
 
 const faqItems = [
   {
-    question: "What is Trendsetter Pro?",
-    answer: "Trendsetter Pro is an all-in-one platform that provides a suite of specialized AI agents designed to automate and supercharge your content strategy and SEO workflows. It helps you discover trends, analyze competitors, and generate high-quality content."
+    question: "What makes Trendsetter Pro different from other AI writers?",
+    answer: "Three things: 1) We focus on the entire content lifecycle, from trend discovery to performance analysis. 2) Our AI is trained to generate content aligned with Google's E-E-A-T guidelines for long-term SEO success. 3) Our core advantage is the 'Performance-Driven Content Loop'—the AI analyzes your content's results and gets smarter, providing recommendations to improve your strategy over time. This creates a competitive moat for your business."
   },
   {
     question: "How do the 'AI Agents' work?",
@@ -24,7 +25,7 @@ const faqItems = [
   },
   {
     question: "What is the difference between the Basic and Pro plans?",
-    answer: "The Basic plan is great for individuals and small teams, offering a generous amount of credits for each tool. The Pro plan provides unlimited access to most of our agents, a higher limit for article generation, and API access for custom integrations, making it ideal for professionals and businesses."
+    answer: "The Basic plan is great for individuals and small teams, offering a generous amount of credits for each tool. The Pro plan provides unlimited access to most of our agents, a higher limit for article generation, API access for custom integrations, and unlocks the full power of our performance-driven AI recommendations."
   },
   {
     question: "How do I publish content to my WordPress site?",

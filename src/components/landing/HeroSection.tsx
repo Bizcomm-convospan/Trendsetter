@@ -9,10 +9,10 @@ export function HeroSection() {
     <section className="container grid gap-12 lg:grid-cols-2 items-center py-12 md:py-20 lg:py-24">
       <div className="flex flex-col items-center text-center lg:items-start lg:text-left gap-6 lg:gap-8">
         <h1 className="text-4xl font-extrabold leading-tight tracking-tighter sm:text-5xl md:text-6xl text-foreground">
-          Unlock Agentic AI to Supercharge Your <span className="text-primary">Content & SEO</span>
+          Deploy a Self-Improving AI that Wins at <span className="text-primary">Content & SEO</span>
         </h1>
         <p className="max-w-[600px] text-lg text-muted-foreground sm:text-xl">
-          Deploy a team of specialized AI Agents to discover trends, create high-ranking content, and find your ideal customers. Trendsetter Pro is your all-in-one platform for agent-based marketing and sales automation.
+         Go beyond basic generation. Trendsetter Pro uses a proprietary performance feedback loop, learning from your results to create content that ranks higher and converts better over time.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Button asChild size="lg">
@@ -38,22 +38,22 @@ export function HeroSection() {
                     <li className="flex items-start">
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
-                            <span className="font-semibold text-foreground">Discover What Your Audience Wants:</span>
-                            <span className="text-muted-foreground"> Deploy our Trend and Question Spy agents to find hot topics and the exact questions people are asking.</span>
+                            <span className="font-semibold text-foreground">Create Content that Ranks:</span>
+                            <span className="text-muted-foreground"> Generate articles aligned with Google's core E-E-A-T principles for long-term SEO success.</span>
                         </div>
                     </li>
                     <li className="flex items-start">
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
                             <span className="font-semibold text-foreground">Outsmart Your Competition:</span>
-                            <span className="text-muted-foreground"> Use the Competitor Agent to find strategic gaps and generate superior content that ranks higher.</span>
+                            <span className="text-muted-foreground"> Use the Competitor Agent to find strategic gaps and generate superior content.</span>
                         </div>
                     </li>
-                    <li className="flex items-start">
+                     <li className="flex items-start">
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
-                            <span className="font-semibold text-foreground">Automate High-Quality Content:</span>
-                            <span className="text-muted-foreground"> Chain multiple AI agents to go from idea to a human-like, SEO-optimized article ready to publish.</span>
+                            <span className="font-semibold text-foreground">Close the Loop with Performance Data:</span>
+                            <span className="text-muted-foreground"> Our AI analyzes your content's performance to give you actionable advice, creating a feedback loop for continuous improvement.</span>
                         </div>
                     </li>
                 </ul>

@@ -1,6 +1,6 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Wand2, ScanText, FileText, UploadCloud, BarChart3, BrainCircuit, MessageCircleQuestion, Target } from 'lucide-react';
+import { Wand2, ScanText, FileText, UploadCloud, BarChart3, BrainCircuit, MessageCircleQuestion, Target, TrendingUp } from 'lucide-react';
 
 const features = [
   {
@@ -19,19 +19,19 @@ const features = [
     description: 'Analyze competitor articles to find content gaps and strategic opportunities to outperform them in search rankings.',
   },
   {
-    icon: <BrainCircuit className="mb-4 h-10 w-10 text-primary" />,
-    title: 'Content Angle Agent',
-    description: 'Go beyond keywords. Generate strategic content angles (Who, What, When, Where, How) to create comprehensive articles.',
-  },
-  {
     icon: <FileText className="mb-4 h-10 w-10 text-primary" />,
-    title: 'Content Generation Agent',
-    description: 'Craft engaging, SEO-friendly articles, complete with a Headline Optimizer to maximize click-through rates.',
+    title: 'E-E-A-T Content Agent',
+    description: 'Craft engaging articles aligned with Google\'s core principles for helpful content that ranks for the long term.',
   },
   {
     icon: <Wand2 className="mb-4 h-10 w-10 text-primary" />,
     title: 'AI Humanizer Agent',
     description: "Refine AI text to sound natural and analyze content for a 'humanization score' with improvement suggestions.",
+  },
+  {
+    icon: <TrendingUp className="mb-4 h-10 w-10 text-primary" />,
+    title: 'Performance Audit Agent',
+    description: 'Closes the loop by analyzing your content\'s performance data to provide actionable, AI-driven improvement suggestions.',
   },
 ];
 
