@@ -27,6 +27,9 @@ export function LandingHeader() {
           <Link href="/pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
             {t('nav.pricing')}
           </Link>
+           <Link href="/compare" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+            Compare
+          </Link>
           <Link href="/contact" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
             Contact
           </Link>
@@ -54,6 +57,9 @@ export function LandingHeader() {
                 </Link>
                 <Link href="/pricing" className="text-lg font-medium text-foreground transition-colors hover:text-primary">
                   {t('nav.pricing')}
+                </Link>
+                <Link href="/compare" className="text-lg font-medium text-foreground transition-colors hover:text-primary">
+                  Compare
                 </Link>
                 <Link href="/contact" className="text-lg font-medium text-foreground transition-colors hover:text-primary">
                   Contact
