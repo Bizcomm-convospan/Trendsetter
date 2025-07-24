@@ -1,6 +1,6 @@
 
-import { TrendDiscoveryClient } from '@/components/dashboard/TrendDiscoveryClient';
+import { TrendDiscoveryClient } from '@/components/dashboard/content-creation/TrendDiscoveryClient';
 
 export default function TrendDiscoveryPage() {
-  return <TrendDiscoveryClient />;
+  return <TrendDiscoveryClient onSelectTopic={() => {}} />;
 }

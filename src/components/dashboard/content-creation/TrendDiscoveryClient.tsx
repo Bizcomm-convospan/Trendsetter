@@ -25,7 +25,7 @@ function SubmitButton({ pending }: { pending: boolean }) {
   );
 }
 
-export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend: (topic: string) => void }) {
+export function TrendDiscoveryClient({ onSelectTopic }: { onSelectTopic: (topic: string) => void }) {
   const [trendsData, setTrendsData] = useState<DiscoverTrendsOutput | null>(null);
   const { toast } = useToast();
   const router = useRouter();
@@ -237,7 +237,7 @@ export function TrendDiscoveryClient({ onSelectTrend }: { onSelectTrend: (topic:
                             </div>
                         </TableCell>
                         <TableCell className="text-right">
-                            <Button variant="ghost" size="sm" onClick={() => onSelectTrend(trend.title)}>
+                            <Button variant="ghost" size="sm" onClick={() => onSelectTopic(trend.title)}>
                                 <FileText className="mr-2 h-4 w-4" />
                                 Use this Topic
                             </Button>
