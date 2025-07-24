@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -14,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook } from 'lucide-react';
+import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
@@ -127,6 +125,60 @@ function SocialMediaDialog({ article, open, onOpenChange }: { article: Article |
     )
 }
 
+function WordpressIntegrationStatus() {
+    const isUrlConfigured = process.env.NEXT_PUBLIC_WP_WEBHOOK_URL && !process.env.NEXT_PUBLIC_WP_WEBHOOK_URL.includes('your-ngrok-url');
+    const isTokenConfigured = process.env.NEXT_PUBLIC_WP_WEBHOOK_TOKEN && !process.env.NEXT_PUBLIC_WP_WEBHOOK_TOKEN.includes('your_secure_token_here');
+    const isConfigured = isUrlConfigured && isTokenConfigured;
+    
+    const StatusIcon = isConfigured ? CheckCircle : AlertTriangle;
+    const statusColor = isConfigured ? 'text-green-500' : 'text-amber-500';
+
+    return (
+         <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="text-primary"/>
+                WordPress Integration Status
+              </CardTitle>
+              <CardDescription>
+                This module manages publishing content to your WordPress site. Status is based on your environment configuration.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-2">
+              <div className="flex items-start gap-4 rounded-lg border p-4">
+                <StatusIcon className={`h-6 w-6 ${statusColor} mt-1 flex-shrink-0`} />
+                <div>
+                  <h3 className="font-semibold">Webhook URL</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {isUrlConfigured 
+                        ? "The application is ready to send data to your configured webhook URL." 
+                        : "The WP_WEBHOOK_URL is not configured in your .env file."
+                    }
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 rounded-lg border p-4">
+                <StatusIcon className={`h-6 w-6 ${statusColor} mt-1 flex-shrink-0`} />
+                <div>
+                  <h3 className="font-semibold">Authentication Token</h3>
+                   <p className="text-sm text-muted-foreground">
+                    {isTokenConfigured 
+                        ? "A security token is correctly configured to be sent with each request."
+                        : "The WP_WEBHOOK_TOKEN is not configured in your .env file."
+                    }
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+                <p className="text-xs text-muted-foreground">
+                    If publishing fails, ensure the URL is correct (e.g., using a valid ngrok link for local testing) and the token matches your WordPress plugin's settings.
+                </p>
+            </CardFooter>
+          </Card>
+    )
+}
+
 export function ContentCreationClient({ initialTopic }: { initialTopic?: string }) {
   const { toast } = useToast();
   const router = useRouter();
@@ -138,8 +190,9 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   const [draftArticles, setDraftArticles] = useState<Article[]>([]);
   const [publishedArticles, setPublishedArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [publishingId, setPublishingId] = useState<string | null>(null);
-  const [generatingImageId, setGeneratingImageId] = useState<string | null>(null);
+  
+  // State to track the ID of an article during a specific action
+  const [activeActionId, setActiveActionId] = useState<string | null>(null);
 
   // State for Headline Optimizer
   const [isGeneratingHeadlines, startGeneratingHeadlines] = useTransition();
@@ -212,25 +265,25 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   }, [generateState, toast]);
   
   const handlePublish = async (articleId: string) => {
-    setPublishingId(articleId);
+    setActiveActionId(articleId);
     const result = await handlePublishArticle(articleId);
     if (result.error) {
       toast({ variant: 'destructive', title: 'Publishing Failed', description: result.error });
     } else {
       toast({ title: 'Article Published!', description: 'Your article has been sent to WordPress.' });
     }
-    setPublishingId(null);
+    setActiveActionId(null);
   };
   
   const onGenerateImage = async (article: Article) => {
-    setGeneratingImageId(article.id);
+    setActiveActionId(article.id);
     const result = await handleGenerateImage(article.id, article.featuredImagePrompt);
     if (result.error) {
       toast({ variant: 'destructive', title: 'Image Generation Failed', description: result.error });
     } else {
       toast({ title: 'Image Generated!', description: 'A new featured image has been created for your article.' });
     }
-    setGeneratingImageId(null);
+    setActiveActionId(null);
   };
 
   const handleHumanizeClick = (content: string) => {
@@ -283,7 +336,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
         <TooltipProvider>
         <div className="space-y-8">
           {/* Trend Discovery is now the first step, integrated here */}
-          <TrendDiscoveryClient onSelectTrend={setTopic} />
+          <TrendDiscoveryClient onSelectTopic={setTopic} />
           
           {/* Article Generation Card */}
           <Card className="shadow-lg">
@@ -376,17 +429,17 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                                   variant="outline"
                                   size="icon"
                                   onClick={() => onGenerateImage(article)}
-                                  disabled={generatingImageId === article.id}
+                                  disabled={activeActionId === article.id}
                                   >
                                   <span className="sr-only">Generate Featured Image</span>
-                                  {generatingImageId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+                                  {activeActionId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
                                   </Button>
                               </TooltipTrigger>
                               <TooltipContent><p>Generate Featured Image</p></TooltipContent>
                           </Tooltip>
                           <Tooltip>
                               <TooltipTrigger asChild>
-                                  <Button variant="outline" size="icon" onClick={() => onGenerateHeadlines(article)}>
+                                  <Button variant="outline" size="icon" onClick={() => onGenerateHeadlines(article)} disabled={activeActionId === article.id}>
                                       <span className="sr-only">Optimize Headlines</span>
                                       <Lightbulb className="h-4 w-4" />
                                   </Button>
@@ -395,7 +448,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                           </Tooltip>
                            <Tooltip>
                               <TooltipTrigger asChild>
-                                  <Button variant="outline" size="icon" onClick={() => onGenerateSocial(article)}>
+                                  <Button variant="outline" size="icon" onClick={() => onGenerateSocial(article)} disabled={activeActionId === article.id}>
                                       <span className="sr-only">Generate Social Posts</span>
                                       <MessageSquare className="h-4 w-4" />
                                   </Button>
@@ -404,7 +457,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                           </Tooltip>
                           <Tooltip>
                               <TooltipTrigger asChild>
-                                  <Button variant="outline" size="icon" onClick={() => handleHumanizeClick(article.content)}>
+                                  <Button variant="outline" size="icon" onClick={() => handleHumanizeClick(article.content)} disabled={activeActionId === article.id}>
                                   <span className="sr-only">Rewrite with AI Humanizer</span>
                                   <Wand2 className="h-4 w-4" />
                                   </Button>
@@ -416,10 +469,10 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                                   <Button
                                   size="icon"
                                   onClick={() => handlePublish(article.id)}
-                                  disabled={publishingId === article.id}
+                                  disabled={activeActionId === article.id}
                                   >
                                   <span className="sr-only">Publish to WordPress</span>
-                                  {publishingId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                                  {activeActionId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                                   </Button>
                               </TooltipTrigger>
                               <TooltipContent><p>Publish to WordPress</p></TooltipContent>
@@ -474,42 +527,9 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
               </Table>
             </CardContent>
           </Card>
-           <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="text-primary"/>
-                WordPress Integration Status
-              </CardTitle>
-              <CardDescription>
-                This module manages publishing content to your WordPress site. Status is based on your environment configuration.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
-              <div className="flex items-start gap-4 rounded-lg border p-4">
-                <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
-                <div>
-                  <h3 className="font-semibold">Webhook URL</h3>
-                  <p className="text-sm text-muted-foreground">
-                    The application is ready to send data to the URL configured in your <code>.env</code> file (<code>WP_WEBHOOK_URL</code>).
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4 rounded-lg border p-4">
-                <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
-                <div>
-                  <h3 className="font-semibold">Authentication Token</h3>
-                  <p className="text-sm text-muted-foreground">
-                    A security token is correctly sent in the <code>x-ai-token</code> header, based on your <code>.env</code> file (<code>WP_WEBHOOK_TOKEN</code>).
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-                <p className="text-xs text-muted-foreground">
-                    If publishing fails, ensure the URL is correct (e.g., using a valid ngrok link for local testing) and the token matches your WordPress plugin's settings.
-                </p>
-            </CardFooter>
-          </Card>
+          
+          <WordpressIntegrationStatus />
+
         </div>
         </TooltipProvider>
         <DialogContent className="max-w-3xl">
