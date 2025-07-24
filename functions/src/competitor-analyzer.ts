@@ -61,7 +61,8 @@ const competitorAnalyzerFlow = ai.defineFlow(
   },
   async (input) => {
     // Step 1: Crawl the URL to get the clean text content using the tool.
-    const cleanContent = await crawlUrlTool(input);
+    // The tool input must match its defined schema: z.object({ url: z.string().url() })
+    const cleanContent = await crawlUrlTool({ url: input.url });
 
     if (!cleanContent) {
       throw new Error("Failed to retrieve content from the URL.");

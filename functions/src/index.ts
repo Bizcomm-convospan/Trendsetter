@@ -2,7 +2,7 @@
 import { onRequest } from "firebase-functions/v2/onRequest";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { analyzeCompetitor, CompetitorAnalyzerInput } from "./competitor-analyzer";
+import { analyzeCompetitor, CompetitorAnalyzerInputSchema, CompetitorAnalyzerInput } from "./competitor-analyzer";
 import { z } from "zod";
 
 // Initialize the browser instance from the crawl tool when the function warms up.
@@ -13,9 +13,9 @@ initializeBrowserOnColdStart();
 admin.initializeApp();
 const db = admin.firestore();
 
-const CompetitorAnalysisRequestSchema = z.object({
-  url: z.string().url({ message: "A valid URL is required." }),
-});
+// The request schema now lives in the competitor-analyzer file, but we can re-use it here.
+const CompetitorAnalysisRequestSchema = CompetitorAnalyzerInputSchema;
+
 
 /**
  * An HTTP-triggered function that runs the competitor analysis flow.
@@ -39,9 +39,10 @@ export const analyze = onRequest({ cors: true }, async (request, response) => {
     return;
   }
 
-  const { url } = validatedFields.data;
+  const input: CompetitorAnalyzerInput = validatedFields.data;
+  const { url } = input;
   const flowName = 'competitorAnalyzerFlow';
-  const input: CompetitorAnalyzerInput = { url };
+  
 
   // Implement Firestore-based caching
   const cacheKey = `${flowName}:${url}`;

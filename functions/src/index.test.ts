@@ -22,7 +22,10 @@ jest.mock('./competitor-analyzer', () => ({
     analyzeCompetitor: jest.fn().mockResolvedValue({
         keyTopics: ['testing', 'jest'],
         contentGrade: 'A',
+        contentGaps: [],
+        toneAnalysis: 'Test Tone'
     }),
+    CompetitorAnalyzerInputSchema: { parse: (x: any) => x } // Mock Zod schema for tests
 }));
 
 jest.mock('firebase-functions/logger', () => ({
@@ -92,7 +95,13 @@ describe('analyze HTTP Function', () => {
         expect(analyzeCompetitor).toHaveBeenCalledWith({ url: validUrl });
         expect(mockDb.collection('ai_cache').doc().set).toHaveBeenCalled(); // Check if result is cached
         expect(mockResponse.status).toHaveBeenCalledWith(200);
-        expect(mockResponse.json).toHaveBeenCalledWith({ keyTopics: ['testing', 'jest'], contentGrade: 'A' });
+        const expectedResponse = {
+            keyTopics: ['testing', 'jest'],
+            contentGrade: 'A',
+            contentGaps: [],
+            toneAnalysis: 'Test Tone'
+        };
+        expect(mockResponse.json).toHaveBeenCalledWith(expectedResponse);
     });
 
     it('should return cached result on cache hit', async () => {
@@ -130,7 +139,13 @@ describe('analyze HTTP Function', () => {
         expect(analyzeCompetitor).toHaveBeenCalledWith({ url: validUrl });
         expect(mockDb.collection('ai_cache').doc().set).toHaveBeenCalled();
         expect(mockResponse.status).toHaveBeenCalledWith(200);
-        expect(mockResponse.json).toHaveBeenCalledWith({ keyTopics: ['testing', 'jest'], contentGrade: 'A' });
+        const expectedResponse = {
+            keyTopics: ['testing', 'jest'],
+            contentGrade: 'A',
+            contentGaps: [],
+            toneAnalysis: 'Test Tone'
+        };
+        expect(mockResponse.json).toHaveBeenCalledWith(expectedResponse);
     });
 
     it('should return 500 if analyzeCompetitor flow fails', async () => {
