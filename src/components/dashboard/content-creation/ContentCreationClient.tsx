@@ -4,7 +4,7 @@
 import { useState, useEffect, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
-import { handleGenerateArticle, handlePublishArticle, handleGenerateHeadlines, handleGenerateImage, handleSocialMedia, type ActionResponse } from '@/app/actions';
+import { handleGenerateArticle, handlePublishArticle, handleGenerateHeadlines, handleGenerateImage, handleGenerateVideo, handleSocialMedia, type ActionResponse } from '@/app/actions';
 import type { GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import type { GenerateHeadlinesOutput } from '@/ai/flows/generate-headlines-flow';
 import type { SocialMediaOutput } from '@/ai/flows/social-media-flow';
@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook, AlertTriangle } from 'lucide-react';
+import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook, AlertTriangle, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
@@ -36,6 +36,8 @@ interface Article extends GenerateSeoArticleOutput {
   publishedAt?: Timestamp;
   topic: string;
   featuredImageUrl?: string;
+  videoUrl?: string;
+  isGeneratingVideo?: boolean;
 }
 
 function GenerateArticleButton() {
@@ -245,7 +247,10 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
 
   // Action for generating a new article
   const generateArticleAction = (formData: FormData) => {
-    handleGenerateArticle(formData).then(setGenerateState);
+    startTransition(async () => {
+      const response = await handleGenerateArticle(formData);
+      setGenerateState(response);
+    });
   };
 
   useEffect(() => {
@@ -280,6 +285,20 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
     } else {
       toast({ title: 'Image Generated!', description: 'A new featured image has been created for your article.' });
     }
+    setActiveActionId(null);
+  };
+  
+  const onGenerateVideo = async (article: Article) => {
+    setActiveActionId(article.id);
+    setDraftArticles(prev => prev.map(a => a.id === article.id ? { ...a, isGeneratingVideo: true } : a));
+    const result = await handleGenerateVideo(article.id, article.title); // Use title as prompt
+    if (result.error) {
+        toast({ variant: 'destructive', title: 'Video Generation Failed', description: result.error });
+    } else {
+        toast({ title: 'Video Generated!', description: 'A video has been created for your article.' });
+    }
+    // Update local state even if Firestore update is slightly delayed
+    setDraftArticles(prev => prev.map(a => a.id === article.id ? { ...a, videoUrl: result.data?.videoUrl, isGeneratingVideo: false } : a));
     setActiveActionId(null);
   };
 
@@ -408,17 +427,36 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                     draftArticles.map(article => (
                       <TableRow key={article.id}>
                         <TableCell className="font-medium text-foreground flex items-center gap-4">
-                          {article.featuredImageUrl ? (
-                            <Image src={article.featuredImageUrl} alt={`Featured image for ${article.title}`} width={64} height={64} className="rounded-md aspect-square object-cover" />
-                          ) : (
-                            <div className="w-16 h-16 bg-muted rounded-md flex items-center justify-center text-muted-foreground">
-                              <ImageIcon className="h-6 w-6"/>
+                           <div className="w-16 h-16 bg-muted rounded-md flex items-center justify-center text-muted-foreground relative">
+                              {article.videoUrl ? (
+                                <video key={article.videoUrl} loop autoPlay muted playsInline className="w-full h-full object-cover rounded-md">
+                                    <source src={article.videoUrl} type="video/mp4" />
+                                </video>
+                              ) : article.featuredImageUrl ? (
+                                <Image src={article.featuredImageUrl} alt={`Featured image for ${article.title}`} fill className="object-cover rounded-md" />
+                              ) : (
+                                <ImageIcon className="h-6 w-6"/>
+                              )}
+                              {article.isGeneratingVideo && <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md"><Loader2 className="h-6 w-6 animate-spin text-white"/></div>}
                             </div>
-                          )}
                           <span>{article.title}</span>
                         </TableCell>
                         <TableCell>{article.createdAt ? format(article.createdAt.toDate(), 'PP') : 'N/A'}</TableCell>
                         <TableCell className="text-right space-x-1">
+                           <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => onGenerateVideo(article)}
+                                  disabled={activeActionId === article.id}
+                                  >
+                                  <span className="sr-only">Generate Video</span>
+                                  {activeActionId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Generate Video</p></TooltipContent>
+                          </Tooltip>
                           <Tooltip>
                               <TooltipTrigger asChild>
                                   <Button

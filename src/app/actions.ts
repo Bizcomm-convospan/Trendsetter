@@ -35,6 +35,10 @@ import {
   GenerateImageOutput
 } from '@/ai/flows/generate-image-flow';
 import {
+  generateVideo,
+  GenerateVideoOutput,
+} from '@/ai/flows/generate-video-flow';
+import {
   generateKeywordStrategy,
   KeywordStrategyInput,
   KeywordStrategyOutput,
@@ -336,6 +340,7 @@ export async function handlePublishArticle(
       const warningMessage =
         'WP_WEBHOOK_URL and/or WP_WEBHOOK_TOKEN are not configured. Skipping actual webhook call and marking as published for testing.';
       console.warn(warningMessage);
+      return { error: warningMessage };
     }
 
     // This will now only be reached if the webhook call was successful or skipped due to config.
@@ -548,6 +553,32 @@ export async function handleGenerateImage(
   } catch (e: any) {
     console.error(`Error generating image for article ${articleId}:`, e);
     return { error: e.message || 'Failed to generate image.' };
+  }
+}
+
+export async function handleGenerateVideo(
+  articleId: string,
+  prompt: string
+): Promise<ActionResponse<GenerateVideoOutput>> {
+  if (!articleId || !prompt) {
+    return { error: 'Article ID and prompt are required.' };
+  }
+
+  try {
+    const result = await generateVideo({ prompt });
+
+    if (result.videoUrl) {
+      const articleRef = adminDb.collection('articles').doc(articleId);
+      await articleRef.update({
+        videoUrl: result.videoUrl,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
+
+    return { data: result };
+  } catch (e: any) {
+    console.error(`Error generating video for article ${articleId}:`, e);
+    return { error: e.message || 'Failed to generate video.' };
   }
 }
 

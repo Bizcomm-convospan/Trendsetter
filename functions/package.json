@@ -22,7 +22,8 @@
     "@genkit-ai/googleai": "1.7.0",
     "zod": "^3.24.2",
     "playwright": "^1.45.1",
-    "node-html-parser": "^6.1.13"
+    "node-html-parser": "^6.1.13",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
