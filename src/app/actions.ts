@@ -44,6 +44,11 @@ import {
   SocialMediaInput,
   SocialMediaOutput,
 } from '@/ai/flows/social-media-flow';
+import {
+  analyzeContentPerformance,
+  AnalyzePerformanceInput,
+  AnalyzePerformanceOutput,
+} from '@/ai/flows/analyze-performance-flow';
 import { z } from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -117,6 +122,16 @@ const KeywordStrategySchema = z.object({
 const SocialMediaSchema = z.object({
     articleTitle: z.string().min(3, 'Article title is required.'),
     articleContent: z.string().min(100, 'Article content must be at least 100 characters.'),
+});
+
+const AnalyzePerformanceSchema = z.object({
+    articleTitle: z.string(),
+    articleTopic: z.string(),
+    performanceData: z.object({
+        views: z.number(),
+        ctr: z.number(),
+        engagementRate: z.number(),
+    }),
 });
 
 export interface ActionResponse<T> {
@@ -570,4 +585,24 @@ export async function handleSocialMedia(
         console.error('Error generating social media content:', e);
         return { error: e.message || 'Failed to generate social media content.' };
     }
+}
+
+export async function handleAnalyzePerformance(
+  input: AnalyzePerformanceInput
+): Promise<ActionResponse<AnalyzePerformanceOutput>> {
+  const validatedFields = AnalyzePerformanceSchema.safeParse(input);
+  if (!validatedFields.success) {
+    return {
+      validationErrors: validatedFields.error.flatten().fieldErrors,
+      error: 'Validation failed.',
+    };
+  }
+
+  try {
+    const result = await analyzeContentPerformance(validatedFields.data);
+    return { data: result };
+  } catch (e: any) {
+    console.error('Error analyzing content performance:', e);
+    return { error: e.message || 'Failed to analyze performance.' };
+  }
 }
