@@ -1,8 +1,9 @@
-
+import React from 'react';
 import { LandingLayout } from '@/components/layout/LandingLayout';
 import { ComparisonTable } from '@/components/landing/ComparisonTable';
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Wand2, Search } from 'lucide-react';
+import { CtaSection } from '@/components/landing/CtaSection';
 
 export default function ComparePage() {
   return (
@@ -39,6 +40,7 @@ export default function ComparePage() {
         <ComparisonTable />
         
       </section>
+      <CtaSection />
     </LandingLayout>
   );
 }
