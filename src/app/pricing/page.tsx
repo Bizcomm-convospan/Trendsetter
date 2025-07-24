@@ -18,6 +18,7 @@ const pricingPlans = [
       "Question Spy (10 searches/mo)",
       "Competitor Analyzer (5 reports/mo)",
       "E-E-A-T Aligned Content Generation (5 articles/mo)",
+      'AI Video Generation (2 videos/mo)',
       'AI Humanizer & Detector (10 analyses/mo)',
       'Headline & Social Media Tools',
       'WordPress Publishing (5 articles/mo)',
@@ -36,6 +37,7 @@ const pricingPlans = [
       'Everything in Basic, plus:',
       "Unlimited Trend, Question & Competitor Searches",
       "E-E-A-T Aligned Content Generation (25 articles/mo)",
+      "AI Video Generation (10 videos/mo)",
       "AI Performance Audits & Recommendations",
       'Unlimited AI Humanizer & Detector use',
       'WordPress Publishing (Unlimited)',
@@ -53,6 +55,7 @@ const pricingPlans = [
     description: 'For large organizations with custom needs.',
     features: [
       'All Pro Features',
+      'Unlimited Video Generation',
       'Personalized AI Model Training',
       'Unlimited Team Members',
       'Dedicated Account Manager',

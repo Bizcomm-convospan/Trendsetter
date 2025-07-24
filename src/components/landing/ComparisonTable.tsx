@@ -26,6 +26,7 @@ const features = [
   {
     category: 'The Competitive Moat',
     items: [
+      { feature: 'AI-Powered Video Generation', writers: false, trendsetter: true, toolkits: false },
       { feature: 'Performance-Driven AI Audits & Recommendations', writers: false, trendsetter: true, toolkits: false },
       { feature: 'Personalized Suggestions Based on Your Results', writers: false, trendsetter: true, toolkits: false },
       { feature: 'Automated Social Media Post Generation', writers: 'partial', trendsetter: true, toolkits: false },

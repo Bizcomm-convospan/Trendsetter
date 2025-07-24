@@ -1,6 +1,6 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Wand2, ScanText, FileText, UploadCloud, BarChart3, BrainCircuit, MessageCircleQuestion, Target, TrendingUp } from 'lucide-react';
+import { Wand2, ScanText, FileText, UploadCloud, BarChart3, BrainCircuit, MessageCircleQuestion, Target, TrendingUp, Video } from 'lucide-react';
 
 const features = [
   {
@@ -24,9 +24,9 @@ const features = [
     description: 'Craft engaging articles aligned with Google\'s core principles for helpful content that ranks for the long term.',
   },
   {
-    icon: <Wand2 className="mb-4 h-10 w-10 text-primary" />,
-    title: 'AI Humanizer Agent',
-    description: "Refine AI text to sound natural and analyze content for a 'humanization score' with improvement suggestions.",
+    icon: <Video className="mb-4 h-10 w-10 text-primary" />,
+    title: 'AI Video Agent',
+    description: "Transform any generated article into a short, engaging video for social media and web embeds with a single click.",
   },
   {
     icon: <TrendingUp className="mb-4 h-10 w-10 text-primary" />,
