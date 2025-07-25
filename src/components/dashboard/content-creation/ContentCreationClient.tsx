@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook, AlertTriangle, Video, Info, Sparkles } from 'lucide-react';
+import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook, AlertTriangle, Video, Info, Sparkles, Edit } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, orderBy, Timestamp, doc, updateDoc } from 'firebase/firestore';
@@ -199,10 +199,6 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   const [selectedArticleForSocial, setSelectedArticleForSocial] = useState<Article | null>(null);
   const [isSocialDialogOpen, setIsSocialDialogOpen] = useState(false);
 
-  const [textSelection, setTextSelection] = useState<Selection | null>(null);
-  const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
-
-
   useEffect(() => {
     try {
         const storedTopic = localStorage.getItem('content-creation-initial-topic');
@@ -319,35 +315,10 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
     setIsSocialDialogOpen(true);
   };
 
-  // Inline editing handlers
-  const handleTextSelection = () => {
-    const selection = window.getSelection();
-    if (selection && !selection.isCollapsed) {
-      setTextSelection(selection);
-    } else {
-      setTextSelection(null);
-    }
-  };
-
-  const handleImproveText = async (improvedText: string) => {
-    if (textSelection && editingArticleId) {
-      const range = textSelection.getRangeAt(0);
-      range.deleteContents();
-      range.insertNode(document.createTextNode(improvedText));
-      
-      const articleContentDiv = document.getElementById(`article-content-${editingArticleId}`);
-      if (articleContentDiv) {
-        const newContent = articleContentDiv.innerHTML;
-        // Now, update this newContent in Firestore
-        await handleUpdateArticleContent(editingArticleId, newContent);
-        toast({ title: 'Content Improved!', description: 'The selected text has been updated.' });
-      }
-    }
-    setTextSelection(null);
-  };
-
-  const openArticleEditor = (articleId: string) => {
-    setEditingArticleId(articleId);
+  const openArticleEditor = (article: Article) => {
+    // Pass the article data to the optimizer page via localStorage
+    localStorage.setItem('optimizer-article-data', JSON.stringify(article));
+    router.push('/dashboard/content-optimizer');
   };
 
   return (
@@ -422,32 +393,6 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
             </CardFooter>
           </form>
         </Card>
-        
-        {editingArticleId && (
-            <Dialog open={!!editingArticleId} onOpenChange={(isOpen) => !isOpen && setEditingArticleId(null)}>
-                <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-                    <DialogHeader>
-                        <DialogTitle>Article Editor</DialogTitle>
-                        <DialogDescription>
-                            Edit your article below. Highlight any text to improve it with AI.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex-grow overflow-y-auto" onMouseUp={handleTextSelection}>
-                        <div 
-                            id={`article-content-${editingArticleId}`}
-                            contentEditable 
-                            suppressContentEditableWarning 
-                            className="prose dark:prose-invert max-w-none p-4 rounded-md border h-full focus:outline-none focus:ring-2 focus:ring-primary"
-                            dangerouslySetInnerHTML={{ __html: draftArticles.find(a => a.id === editingArticleId)?.content || '' }}
-                        />
-                         {textSelection && (
-                          <TextImprovementPopover selection={textSelection} onImproveText={handleImproveText} />
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
-        )}
-
 
         <Card className="shadow-lg">
           <CardHeader>
@@ -490,11 +435,11 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                       <TableCell>{article.createdAt ? format(article.createdAt.toDate(), 'PP') : 'N/A'}</TableCell>
                       <TableCell className="text-right space-x-1">
                          <Tooltip><TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => openArticleEditor(article.id)} disabled={activeActionId === article.id || article.isGeneratingVideo}>
+                            <Button variant="outline" size="icon" onClick={() => openArticleEditor(article)} disabled={activeActionId === article.id || article.isGeneratingVideo}>
                                 <span className="sr-only">Edit Article</span>
-                                <Wand2 className="h-4 w-4" />
+                                <Edit className="h-4 w-4" />
                             </Button>
-                        </TooltipTrigger><TooltipContent><p>Edit & Improve with AI</p></TooltipContent></Tooltip>
+                        </TooltipTrigger><TooltipContent><p>Edit & Optimize</p></TooltipContent></Tooltip>
                         <Tooltip><TooltipTrigger asChild>
                             <Button
                             variant="outline"

@@ -2,16 +2,15 @@
 
 'use client';
 
-import { useState, useTransition, useMemo, useEffect } from 'react';
+import { useState, useTransition, useMemo, useEffect, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Sparkles, CheckCircle, FileText, BarChart, BookOpen, Lightbulb, Languages, Edit, Type, Palette } from 'lucide-react';
+import { Loader2, Sparkles, CheckCircle, FileText, BarChart, BookOpen, Lightbulb, Languages, Edit, Type, Palette, Bold, Italic, Underline, List, Heading1, Heading2, Heading3, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { type ActionResponse, handleAnalyzeContentForSeo } from '@/app/actions';
+import { type ActionResponse, handleAnalyzeContentForSeo, handleUpdateArticleContent } from '@/app/actions';
 import { type ContentOptimizerOutput } from '@/ai/flows/content-optimizer-flow';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -19,6 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartContainer, ChartConfig, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { RadialBarChart, RadialBar, PolarGrid, PolarAngleAxis } from 'recharts';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+
 
 interface LocalAnalysis {
   wordCount: number;
@@ -37,17 +38,79 @@ function SubmitButton() {
   );
 }
 
+const EditorToolbar = ({ onCommand }: { onCommand: (command: string, value?: string) => void }) => {
+    return (
+        <div className="flex items-center gap-1 border rounded-md p-1 bg-muted">
+            <ToggleGroup type="multiple" size="sm">
+                <ToggleGroupItem value="bold" aria-label="Toggle bold" onClick={() => onCommand('bold')}>
+                    <Bold className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="italic" aria-label="Toggle italic" onClick={() => onCommand('italic')}>
+                    <Italic className="h-4 w-4" />
+                </ToggleGroupItem>
+                 <ToggleGroupItem value="underline" aria-label="Toggle underline" onClick={() => onCommand('underline')}>
+                    <Underline className="h-4 w-4" />
+                </ToggleGroupItem>
+            </ToggleGroup>
+            <Separator orientation="vertical" className="h-6 mx-1" />
+             <ToggleGroup type="single" size="sm">
+                <ToggleGroupItem value="h1" aria-label="Toggle H1" onClick={() => onCommand('formatBlock', 'h1')}>
+                    <Heading1 className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="h2" aria-label="Toggle H2" onClick={() => onCommand('formatBlock', 'h2')}>
+                    <Heading2 className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="h3" aria-label="Toggle H3" onClick={() => onCommand('formatBlock', 'h3')}>
+                    <Heading3 className="h-4 w-4" />
+                </ToggleGroupItem>
+            </ToggleGroup>
+             <Separator orientation="vertical" className="h-6 mx-1" />
+             <Button variant="ghost" size="sm" onClick={() => onCommand('insertUnorderedList')}>
+                <List className="h-4 w-4" />
+            </Button>
+        </div>
+    )
+}
+
 export function ContentOptimizerClient() {
+  const [articleId, setArticleId] = useState<string | null>(null);
   const [content, setContent] = useState('');
   const [keyword, setKeyword] = useState('');
+  const [language, setLanguage] = useState('en');
   const { toast } = useToast();
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [isSaving, setIsSaving] = useTransition();
 
   const [isAnalyzing, startTransition] = useTransition();
   const [state, setState] = useState<ActionResponse<ContentOptimizerOutput>>({});
 
+  useEffect(() => {
+    try {
+        const storedData = localStorage.getItem('optimizer-article-data');
+        if (storedData) {
+            const articleData = JSON.parse(storedData);
+            setArticleId(articleData.id);
+            setContent(articleData.content);
+            setKeyword(articleData.topic); // Use topic as the initial keyword
+            if (editorRef.current) {
+                editorRef.current.innerHTML = articleData.content;
+            }
+            localStorage.removeItem('optimizer-article-data');
+        }
+    } catch (e) {
+        console.error("Failed to parse article data from localStorage", e);
+    }
+  }, []);
+
+  const handleManualContentUpdate = (e: React.FormEvent<HTMLDivElement>) => {
+    setContent(e.currentTarget.innerHTML);
+  };
+
   const formAction = (formData: FormData) => {
     setState({});
     startTransition(async () => {
+      // Ensure the content from the contentEditable div is included in the form data
+      formData.set('content', content);
       const response = await handleAnalyzeContentForSeo(formData);
       setState(response);
       if (response.data) {
@@ -58,15 +121,36 @@ export function ContentOptimizerClient() {
     });
   };
 
+  const handleSave = () => {
+    if (!articleId) return;
+    setIsSaving(async () => {
+        const result = await handleUpdateArticleContent(articleId, content);
+        if (result.data) {
+            toast({ title: "Content Saved!", description: "Your changes have been saved to the draft."});
+        } else {
+             toast({ variant: 'destructive', title: 'Save Failed', description: result.error });
+        }
+    });
+  };
+
+  const handleEditorCommand = (command: string, value?: string) => {
+    document.execCommand(command, false, value);
+    if(editorRef.current) {
+        editorRef.current.focus();
+        setContent(editorRef.current.innerHTML); // Update state after command
+    }
+  };
+
   const localAnalysis = useMemo((): LocalAnalysis => {
-    const words = content.match(/\b\w+\b/g) || [];
-    const paragraphs = content.split(/\n+/).filter(p => p.trim().length > 0);
-    const headings = content.match(/^#+\s/gm) || [];
+    const plainText = editorRef.current?.innerText || '';
+    const words = plainText.match(/\b\w+\b/g) || [];
+    const paragraphs = plainText.split(/\n+/).filter(p => p.trim().length > 0);
+    const headings = content.match(/<h[1-3]>/gi) || [];
     
     let keywordCount = 0;
     if (keyword.trim().length > 0) {
       const regex = new RegExp(`\\b${keyword.trim()}\\b`, 'gi');
-      keywordCount = (content.match(regex) || []).length;
+      keywordCount = (plainText.match(regex) || []).length;
     }
     
     const keywordDensity = words.length > 0 ? (keywordCount / words.length) * 100 : 0;
@@ -104,9 +188,9 @@ export function ContentOptimizerClient() {
         <form action={formAction}>
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle>Content Optimizer</CardTitle>
+              <CardTitle>Content Editor & Optimizer</CardTitle>
               <CardDescription>
-                Write or paste your content below. Use the real-time metrics for basic guidance, then run the AI analysis for a full SEO score and recommendations.
+                Use the rich text editor to format your article. Use the real-time metrics for basic guidance, then run the AI analysis for a full SEO score and recommendations.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -126,7 +210,7 @@ export function ContentOptimizerClient() {
                 </div>
                  <div className="space-y-2">
                   <Label htmlFor="language">Content Language</Label>
-                   <Select name="language" defaultValue="en" disabled={isAnalyzing}>
+                   <Select name="language" value={language} onValueChange={setLanguage} disabled={isAnalyzing}>
                         <SelectTrigger id="language">
                             <SelectValue placeholder="Select a language" />
                         </SelectTrigger>
@@ -142,21 +226,28 @@ export function ContentOptimizerClient() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="content">Your Content</Label>
-                <Textarea
-                  id="content"
-                  name="content"
-                  placeholder="Start writing your article here..."
-                  rows={25}
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  disabled={isAnalyzing}
-                  required
-                />
+                <div className="space-y-2">
+                    <EditorToolbar onCommand={handleEditorCommand} />
+                    <div
+                        ref={editorRef}
+                        id="content"
+                        contentEditable={!isAnalyzing}
+                        onInput={handleManualContentUpdate}
+                        className="prose dark:prose-invert max-w-none min-h-[400px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        dangerouslySetInnerHTML={{ __html: content }}
+                    />
+                </div>
                  {state.validationErrors?.content && <p className="text-destructive text-sm">{state.validationErrors.content[0]}</p>}
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="justify-between">
               <SubmitButton />
+              {articleId && (
+                <Button variant="outline" onClick={handleSave} disabled={isSaving}>
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    Save Changes
+                </Button>
+              )}
             </CardFooter>
           </Card>
         </form>
@@ -281,4 +372,3 @@ export function ContentOptimizerClient() {
     </div>
   );
 }
-
