@@ -9,7 +9,7 @@ export function HeroSection() {
     <section className="container grid gap-12 lg:grid-cols-2 items-center py-12 md:py-20 lg:py-24">
       <div className="flex flex-col items-center text-center lg:items-start lg:text-left gap-6 lg:gap-8">
         <h1 className="text-4xl font-extrabold leading-tight tracking-tighter sm:text-5xl md:text-6xl text-foreground">
-          Deploy an army of self-improving ai agents that ensure you win at <span className="text-primary">content & SEO</span>
+          Deploy an army of self-improving AI agents to win at <span className="text-primary">Content & SEO</span>
         </h1>
         <p className="max-w-[600px] text-lg text-muted-foreground sm:text-xl">
          In an era of constant algorithm updates like Google's 'Muvera', Trendsetter Pro helps you dominate by using a proprietary performance feedback loop to create content that ranks higher and converts better over time.
