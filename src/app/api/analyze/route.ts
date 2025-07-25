@@ -19,18 +19,18 @@ export async function POST(request: NextRequest) {
 
     if (!functionUrl || functionUrl.includes('your-firebase-cloud-function')) {
         const errorMessage = "The Competitor Analysis agent is not configured. Please set the COMPETITOR_ANALYSIS_FUNCTION_URL environment variable in your project settings.";
-        console.error(JSON.stringify({ message: errorMessage, ...logMetadata }));
+        console.error(errorMessage, logMetadata);
         return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
       
     const body = await request.json();
-    console.info(JSON.stringify({ message: 'Analysis request received', ...logMetadata, url: body.url }));
+    console.info('Analysis request received', { ...logMetadata, url: body.url });
 
     const validatedFields = AnalyzeRequestSchema.safeParse(body);
 
     if (!validatedFields.success) {
       const errorDetails = validatedFields.error.flatten().fieldErrors;
-      console.error(JSON.stringify({ message: 'Validation failed for analysis request', ...logMetadata, error: errorDetails }));
+      console.error('Validation failed for analysis request', { ...logMetadata, error: errorDetails });
       return NextResponse.json(
         { 
           error: "Validation failed. Please check your input.",
@@ -51,15 +51,15 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
         const errorMessage = responseData.error || `Analysis function returned status ${response.status}`;
-        console.error(JSON.stringify({ message: 'Analysis function call failed', ...logMetadata, error: errorMessage, status: response.status }));
+        console.error('Analysis function call failed', { ...logMetadata, error: errorMessage, status: response.status });
         throw new Error(errorMessage);
     }
     
-    console.info(JSON.stringify({ message: 'Successfully returned analysis', ...logMetadata, url: validatedFields.data.url }));
+    console.info('Successfully returned analysis', { ...logMetadata, url: validatedFields.data.url });
     return NextResponse.json(responseData, { status: response.status });
 
   } catch (e: any) {
-    console.error(JSON.stringify({ message: 'Error in /api/analyze proxy', ...logMetadata, error: e.message }));
+    console.error('Error in /api/analyze proxy', { ...logMetadata, error: e.message });
     return NextResponse.json(
       { error: e.message || "Failed to call analysis function. Please try again." }, 
       { status: 500 }
