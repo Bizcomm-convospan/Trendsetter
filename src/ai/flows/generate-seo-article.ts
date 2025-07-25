@@ -4,10 +4,6 @@
 /**
  * @fileOverview A flow for generating SEO-optimized articles and saving them as drafts in Firestore.
  * This flow is now optimized to generate headlines and social posts in a single call.
- *
- * - generateSeoArticle - A function that handles the generation of SEO-optimized articles.
- * - GenerateSeoArticleInput - The input type for the generateSeoArticle function.
- * - GenerateSeoArticleOutput - The return type for the generateSeoArticle function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -22,6 +18,8 @@ const GenerateSeoArticleInputSchema = z.object({
   language: z.string().optional().describe('The language for the article (e.g., en, es, fr).'),
   template: z.enum(['standard', 'listicle', 'how-to']).default('standard').describe('The structure of the article (e.g., standard blog post, listicle).'),
   tone: z.enum(['professional', 'casual', 'witty', 'authoritative']).default('professional').describe('The desired writing style and tone for the article.'),
+  brandVoice: z.string().optional().describe('A description of the brand voice to use for the article.'),
+  customGuidelines: z.string().optional().describe('Specific rules or guidelines the AI must follow.'),
 });
 export type GenerateSeoArticleInput = z.infer<typeof GenerateSeoArticleInputSchema>;
 
@@ -80,6 +78,15 @@ Your task is to generate a comprehensive content package based on the user's top
 - **Tone of Voice:** Write in a '{{{tone}}}' tone.
 - **Language:** The entire output must be in the following language: {{#if language}}{{{language}}}{{else}}English{{/if}}.
 
+**Brand & Guideline Instructions:**
+{{#if brandVoice}}
+- **Brand Voice:** You must adhere to the following brand voice: "{{{brandVoice}}}"
+{{/if}}
+{{#if customGuidelines}}
+- **Custom Guidelines:** You must strictly follow these rules: "{{{customGuidelines}}}"
+{{/if}}
+
+
 **The response must include all of the following:**
 1.  **Article Title**: An engaging and informative main title for the article.
 2.  **Article Content**: The full article in well-structured HTML format (use <p>, <h2>, <h3>, <ul>, <li>, <strong>).
@@ -102,7 +109,18 @@ const generateSeoArticleFlow = ai.defineFlow(
     outputSchema: GenerateSeoArticleOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    // Fetch global brand settings from Firestore
+    const brandSettingsRef = adminDb.collection('settings').doc('brand');
+    const brandSettingsDoc = await brandSettingsRef.get();
+    const brandSettings = brandSettingsDoc.data();
+
+    const fullInput = {
+        ...input,
+        brandVoice: brandSettings?.brandVoice,
+        customGuidelines: brandSettings?.customGuidelines,
+    };
+    
+    const {output} = await prompt(fullInput);
 
     if (output) {
       await adminDb.collection('articles').add({
@@ -117,3 +135,5 @@ const generateSeoArticleFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

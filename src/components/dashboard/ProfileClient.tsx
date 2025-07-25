@@ -12,9 +12,10 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
-import { User, CreditCard, BarChart2, KeyRound, Copy, RefreshCw, Loader2, FileText, TrendingUp, ScanText, Cpu, BrainCircuit, MessageCircleQuestion, Target, Zap } from 'lucide-react';
+import { User, CreditCard, BarChart2, KeyRound, Copy, RefreshCw, Loader2, FileText, TrendingUp, ScanText, Cpu, BrainCircuit, MessageCircleQuestion, Target, Zap, Palette, BookText } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { handleSaveWebhookUrl, type ActionResponse } from '@/app/actions';
+import { Textarea } from '../ui/textarea';
 
 
 export function ProfileClient() {
@@ -50,7 +51,7 @@ export function ProfileClient() {
       </header>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Left Column - Profile Info */}
+        {/* Left Column - Profile Info & Brand Voice */}
         <div className="lg:col-span-1 space-y-8">
             <Card className="shadow-lg">
                 <CardHeader className="text-center items-center">
@@ -77,6 +78,32 @@ export function ProfileClient() {
                         Save Changes
                     </Button>
                 </CardFooter>
+            </Card>
+            
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Palette className="text-primary" /> Global Brand Voice</CardTitle>
+                    <CardDescription>Define your brand voice once. The AI will use it for all future content generation.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="brandVoice">Brand Voice Description</Label>
+                        <Textarea id="brandVoice" name="brandVoice" placeholder="e.g., 'Our brand is witty, informal, and uses pop culture references. We avoid corporate jargon...'" rows={4} />
+                    </div>
+                </CardContent>
+            </Card>
+
+             <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><BookText className="text-primary" /> Custom Content Guidelines</CardTitle>
+                    <CardDescription>Set rules for the AI to follow, such as topics to avoid or specific CTAs to include.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="customGuidelines">Content Rules & Guidelines</Label>
+                        <Textarea id="customGuidelines" name="customGuidelines" placeholder="e.g., 'Always end articles with a question. Never mention competitor X. Include a link to our pricing page...'" rows={4} />
+                    </div>
+                </CardContent>
             </Card>
 
             <Card className="shadow-lg">
@@ -201,3 +228,5 @@ export function ProfileClient() {
     </div>
   );
 }
+
+    

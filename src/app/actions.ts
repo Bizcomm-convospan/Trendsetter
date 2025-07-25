@@ -148,6 +148,11 @@ const WebhookUrlSchema = z.object({
     webhookUrl: z.string().url('Please enter a valid Zapier webhook URL.')
 });
 
+const BrandSettingsSchema = z.object({
+    brandVoice: z.string().optional(),
+    customGuidelines: z.string().optional(),
+});
+
 export interface ActionResponse<T> {
   data?: T;
   error?: string;
@@ -656,3 +661,37 @@ export async function handleUpdateArticleContent(
     return { error: e.message || 'Failed to update article content.' };
   }
 }
+
+export async function handleSaveBrandSettings(
+    formData: FormData
+): Promise<ActionResponse<{ success: boolean }>> {
+    const rawFormData = {
+        brandVoice: formData.get('brandVoice') as string || undefined,
+        customGuidelines: formData.get('customGuidelines') as string || undefined,
+    };
+
+    const validatedFields = BrandSettingsSchema.safeParse(rawFormData);
+    if (!validatedFields.success) {
+        return {
+            validationErrors: validatedFields.error.flatten().fieldErrors,
+            error: 'Validation failed.',
+        };
+    }
+
+    try {
+        const settingsRef = adminDb.collection('settings').doc('brand');
+        await settingsRef.set(
+            {
+                ...validatedFields.data,
+                updatedAt: FieldValue.serverTimestamp(),
+            },
+            { merge: true }
+        );
+        return { data: { success: true } };
+    } catch (e: any) {
+        console.error('Error saving brand settings:', e);
+        return { error: e.message || 'Failed to save brand settings.' };
+    }
+}
+
+    
