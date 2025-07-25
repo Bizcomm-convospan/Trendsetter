@@ -23,6 +23,8 @@ export const ContentOptimizerOutputSchema = z.object({
       structure: z.string().describe("Feedback on the content's structure (headings, paragraphs)."),
       readability: z.string().describe("Feedback on the content's readability and complexity."),
       keywordUsage: z.string().describe("Feedback on the usage of the primary keyword."),
+      grammarAndClarity: z.string().describe("Feedback on the content's grammar, spelling, and overall clarity."),
+      toneAndStyle: z.string().describe("Analysis of the content's writing style and tone (e.g., formal, conversational, persuasive)."),
   }).describe("A breakdown of the analysis across key SEO areas."),
   recommendations: z.array(z.string()).describe("A list of the top 3-5 actionable recommendations to improve the score."),
   nlpKeywords: z.array(z.string()).describe("A list of 5-10 related NLP-friendly keywords and entities that should be included in the content."),
@@ -38,7 +40,7 @@ const contentOptimizerPrompt = ai.definePrompt({
   input: {schema: ContentOptimizerInputSchema},
   output: {schema: ContentOptimizerOutputSchema},
   prompt: `
-    You are an expert SEO Content Analyst, similar to the engine behind SurferSEO or MarketMuse.
+    You are an expert SEO Content Analyst and Editor, similar to the engine behind SurferSEO or MarketMuse.
     Your task is to analyze the provided text based on a target keyword and provide a detailed optimization report.
 
     The user wants to rank for the keyword: "{{{keyword}}}"
@@ -52,9 +54,11 @@ const contentOptimizerPrompt = ai.definePrompt({
     Your analysis must include:
     1.  **Content Score**: An overall score from 0-100, where 100 is perfectly optimized. Base this on structure, readability, and keyword usage.
     2.  **Analysis Breakdown**:
-        *   **Structure**: Comment on the use of headings (H1, H2, etc.) and paragraph length.
+        *   **Structure**: Comment on the use of headings (H1, H2, etc.), paragraph length, and overall article structure.
         *   **Readability**: Assess the complexity of the language. Is it easy to read?
         *   **Keyword Usage**: Is the primary keyword used effectively (not too much, not too little)?
+        *   **Grammar and Clarity**: Check for grammatical errors, spelling mistakes, and awkward phrasing that affects clarity.
+        *   **Tone and Style**: Describe the writing style and tone (e.g., 'Formal and academic', 'Casual and conversational', 'Persuasive').
     3.  **Recommendations**: Provide a list of the top 3-5 most impactful, actionable steps the user can take to improve their score.
     4.  **NLP Keywords**: Provide a list of 5-10 important, semantically related keywords and entities that are missing or underutilized in the text. This helps with topical authority.
 

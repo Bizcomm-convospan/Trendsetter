@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Sparkles, CheckCircle, FileText, BarChart, BookOpen, Lightbulb, Languages } from 'lucide-react';
+import { Loader2, Sparkles, CheckCircle, FileText, BarChart, BookOpen, Lightbulb, Languages, Edit, Type, Palette } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { type ActionResponse, handleAnalyzeContentForSeo } from '@/app/actions';
 import { type ContentOptimizerOutput } from '@/ai/flows/content-optimizer-flow';
@@ -197,6 +197,8 @@ export function ContentOptimizerClient() {
                      <p className="text-sm"><strong className="text-muted-foreground">Structure:</strong> {analysisResult.analysis.structure}</p>
                      <p className="text-sm"><strong className="text-muted-foreground">Readability:</strong> {analysisResult.analysis.readability}</p>
                      <p className="text-sm"><strong className="text-muted-foreground">Keywords:</strong> {analysisResult.analysis.keywordUsage}</p>
+                     <p className="text-sm"><strong className="text-muted-foreground">Grammar & Clarity:</strong> {analysisResult.analysis.grammarAndClarity}</p>
+                     <p className="text-sm"><strong className="text-muted-foreground">Tone & Style:</strong> {analysisResult.analysis.toneAndStyle}</p>
                 </div>
                 <Separator />
                 <div className="space-y-3">
