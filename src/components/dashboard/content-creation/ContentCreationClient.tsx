@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useTransition, useMemo } from 'react';
@@ -63,83 +64,6 @@ function ArticleRowSkeleton() {
   );
 }
 
-function HeadlineDialog({ headlines, articleTitle, open, onOpenChange }: { headlines: HeadlineSuggestion[] | undefined, articleTitle: string | undefined, open: boolean, onOpenChange: (open: boolean) => void }) {
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl">
-                <DialogHeader>
-                    <DialogTitle>Headline Optimizer</DialogTitle>
-                    <DialogDescription>
-                        Showing {headlines?.length || 0} headline ideas for: "{articleTitle}"
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                    {headlines && (
-                        <div className="space-y-4">
-                            {headlines.map((item, index) => (
-                                <div key={index} className="p-4 border rounded-lg space-y-2">
-                                    <p className="text-lg font-semibold text-foreground">{item.headline}</p>
-                                    <div className="flex items-center justify-between text-sm">
-                                        <Badge variant="outline">{item.angle}</Badge>
-                                        <div className="flex items-center gap-2">
-                                            <Label htmlFor={`score-${index}`} className="text-muted-foreground">Click-Through Score:</Label>
-                                            <Progress id={`score-${index}`} value={item.clickThroughScore} className="w-24 h-2" />
-                                            <span className="font-semibold">{item.clickThroughScore}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </DialogContent>
-        </Dialog>
-    )
-}
-
-function SocialMediaDialog({ article, open, onOpenChange }: { article: Article | null, open: boolean, onOpenChange: (open: boolean) => void }) {
-    const socialPosts = article?.socialMediaPosts;
-
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl">
-                <DialogHeader>
-                    <DialogTitle>Social Media Content</DialogTitle>
-                    <DialogDescription>
-                        AI-crafted social media posts for: "{article?.title}"
-                    </DialogDescription>
-                </DialogHeader>
-                {socialPosts ? (
-                    <Tabs defaultValue="twitter" className="w-full pt-4">
-                        <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="twitter"><Twitter className="mr-2 h-4 w-4" />Twitter</TabsTrigger>
-                            <TabsTrigger value="linkedin"><Linkedin className="mr-2 h-4 w-4" />LinkedIn</TabsTrigger>
-                            <TabsTrigger value="facebook"><Facebook className="mr-2 h-4 w-4" />Facebook</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="twitter" className="mt-4">
-                            <div className="space-y-3">
-                                {socialPosts.twitterThread.map((tweet, index) => (
-                                    <Textarea key={index} value={tweet} readOnly className="bg-muted/50" rows={4} />
-                                ))}
-                            </div>
-                        </TabsContent>
-                        <TabsContent value="linkedin" className="mt-4">
-                            <Textarea value={socialPosts.linkedInPost} readOnly className="bg-muted/50" rows={8} />
-                        </TabsContent>
-                        <TabsContent value="facebook" className="mt-4">
-                           <Textarea value={socialPosts.facebookPost} readOnly className="bg-muted/50" rows={8} />
-                        </TabsContent>
-                    </Tabs>
-                ) : (
-                     <div className="flex items-center justify-center p-8">
-                        <p>No social media posts were generated for this article.</p>
-                    </div>
-                )}
-            </DialogContent>
-        </Dialog>
-    )
-}
-
 export function ContentCreationClient({ initialTopic }: { initialTopic?: string }) {
   const { toast } = useToast();
   const router = useRouter();
@@ -152,12 +76,6 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   const [isLoading, setIsLoading] = useState(true);
   
   const [activeActionId, setActiveActionId] = useState<string | null>(null);
-
-  const [selectedArticleForHeadlines, setSelectedArticleForHeadlines] = useState<Article | null>(null);
-  const [isHeadlineDialogOpen, setIsHeadlineDialogOpen] = useState(false);
-  
-  const [selectedArticleForSocial, setSelectedArticleForSocial] = useState<Article | null>(null);
-  const [isSocialDialogOpen, setIsSocialDialogOpen] = useState(false);
 
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
 
@@ -251,31 +169,8 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
     } else {
         toast({ title: 'Video Generated!', description: 'A video has been created for your article.' });
     }
-    // Update the local state to remove the spinner, the onSnapshot listener will update the videoUrl
     setDraftArticles(prev => prev.map(a => a.id === article.id ? { ...a, isGeneratingVideo: false } : a));
     setActiveActionId(null);
-  };
-
-  const handleHumanizeClick = (content: string) => {
-    setEditingArticle(prev => prev ? { ...prev, content } : null);
-    toast({ title: "Content Humanized", description: "The article content has been updated in the editor." });
-  };
-
-  const onHeadlineDialogOpenChange = (open: boolean) => {
-    setIsHeadlineDialogOpen(open);
-    if (!open) {
-      setSelectedArticleForHeadlines(null);
-    }
-  };
-
-  const onShowHeadlines = (article: Article) => {
-    setSelectedArticleForHeadlines(article);
-    setIsHeadlineDialogOpen(true);
-  };
-
-  const onShowSocial = (article: Article) => {
-    setSelectedArticleForSocial(article);
-    setIsSocialDialogOpen(true);
   };
   
   const openArticleEditor = (article: Article) => {
@@ -287,7 +182,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   };
 
   if (editingArticle) {
-    return <ContentOptimizer article={editingArticle} onBack={closeArticleEditor} onHumanize={handleHumanizeClick} />;
+    return <ContentOptimizer article={editingArticle} onBack={closeArticleEditor} />;
   }
 
   return (
@@ -409,40 +304,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                                 <Edit className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger><TooltipContent><p>Edit & Optimize</p></TooltipContent></Tooltip>
-                        <Tooltip><TooltipTrigger asChild>
-                            <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => onGenerateVideo(article)}
-                            disabled={activeActionId === article.id || article.isGeneratingVideo}
-                            >
-                            <span className="sr-only">Generate Video</span>
-                            {activeActionId === article.id && article.isGeneratingVideo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
-                            </Button>
-                        </TooltipTrigger><TooltipContent><p>Generate Video</p></TooltipContent></Tooltip>
-                        <Tooltip><TooltipTrigger asChild>
-                            <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => onGenerateImage(article)}
-                            disabled={activeActionId === article.id || article.isGeneratingVideo}
-                            >
-                            <span className="sr-only">Generate Featured Image</span>
-                            {activeActionId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
-                            </Button>
-                        </TooltipTrigger><TooltipContent><p>Generate Featured Image</p></TooltipContent></Tooltip>
-                        <Tooltip><TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => onShowHeadlines(article)} disabled={activeActionId === article.id || article.isGeneratingVideo}>
-                                <span className="sr-only">View Headlines</span>
-                                <Lightbulb className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger><TooltipContent><p>View Headlines</p></TooltipContent></Tooltip>
-                         <Tooltip><TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => onShowSocial(article)} disabled={activeActionId === article.id || article.isGeneratingVideo}>
-                                <span className="sr-only">View Social Posts</span>
-                                <MessageSquare className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger><TooltipContent><p>View Social Posts</p></TooltipContent></Tooltip>
+                        
                          <Tooltip><TooltipTrigger asChild>
                             <Button
                             size="icon"
@@ -505,13 +367,6 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
         
       </div>
       </TooltipProvider>
-      <HeadlineDialog 
-        headlines={selectedArticleForHeadlines?.headlineSuggestions}
-        articleTitle={selectedArticleForHeadlines?.title}
-        open={isHeadlineDialogOpen}
-        onOpenChange={onHeadlineDialogOpenChange}
-      />
-      <SocialMediaDialog article={selectedArticleForSocial} open={isSocialDialogOpen} onOpenChange={setIsSocialDialogOpen} />
     </>
   );
 }
