@@ -152,24 +152,6 @@ export function ProfileClient() {
                             <Label htmlFor="customGuidelines">Custom Content Guidelines</Label>
                             <Textarea id="customGuidelines" name="customGuidelines" placeholder="e.g., 'Always end articles with a question. Never mention competitor X...'" rows={3} />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="ai-model">Default AI Model</Label>
-                             <Select name="modelProvider" defaultValue="google-ai">
-                                <SelectTrigger id="ai-model" className="w-full">
-                                    <SelectValue placeholder="Select a model" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectLabel>Supported Models</SelectLabel>
-                                        <SelectItem value="google-ai">Google Gemini (Recommended)</SelectItem>
-                                        <SelectItem value="openai">OpenAI GPT-4</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                             <p className="text-xs text-muted-foreground">
-                                Using models other than Google Gemini requires setting the appropriate API key (e.g., OPENAI_API_KEY) in the project's environment variables.
-                            </p>
-                        </div>
                     </CardContent>
                      <CardFooter>
                         <SaveButton>Save AI Settings</SaveButton>

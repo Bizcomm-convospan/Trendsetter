@@ -10,7 +10,6 @@ import {ai} from '@/ai/genkit';
 import {z} from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import { openai } from '@genkit-ai/openai';
 import { HeadlineSuggestionSchema, SocialMediaPostSchema } from './schemas';
 
 const GenerateSeoArticleInputSchema = z.object({
@@ -22,8 +21,6 @@ const GenerateSeoArticleInputSchema = z.object({
   tone: z.enum(['professional', 'casual', 'witty', 'authoritative']).default('professional').describe('The desired writing style and tone for the article.'),
   brandVoice: z.string().optional().describe('A description of the brand voice to use for the article.'),
   customGuidelines: z.string().optional().describe('Specific rules or guidelines the AI must follow.'),
-  // New field to select the AI model
-  modelProvider: z.enum(['google-ai', 'openai']).default('google-ai').describe('The AI provider to use for generation.'),
 });
 export type GenerateSeoArticleInput = z.infer<typeof GenerateSeoArticleInputSchema>;
 
@@ -112,17 +109,9 @@ const generateSeoArticleFlow = ai.defineFlow(
         customGuidelines: brandSettings?.customGuidelines || input.customGuidelines,
     };
     
-    // Dynamically select the model based on user input
-    let llmResponse;
-    if (input.modelProvider === 'openai') {
-      console.log('Using OpenAI model for generation.');
-      // In a real app, you'd want to handle potential errors if the API key isn't set.
-      llmResponse = await prompt.with({ model: openai('gpt-4') })(fullInput);
-    } else {
-      console.log('Using Google AI model for generation.');
-      // Default to the globally configured Google AI model
-      llmResponse = await prompt(fullInput);
-    }
+    // The flow will now use the default model configured in `ai/genkit.ts`.
+    console.log('Using Google AI model for generation.');
+    const llmResponse = await prompt(fullInput);
 
     const output = llmResponse.output();
 
