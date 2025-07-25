@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useTransition, useMemo, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,11 +13,12 @@ import { Loader2, Sparkles, CheckCircle, FileText, BarChart, BookOpen, Lightbulb
 import { useToast } from '@/hooks/use-toast';
 import { type ActionResponse, handleAnalyzeContentForSeo } from '@/app/actions';
 import { type ContentOptimizerOutput } from '@/ai/flows/content-optimizer-flow';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ChartContainer, ChartConfig, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { RadialBarChart, RadialBar, PolarGrid, PolarAngleAxis } from 'recharts';
 
 interface LocalAnalysis {
   wordCount: number;
@@ -78,6 +80,22 @@ export function ContentOptimizerClient() {
   }, [content, keyword]);
   
   const analysisResult = state?.data;
+
+  const chartData = useMemo(() => {
+    if (!analysisResult) return [];
+    return [{ name: 'Score', value: analysisResult.contentScore, fill: 'hsl(var(--primary))' }];
+  }, [analysisResult]);
+
+  const chartConfig = useMemo(() => ({
+    value: {
+      label: 'Content Score',
+    },
+    score: {
+      label: 'Content Score',
+      color: 'hsl(var(--primary))',
+    },
+  }), []);
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -174,7 +192,7 @@ export function ContentOptimizerClient() {
             <Card className="shadow-lg animate-pulse">
                 <CardHeader><CardTitle>AI Analysis</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                    <Skeleton className="h-8 w-3/4" />
+                    <Skeleton className="h-40 w-full" />
                     <Skeleton className="h-16 w-full" />
                     <Skeleton className="h-16 w-full" />
                 </CardContent>
@@ -186,10 +204,52 @@ export function ContentOptimizerClient() {
             <CardHeader>
                 <CardTitle>AI Analysis</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div>
-                    <Label className="text-lg">Content Score: {analysisResult.contentScore}/100</Label>
-                    <Progress value={analysisResult.contentScore} className="mt-2 h-4" />
+            <CardContent className="space-y-6">
+                <div className="flex justify-center items-center">
+                  <ChartContainer
+                    config={chartConfig}
+                    className="mx-auto aspect-square h-52 w-52"
+                  >
+                    <RadialBarChart
+                      data={chartData}
+                      startAngle={-270}
+                      endAngle={90}
+                      innerRadius="70%"
+                      outerRadius="100%"
+                      barSize={20}
+                      cy="55%"
+                    >
+                      <PolarAngleAxis
+                        type="number"
+                        domain={[0, 100]}
+                        tick={false}
+                      />
+                      <PolarGrid gridType="circle" stroke="none" />
+                      <RadialBar
+                        dataKey="value"
+                        background={{ fill: 'hsl(var(--muted))' }}
+                        cornerRadius={10}
+                      />
+                       <text
+                          x="50%"
+                          y="55%"
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          className="fill-foreground text-4xl font-bold"
+                        >
+                          {analysisResult.contentScore.toFixed(0)}
+                        </text>
+                        <text
+                            x="50%"
+                            y="70%"
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            className="fill-muted-foreground text-sm"
+                        >
+                            Score
+                        </text>
+                    </RadialBarChart>
+                  </ChartContainer>
                 </div>
                 <Separator />
                 <div className="space-y-3">
@@ -221,3 +281,4 @@ export function ContentOptimizerClient() {
     </div>
   );
 }
+
