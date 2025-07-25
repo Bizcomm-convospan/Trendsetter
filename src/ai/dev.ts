@@ -15,3 +15,5 @@ import '@/ai/flows/keyword-strategy-flow.ts';
 import '@/ai/flows/email-outreach-flow.ts';
 import '@/ai/flows/analyze-performance-flow.ts';
 import '@/ai/flows/generate-video-flow.ts';
+import '@/ai/flows/content-optimizer-flow.ts';
+

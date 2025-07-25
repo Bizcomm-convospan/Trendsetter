@@ -49,6 +49,11 @@ import {
   AnalyzePerformanceInput,
   AnalyzePerformanceOutput,
 } from '@/ai/flows/analyze-performance-flow';
+import {
+    analyzeContentForSeo,
+    ContentOptimizerInput,
+    ContentOptimizerOutput,
+} from '@/ai/flows/content-optimizer-flow';
 import { z } from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -92,6 +97,12 @@ const AiDetectorSchema = z.object({
   content: z
     .string()
     .min(50, 'Content must be at least 50 characters to analyze effectively.'),
+});
+
+const ContentOptimizerSchema = z.object({
+  content: z.string().min(100, 'Content must be at least 100 characters for a meaningful analysis.'),
+  keyword: z.string().min(2, 'Please provide a target keyword.'),
+  language: z.string().optional(),
 });
 
 // Using a raw string because parsing server-side can be tricky with complex objects.
@@ -559,4 +570,28 @@ export async function handleAnalyzePerformance(
   }
 }
 
-    
+export async function handleAnalyzeContentForSeo(
+    formData: FormData
+): Promise<ActionResponse<ContentOptimizerOutput>> {
+    const rawFormData = {
+        content: formData.get('content'),
+        keyword: formData.get('keyword'),
+        language: formData.get('language'),
+    };
+
+    const validatedFields = ContentOptimizerSchema.safeParse(rawFormData);
+    if (!validatedFields.success) {
+        return {
+            validationErrors: validatedFields.error.flatten().fieldErrors,
+            error: 'Validation failed.',
+        };
+    }
+
+    try {
+        const result = await analyzeContentForSeo(validatedFields.data as ContentOptimizerInput);
+        return { data: result };
+    } catch (e: any) {
+        console.error('Error analyzing content for SEO:', e);
+        return { error: e.message || 'Failed to analyze content.' };
+    }
+}

@@ -5,7 +5,7 @@ import { WorkflowGuide } from '@/components/dashboard/WorkflowGuide';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { MessageCircleQuestion, BrainCircuit, Wand2, ScanText, ArrowRight, Target, Key, TrendingUp, Search, FileSignature, BarChart2 } from 'lucide-react';
+import { MessageCircleQuestion, BrainCircuit, Wand2, ScanText, ArrowRight, Target, Key, TrendingUp, Search, FileSignature, BarChart2, Edit } from 'lucide-react';
 
 const toolCards = [
   {
@@ -55,6 +55,14 @@ const toolCards = [
     description: 'Turn any topic into a structured set of content angles for comprehensive articles.',
     cta: 'Get Angles',
     group: 'research'
+  },
+  {
+    href: '/dashboard/content-optimizer',
+    icon: Edit,
+    title: 'Content Optimizer',
+    description: 'Get a real-time Content Score, NLP keywords, and suggestions to improve your on-page SEO.',
+    cta: 'Optimize Content',
+    group: 'creation'
   },
   {
     href: '/dashboard/ai-detector',
