@@ -43,13 +43,10 @@ export function SidebarNav() {
       ]
     },
     {
-      title: 'Creation & Refinement',
+      title: 'Content & SEO',
       icon: FileSignature,
       items: [
-        { href: '/dashboard/content-creation', label: 'Content Editor & Hub', icon: Wand2 },
-        { href: '/dashboard/ai-detector', label: t('sidebar.aiDetector'), icon: ScanText },
-        { href: '/dashboard/humanizer', label: t('sidebar.aiHumanizer'), icon: Wand2 },
-        { href: '/dashboard/plagiarism-checker', label: 'Plagiarism Checker', icon: ShieldCheck },
+        { href: '/dashboard/content-creation', label: 'Content Hub', icon: Wand2 },
       ]
     },
     {
@@ -58,8 +55,14 @@ export function SidebarNav() {
         items: [
             { href: '/dashboard/performance', label: 'Content Performance', icon: TrendingUp },
             { href: '/dashboard/email-outreach', label: 'Email Outreach', icon: Mail },
-            { href: '/dashboard/integrations', label: 'Integrations', icon: Zap },
-            { href: '/dashboard/profile', label: t('sidebar.myProfile'), icon: User },
+        ]
+    },
+    {
+        title: 'Settings & Account',
+        icon: User,
+        items: [
+             { href: '/dashboard/integrations', label: 'Integrations', icon: Zap },
+             { href: '/dashboard/profile', label: t('sidebar.myProfile'), icon: User },
         ]
     }
   ];

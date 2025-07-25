@@ -11,10 +11,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook, AlertTriangle, Video, Info, Sparkles, Edit, ArrowLeft } from 'lucide-react';
+import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook, AlertTriangle, Video, Info, Sparkles, Edit, ArrowLeft, ShieldCheck, BrainCircuit, ScanSearch } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, orderBy, Timestamp, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -257,8 +257,8 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   };
 
   const handleHumanizeClick = (content: string) => {
-    localStorage.setItem('humanizer-initial-content', content);
-    router.push('/dashboard/humanizer');
+    setEditingArticle(prev => prev ? { ...prev, content } : null);
+    toast({ title: "Content Humanized", description: "The article content has been updated in the editor." });
   };
 
   const onHeadlineDialogOpenChange = (open: boolean) => {
@@ -287,7 +287,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   };
 
   if (editingArticle) {
-    return <ContentOptimizer article={editingArticle} onBack={closeArticleEditor} />;
+    return <ContentOptimizer article={editingArticle} onBack={closeArticleEditor} onHumanize={handleHumanizeClick} />;
   }
 
   return (
