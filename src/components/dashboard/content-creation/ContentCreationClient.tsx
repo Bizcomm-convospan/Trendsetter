@@ -60,52 +60,6 @@ function ArticleRowSkeleton() {
   );
 }
 
-function WordpressIntegrationStatus() {
-    const isZapierUrlConfigured = process.env.NEXT_PUBLIC_ZAPIER_WEBHOOK_URL && !process.env.NEXT_PUBLIC_ZAPIER_WEBHOOK_URL.includes('your-zapier-webhook-url-here');
-
-    return (
-         <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="text-primary"/>
-                Publishing Automation Status
-              </CardTitle>
-              <CardDescription>
-                This application uses Zapier to automate publishing to WordPress or any other platform. To enable this, you need to configure a Zapier webhook.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
-              <div className="flex items-start gap-4 rounded-lg border p-4">
-                {isZapierUrlConfigured ? <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" /> : <AlertTriangle className="h-6 w-6 text-amber-500 mt-1 flex-shrink-0" />}
-                <div>
-                  <h3 className="font-semibold">Zapier Webhook URL</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {isZapierUrlConfigured
-                        ? "Automation is active. Published articles will be sent to your configured Zapier webhook."
-                        : "Automation is disabled. Your ZAPIER_WEBHOOK_URL is not configured in your .env file."
-                    }
-                  </p>
-                </div>
-              </div>
-               <div className="flex items-start gap-4 rounded-lg border p-4 bg-muted/40">
-                <Info className="h-6 w-6 text-sky-500 mt-1 flex-shrink-0" />
-                <div>
-                  <h3 className="font-semibold">How to Enable Automation</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Create a "Catch Hook" trigger in <Link href="https://zapier.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">Zapier</Link>, connect it to a WordPress "Create Post" action, and paste the webhook URL into your .env file.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-                <p className="text-xs text-muted-foreground">
-                    When you click "Publish", the app sends the article data to your Zapier webhook, which then creates the post in WordPress. This allows for powerful, flexible automations.
-                </p>
-            </CardFooter>
-          </Card>
-    )
-}
-
 function HeadlineDialog({ headlines, articleTitle, open, onOpenChange }: { headlines: HeadlineSuggestion[] | undefined, articleTitle: string | undefined, open: boolean, onOpenChange: (open: boolean) => void }) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -528,8 +482,6 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
           </CardContent>
         </Card>
         
-        <WordpressIntegrationStatus />
-
       </div>
       </TooltipProvider>
       <HeadlineDialog 

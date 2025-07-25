@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
+import { useFormStatus } from 'react-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,13 +12,25 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
-import { User, CreditCard, BarChart2, KeyRound, Copy, RefreshCw, Loader2, FileText, TrendingUp, ScanText, Cpu, BrainCircuit, MessageCircleQuestion, Target } from 'lucide-react';
+import { User, CreditCard, BarChart2, KeyRound, Copy, RefreshCw, Loader2, FileText, TrendingUp, ScanText, Cpu, BrainCircuit, MessageCircleQuestion, Target, Zap } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { handleSaveWebhookUrl, type ActionResponse } from '@/app/actions';
+
+function SaveWebhookButton() {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" disabled={pending} className="w-full sm:w-auto">
+            {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Save Webhook URL
+        </Button>
+    )
+}
 
 export function ProfileClient() {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [apiKey, setApiKey] = useState('tp_live_********************1234');
+  const [webhookUrlState, setWebhookUrlState] = useState<ActionResponse<{success: boolean}>>({});
   
   const handleSave = async () => {
     setIsSaving(true);
@@ -34,6 +47,16 @@ export function ProfileClient() {
   const handleRegenerateKey = () => {
     setApiKey(`tp_live_********************${Math.floor(Math.random() * 9000) + 1000}`);
     toast({ title: "API Key Regenerated", description: "A new API key has been generated." });
+  };
+
+  const saveWebhookAction = async (formData: FormData) => {
+    const result = await handleSaveWebhookUrl(formData);
+    if (result.error) {
+        toast({ variant: 'destructive', title: 'Error', description: result.error });
+    } else {
+        toast({ title: 'Success!', description: 'Your Zapier webhook URL has been saved.' });
+    }
+    setWebhookUrlState(result);
   };
 
   return (
@@ -73,6 +96,37 @@ export function ProfileClient() {
                         Save Changes
                     </Button>
                 </CardFooter>
+            </Card>
+
+            <Card className="shadow-lg">
+                <form action={saveWebhookAction}>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Zap /> Automations</CardTitle>
+                        <CardDescription>
+                            Connect Trendsetter Pro to other apps using Zapier.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="webhookUrl">Zapier Webhook URL</Label>
+                            <Input 
+                                id="webhookUrl"
+                                name="webhookUrl"
+                                type="url"
+                                placeholder="https://hooks.zapier.com/hooks/catch/..."
+                            />
+                            {webhookUrlState.validationErrors?.webhookUrl && (
+                                <p className="text-sm text-destructive">{webhookUrlState.validationErrors.webhookUrl}</p>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                                Create a "Catch Hook" trigger in <a href="https://zapier.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">Zapier</a> and paste the URL here to enable publishing automation.
+                            </p>
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                        <SaveWebhookButton />
+                    </CardFooter>
+                </form>
             </Card>
         </div>
 

@@ -101,12 +101,13 @@ export const onArticlePublish = onDocumentUpdated("articles/{articleId}", async 
   if (before.status === 'draft' && after.status === 'published') {
     logger.info(`Article ${event.params.articleId} was published. Preparing to send to webhook.`);
     
-    // The ZAPIER_WEBHOOK_URL would be stored in Firebase environment variables
-    // for security (e.g., using `firebase functions:config:set zapier.webhook_url="..."`)
-    const webhookUrl = process.env.ZAPIER_WEBHOOK_URL;
+    // Fetch the webhook URL from Firestore settings instead of environment variables
+    const settingsRef = db.collection('settings').doc('integrations');
+    const settingsDoc = await settingsRef.get();
+    const webhookUrl = settingsDoc.data()?.zapierWebhookUrl;
 
-    if (!webhookUrl || webhookUrl.includes('your-zapier-webhook-url-here')) {
-        logger.warn(`ZAPIER_WEBHOOK_URL is not configured. Skipping webhook for article ${event.params.articleId}.`);
+    if (!webhookUrl) {
+        logger.warn(`Zapier webhook URL is not configured in Firestore settings. Skipping webhook for article ${event.params.articleId}.`);
         return; // Exit gracefully if the URL isn't set up
     }
     
@@ -143,5 +144,3 @@ export const onArticlePublish = onDocumentUpdated("articles/{articleId}", async 
     }
   }
 });
-
-    

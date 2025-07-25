@@ -142,6 +142,10 @@ const EmailOutreachSchema = z.object({
     tone: z.enum(['formal', 'casual', 'enthusiastic', 'direct']).default('casual'),
 });
 
+const WebhookUrlSchema = z.object({
+    webhookUrl: z.string().url('Please enter a valid Zapier webhook URL.')
+});
+
 export interface ActionResponse<T> {
   data?: T;
   error?: string;
@@ -594,4 +598,36 @@ export async function handleAnalyzeContentForSeo(
         console.error('Error analyzing content for SEO:', e);
         return { error: e.message || 'Failed to analyze content.' };
     }
+}
+
+export async function handleSaveWebhookUrl(
+  formData: FormData
+): Promise<ActionResponse<{ success: boolean }>> {
+  const rawFormData = {
+    webhookUrl: formData.get('webhookUrl') as string,
+  };
+
+  const validatedFields = WebhookUrlSchema.safeParse(rawFormData);
+
+  if (!validatedFields.success) {
+    return {
+      validationErrors: validatedFields.error.flatten().fieldErrors,
+      error: 'Validation failed. Please provide a valid URL.',
+    };
+  }
+
+  try {
+    // In a real multi-user app, you'd associate this with the current user ID.
+    // For this demo, we'll store it in a predictable document.
+    const settingsRef = adminDb.collection('settings').doc('integrations');
+    await settingsRef.set({
+      zapierWebhookUrl: validatedFields.data.webhookUrl,
+      updatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    return { data: { success: true } };
+  } catch (e: any) {
+    console.error('Error saving webhook URL:', e);
+    return { error: e.message || 'Failed to save webhook URL.' };
+  }
 }
