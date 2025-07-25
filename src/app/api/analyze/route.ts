@@ -15,6 +15,14 @@ export async function POST(request: NextRequest) {
   const logMetadata = { requestId, ip, authUid };
 
   try {
+    const functionUrl = process.env.COMPETITOR_ANALYSIS_FUNCTION_URL;
+
+    if (!functionUrl || functionUrl.includes('your-firebase-cloud-function')) {
+        const errorMessage = "The Competitor Analysis agent is not configured. Please set the COMPETITOR_ANALYSIS_FUNCTION_URL environment variable in your project settings.";
+        console.error(JSON.stringify({ message: errorMessage, ...logMetadata }));
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
+    }
+      
     const body = await request.json();
     console.info(JSON.stringify({ message: 'Analysis request received', ...logMetadata, url: body.url }));
 
@@ -30,14 +38,6 @@ export async function POST(request: NextRequest) {
         }, 
         { status: 400 }
       );
-    }
-
-    const functionUrl = process.env.COMPETITOR_ANALYSIS_FUNCTION_URL;
-
-    if (!functionUrl || functionUrl.includes('your-firebase-cloud-function')) {
-        const errorMessage = "COMPETITOR_ANALYSIS_FUNCTION_URL environment variable is not set. Please configure it in the .env file.";
-        console.error(JSON.stringify({ message: errorMessage, ...logMetadata }));
-        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 
     // Call the dedicated Firebase Function for competitor analysis

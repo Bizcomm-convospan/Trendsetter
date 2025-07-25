@@ -10,7 +10,7 @@ import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useEffect, useState, Suspense } from 'react';
 
 
-function ThankYouContentInner() {
+function ThankYouContent() {
   const searchParams = useSearchParams();
   const [planName, setPlanName] = useState<string | null>(null);
 
@@ -63,12 +63,17 @@ function ThankYouContentInner() {
   );
 }
 
+// Wrap the client component in Suspense to handle dynamic routing parameters correctly
 export default function ThankYouPage() {
   return (
     <LandingLayout>
       <section className="container flex min-h-[calc(100vh-10rem)] items-center justify-center py-12">
-        <Suspense fallback={<div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>}>
-          <ThankYouContentInner />
+        <Suspense fallback={
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+          </div>
+        }>
+          <ThankYouContent />
         </Suspense>
       </section>
     </LandingLayout>

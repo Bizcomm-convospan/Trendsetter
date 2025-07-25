@@ -29,17 +29,14 @@ export default function CheckoutPage() {
   const planId = typeof params.planId === 'string' ? params.planId : '';
 
   useEffect(() => {
-    if (planId) {
-      if (planDetails[planId]) {
-        setCurrentPlan(planDetails[planId]);
-        setStatus('ready');
-      } else {
-        setStatus('invalid');
+    if (planId && planDetails[planId]) {
+      setCurrentPlan(planDetails[planId]);
+      setStatus('ready');
+    } else {
+      setStatus('invalid');
+      if (planId) { // Only show toast if a planId was present but invalid
         toast({ variant: 'destructive', title: 'Invalid Plan', description: 'The selected plan is not valid.' });
       }
-    } else {
-        // This case handles if the URL is somehow /checkout/ without a planId
-        setStatus('invalid');
     }
   }, [planId, toast]);
 
@@ -71,7 +68,7 @@ export default function CheckoutPage() {
               <CardTitle>Invalid Plan</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>The plan you selected is not available. Please return to our pricing page.</p>
+              <p>The plan you selected is not available. Please return to our pricing page to select a valid plan.</p>
             </CardContent>
             <CardFooter>
               <Button onClick={() => router.push('/pricing')} className="w-full">Go to Pricing</Button>
