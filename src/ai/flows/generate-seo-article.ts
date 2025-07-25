@@ -11,6 +11,7 @@ import {z} from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { openai } from '@genkit-ai/openai';
+import { HeadlineSuggestionSchema, SocialMediaPostSchema } from './schemas';
 
 const GenerateSeoArticleInputSchema = z.object({
   topic: z
@@ -29,18 +30,6 @@ export type GenerateSeoArticleInput = z.infer<typeof GenerateSeoArticleInputSche
 const SeoMetaSchema = z.object({
   title: z.string().describe('An SEO-optimized title (around 60 characters).'),
   description: z.string().describe('An SEO-optimized meta description (around 155 characters).'),
-});
-
-const HeadlineSuggestionSchema = z.object({
-    headline: z.string().describe("The suggested headline text."),
-    angle: z.string().describe("The angle or type of the headline (e.g., 'How-To', 'Controversial', 'List-based')."),
-    clickThroughScore: z.number().min(0).max(100).describe("An AI-generated score from 0-100 indicating the headline's potential click-through rate."),
-});
-
-const SocialMediaPostSchema = z.object({
-  twitterThread: z.array(z.string()).describe('A thread of 2-3 tweets, each a maximum of 280 characters, including relevant hashtags.'),
-  linkedInPost: z.string().describe('A professional and engaging post for LinkedIn, including relevant hashtags.'),
-  facebookPost: z.string().describe('A more casual and engaging post for Facebook, including relevant hashtags and possibly a question to drive engagement.'),
 });
 
 const GenerateSeoArticleOutputSchema = z.object({

@@ -12,6 +12,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { SocialMediaPostSchema } from './schemas';
 
 const SocialMediaInputSchema = z.object({
   articleContent: z.string().min(100).describe('The full content of the article to generate social media posts from.'),
@@ -19,12 +20,7 @@ const SocialMediaInputSchema = z.object({
 });
 export type SocialMediaInput = z.infer<typeof SocialMediaInputSchema>;
 
-const SocialMediaOutputSchema = z.object({
-  twitterThread: z.array(z.string()).describe('A thread of 2-3 tweets, each a maximum of 280 characters, including relevant hashtags.'),
-  linkedInPost: z.string().describe('A professional and engaging post for LinkedIn, including relevant hashtags.'),
-  facebookPost: z.string().describe('A more casual and engaging post for Facebook, including relevant hashtags and possibly a question to drive engagement.'),
-});
-export type SocialMediaOutput = z.infer<typeof SocialMediaOutputSchema>;
+export type SocialMediaOutput = z.infer<typeof SocialMediaPostSchema>;
 
 export async function generateSocialMediaContent(input: SocialMediaInput): Promise<SocialMediaOutput> {
     throw new Error('This flow is deprecated. Please use the unified `generateSeoArticle` flow instead.');
