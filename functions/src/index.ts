@@ -1,8 +1,11 @@
 
 import { onRequest } from "firebase-functions/v2/onRequest";
+import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { analyzeCompetitor, CompetitorAnalyzerInputSchema, CompetitorAnalyzerInput, CompetitorAnalyzerOutput } from "./competitor-analyzer";
+import fetch from 'node-fetch';
+
 
 // Initialize the browser instance from the crawl tool when the function warms up.
 import { initializeBrowserOnColdStart } from './tools/crawl';
@@ -79,3 +82,66 @@ export const analyze = onRequest({ cors: true }, async (request, response) => {
     response.status(500).json({ error: `Failed to analyze competitor: ${e.message}` });
   }
 });
+
+
+/**
+ * A Firestore-triggered function that sends published article data to a webhook.
+ * This is designed to integrate with services like Zapier.
+ */
+export const onArticlePublish = onDocumentUpdated("articles/{articleId}", async (event) => {
+  if (!event.data) {
+    logger.info("No data associated with the event, skipping.");
+    return;
+  }
+
+  const before = event.data.before.data();
+  const after = event.data.after.data();
+
+  // Check if the status changed from 'draft' to 'published'
+  if (before.status === 'draft' && after.status === 'published') {
+    logger.info(`Article ${event.params.articleId} was published. Preparing to send to webhook.`);
+    
+    // The ZAPIER_WEBHOOK_URL would be stored in Firebase environment variables
+    // for security (e.g., using `firebase functions:config:set zapier.webhook_url="..."`)
+    const webhookUrl = process.env.ZAPIER_WEBHOOK_URL;
+
+    if (!webhookUrl || webhookUrl.includes('your-zapier-webhook-url-here')) {
+        logger.warn(`ZAPIER_WEBHOOK_URL is not configured. Skipping webhook for article ${event.params.articleId}.`);
+        return; // Exit gracefully if the URL isn't set up
+    }
+    
+    const payload = {
+        id: event.params.articleId,
+        title: after.title,
+        content: after.content,
+        meta: after.meta,
+        featuredImageUrl: after.featuredImageUrl || '',
+        publishedAt: after.publishedAt.toDate().toISOString(),
+    };
+
+    try {
+        logger.info(`Sending payload to Zapier for article ${event.params.articleId}.`);
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.text();
+            throw new Error(`Zapier webhook failed with status ${response.status}: ${errorBody}`);
+        }
+
+        logger.info(`Successfully sent article ${event.params.articleId} to Zapier webhook.`);
+
+    } catch (error: any) {
+        logger.error(`Error sending data to Zapier for article ${event.params.articleId}:`, {
+            message: error.message,
+            stack: error.stack,
+        });
+        // You might want to add retry logic or an alert here in a real production system.
+    }
+  }
+});
+
+    

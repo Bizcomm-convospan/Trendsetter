@@ -7,7 +7,10 @@
       "runtime": "nodejs20",
       "https": [
         "analyze"
-      ]
+      ],
+      "firestore": {
+        "onUpdate": "onArticlePublish"
+      }
     }
   ],
   "firestore": {
@@ -25,3 +28,5 @@
     }
   }
 }
+
+    

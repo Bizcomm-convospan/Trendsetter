@@ -268,66 +268,16 @@ export async function handlePublishArticle(
 
   try {
     const articleRef = adminDb.collection('articles').doc(articleId);
-    const articleDoc = await articleRef.get();
-
-    if (!articleDoc.exists) {
-      return { error: 'Article not found.' };
-    }
-
-    const articleData = articleDoc.data();
-    if (!articleData) {
-        return { error: 'Article data is missing.' };
-    }
-
-    const webhookUrl = process.env.WP_WEBHOOK_URL;
-    const webhookToken = process.env.WP_WEBHOOK_TOKEN;
-
-    const isUrlConfigured = webhookUrl && !webhookUrl.includes('your-ngrok-url');
-    const isTokenConfigured =
-      webhookToken && !webhookToken.includes('your_secure_token_here');
-
-    if (isUrlConfigured && isTokenConfigured) {
-      console.log(
-        `Sending article ${articleId} to WordPress webhook: ${webhookUrl}`
-      );
-      
-      const payload = {
-          title: articleData.title,
-          content: articleData.content,
-          meta: articleData.meta,
-          featuredImageUrl: articleData.featuredImageUrl || '', // Ensure it's always a string
-      };
-
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-ai-token': webhookToken,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        const errorMessage = `WordPress webhook failed with status ${response.status}: ${errorBody}`;
-        console.error(errorMessage);
-        // Important: Return an error and do NOT proceed to update Firestore.
-        return { error: errorMessage };
-      } else {
-        console.log(`Successfully pushed article ${articleId} to WordPress.`);
-      }
-    } else {
-      const warningMessage =
-        'WP_WEBHOOK_URL and/or WP_WEBHOOK_TOKEN are not configured. Skipping actual webhook call and marking as published for testing.';
-      console.warn(warningMessage);
-      return { error: warningMessage };
-    }
-
-    // This will now only be reached if the webhook call was successful or skipped due to config.
+    
+    // The responsibility of this function is now just to update the status.
+    // A separate Firebase Function will be triggered by this update to handle
+    // the webhook call to Zapier or any other service.
     await articleRef.update({
       status: 'published',
       publishedAt: FieldValue.serverTimestamp(),
     });
+
+    console.log(`Article ${articleId} status updated to 'published'. Triggering downstream automations.`);
 
     return { data: { success: true } };
   } catch (e: any) {
@@ -608,3 +558,5 @@ export async function handleAnalyzePerformance(
     return { error: e.message || 'Failed to analyze performance.' };
   }
 }
+
+    
