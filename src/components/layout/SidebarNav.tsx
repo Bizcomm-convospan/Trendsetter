@@ -46,8 +46,7 @@ export function SidebarNav() {
       title: 'Creation & Refinement',
       icon: FileSignature,
       items: [
-        { href: '/dashboard/content-creation', label: 'Content Creation Hub', icon: Wand2 },
-        { href: '/dashboard/content-optimizer', label: 'Content Optimizer', icon: Edit },
+        { href: '/dashboard/content-creation', label: 'Content Editor & Hub', icon: Wand2 },
         { href: '/dashboard/ai-detector', label: t('sidebar.aiDetector'), icon: ScanText },
         { href: '/dashboard/humanizer', label: t('sidebar.aiHumanizer'), icon: Wand2 },
         { href: '/dashboard/plagiarism-checker', label: 'Plagiarism Checker', icon: ShieldCheck },

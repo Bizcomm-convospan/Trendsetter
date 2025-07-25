@@ -4,14 +4,14 @@
 import { useState, useEffect, useTransition, useMemo } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
-import { handleGenerateArticle, handlePublishArticle, handleGenerateImage, handleGenerateVideo, handleGenerateHumanizedContent, handleUpdateArticleContent, type ActionResponse } from '@/app/actions';
+import { handleGenerateArticle, handlePublishArticle, handleGenerateImage, handleGenerateVideo, type ActionResponse } from '@/app/actions';
 import type { GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook, AlertTriangle, Video, Info, Sparkles, Edit } from 'lucide-react';
+import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook, AlertTriangle, Video, Info, Sparkles, Edit, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, orderBy, Timestamp, doc, updateDoc } from 'firebase/firestore';
@@ -29,6 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { type HeadlineSuggestion } from '@/ai/flows/schemas';
 import Link from 'next/link';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ContentOptimizer } from '../content-optimizer/ContentOptimizer';
 
 
 interface Article extends GenerateSeoArticleOutput {
@@ -139,47 +140,6 @@ function SocialMediaDialog({ article, open, onOpenChange }: { article: Article |
     )
 }
 
-// The new popover for inline text editing
-function TextImprovementPopover({ selection, onImproveText }: { selection: Selection | null, onImproveText: (text: string) => void }) {
-  const [isImproving, startImproving] = useTransition();
-
-  if (!selection || selection.isCollapsed) {
-    return null;
-  }
-
-  const handleImprove = async () => {
-    const selectedText = selection.toString();
-    if (!selectedText) return;
-
-    startImproving(async () => {
-      const formData = new FormData();
-      formData.append('contentToHumanize', selectedText);
-      const response = await handleGenerateHumanizedContent(formData);
-      if (response.data) {
-        onImproveText(response.data);
-      } else {
-        alert("Failed to improve text.");
-      }
-    });
-  };
-
-  const popoverStyle: React.CSSProperties = {
-    position: 'absolute',
-    left: `${selection.getRangeAt(0).getBoundingClientRect().left}px`,
-    top: `${selection.getRangeAt(0).getBoundingClientRect().top - 40}px`,
-  };
-
-  return (
-    <div style={popoverStyle} className="z-50">
-        <Button onClick={handleImprove} disabled={isImproving} size="sm" className="shadow-lg">
-            {isImproving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-            Improve with AI
-        </Button>
-    </div>
-  );
-}
-
-
 export function ContentCreationClient({ initialTopic }: { initialTopic?: string }) {
   const { toast } = useToast();
   const router = useRouter();
@@ -198,6 +158,9 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   
   const [selectedArticleForSocial, setSelectedArticleForSocial] = useState<Article | null>(null);
   const [isSocialDialogOpen, setIsSocialDialogOpen] = useState(false);
+
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+
 
   useEffect(() => {
     try {
@@ -314,12 +277,18 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
     setSelectedArticleForSocial(article);
     setIsSocialDialogOpen(true);
   };
-
+  
   const openArticleEditor = (article: Article) => {
-    // Pass the article data to the optimizer page via localStorage
-    localStorage.setItem('optimizer-article-data', JSON.stringify(article));
-    router.push('/dashboard/content-optimizer');
+    setEditingArticle(article);
   };
+
+  const closeArticleEditor = () => {
+    setEditingArticle(null);
+  };
+
+  if (editingArticle) {
+    return <ContentOptimizer article={editingArticle} onBack={closeArticleEditor} />;
+  }
 
   return (
     <>
