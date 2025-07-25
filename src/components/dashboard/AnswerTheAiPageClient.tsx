@@ -11,7 +11,7 @@ import { Loader2, Sparkles, BrainCircuit, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { handleAnswerTheAIFromText, handleAnswerTheAI, handleDiscoverTrends, type ActionResponse } from '@/app/actions';
 import type { AnswerTheAIOutput } from '@/ai/flows/answer-the-ai-flow';
-import { AnswerTheAiResult } from './AnswerTheAiResult';
+import { AnswerTheAiResult } from './AnswerTheAiClient';
 import { Skeleton } from '../ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
