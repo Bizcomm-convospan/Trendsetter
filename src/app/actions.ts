@@ -25,10 +25,6 @@ import {
   AnswerTheAIInput,
   AnswerTheAIOutput,
 } from '@/ai/flows/answer-the-ai-flow';
-import {
-  generateHeadlines,
-  GenerateHeadlinesOutput,
-} from '@/ai/flows/generate-headlines-flow';
 import { questionSpy, QuestionSpyOutput } from '@/ai/flows/question-spy-flow';
 import {
   generateImage,
@@ -43,11 +39,6 @@ import {
   KeywordStrategyInput,
   KeywordStrategyOutput,
 } from '@/ai/flows/keyword-strategy-flow';
-import {
-  generateSocialMediaContent,
-  SocialMediaInput,
-  SocialMediaOutput,
-} from '@/ai/flows/social-media-flow';
 import {
   generateEmailOutreach,
   EmailOutreachInput,
@@ -111,12 +102,6 @@ const AnswerTheAITextSchema = z.object({
   text: z.string().min(10, 'Please provide some text to generate angles from.'),
 });
 
-const GenerateHeadlinesSchema = z.object({
-  articleContent: z
-    .string()
-    .min(100, 'Article content must be at least 100 characters long.'),
-});
-
 const QuestionSpySchema = z.object({
   topic: z.string().min(2, 'Topic must be at least 2 characters long.'),
 });
@@ -127,11 +112,6 @@ const CompetitorAnalyzerSchema = z.object({
 
 const KeywordStrategySchema = z.object({
     topic: z.string().min(3, 'Topic must be at least 3 characters long.'),
-});
-
-const SocialMediaSchema = z.object({
-    articleTitle: z.string().min(3, 'Article title is required.'),
-    articleContent: z.string().min(100, 'Article content must be at least 100 characters.'),
 });
 
 const AnalyzePerformanceSchema = z.object({
@@ -414,31 +394,6 @@ export async function handleAnswerTheAIFromText(
   }
 }
 
-export async function handleGenerateHeadlines(
-  formData: FormData
-): Promise<ActionResponse<GenerateHeadlinesOutput>> {
-  const rawFormData = {
-    articleContent: formData.get('articleContent') as string,
-  };
-
-  const validatedFields = GenerateHeadlinesSchema.safeParse(rawFormData);
-  if (!validatedFields.success) {
-    return {
-      validationErrors: validatedFields.error.flatten().fieldErrors,
-      error: 'Validation failed.',
-    };
-  }
-
-  try {
-    // The model is good at handling HTML, so we don't need to extract text here.
-    const result = await generateHeadlines({ articleContent: validatedFields.data.articleContent });
-    return { data: result };
-  } catch (e: any) {
-    console.error('Error generating headlines:', e);
-    return { error: e.message || 'Failed to generate headlines.' };
-  }
-}
-
 export async function handleQuestionSpy(
   formData: FormData
 ): Promise<ActionResponse<QuestionSpyOutput>> {
@@ -604,31 +559,6 @@ export async function handleKeywordStrategy(
     console.error('Error in Keyword Strategy:', e);
     return { error: e.message || 'Failed to generate keyword strategy.' };
   }
-}
-
-export async function handleSocialMedia(
-    formData: FormData
-): Promise<ActionResponse<SocialMediaOutput>> {
-    const rawFormData = {
-        articleTitle: formData.get('articleTitle') as string,
-        articleContent: formData.get('articleContent') as string,
-    };
-
-    const validatedFields = SocialMediaSchema.safeParse(rawFormData);
-    if (!validatedFields.success) {
-        return {
-            validationErrors: validatedFields.error.flatten().fieldErrors,
-            error: 'Validation failed.',
-        };
-    }
-    
-    try {
-        const result = await generateSocialMediaContent(validatedFields.data);
-        return { data: result };
-    } catch (e: any) {
-        console.error('Error generating social media content:', e);
-        return { error: e.message || 'Failed to generate social media content.' };
-    }
 }
 
 export async function handleEmailOutreach(
