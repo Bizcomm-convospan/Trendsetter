@@ -5,7 +5,7 @@ import { WorkflowGuide } from '@/components/dashboard/WorkflowGuide';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { MessageCircleQuestion, BrainCircuit, Wand2, ScanText, ArrowRight, Target, Key, TrendingUp, Search, FileSignature, BarChart2, Edit } from 'lucide-react';
+import { MessageCircleQuestion, BrainCircuit, Wand2, ScanText, ArrowRight, Target, Key, TrendingUp, Search, FileSignature, BarChart2, Edit, Mail } from 'lucide-react';
 
 const toolCards = [
   {
@@ -56,6 +56,14 @@ const toolCards = [
     cta: 'Get Angles',
     group: 'research'
   },
+   {
+    href: '/dashboard/email-outreach',
+    icon: Mail,
+    title: 'Email Outreach',
+    description: 'Generate personalized, multi-step email sequences for sales and content promotion.',
+    cta: 'Create Sequence',
+    group: 'performance'
+  },
   {
     href: '/dashboard/content-optimizer',
     icon: Edit,
@@ -85,7 +93,7 @@ const toolCards = [
 const groups = [
     { id: 'research', title: 'Content Strategy & Research', icon: Search },
     { id: 'creation', title: 'Content Creation & Refinement', icon: FileSignature },
-    { id: 'performance', title: 'Performance & Optimization', icon: BarChart2 }
+    { id: 'performance', title: 'Performance & Outreach', icon: BarChart2 }
 ]
 
 

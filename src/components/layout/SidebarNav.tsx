@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Wand2, ScanText, User, BrainCircuit, MessageCircleQuestion, Target, Key, TrendingUp, Search, FileSignature, BarChart2, Edit, Zap } from 'lucide-react';
+import { LayoutDashboard, Wand2, ScanText, User, BrainCircuit, MessageCircleQuestion, Target, Key, TrendingUp, Search, FileSignature, BarChart2, Edit, Zap, Mail } from 'lucide-react';
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -53,10 +53,11 @@ export function SidebarNav() {
       ]
     },
     {
-        title: 'Performance & Profile',
+        title: 'Performance & Outreach',
         icon: BarChart2,
         items: [
             { href: '/dashboard/performance', label: 'Content Performance', icon: TrendingUp },
+            { href: '/dashboard/email-outreach', label: 'Email Outreach', icon: Mail },
             { href: '/dashboard/integrations', label: 'Integrations', icon: Zap },
             { href: '/dashboard/profile', label: t('sidebar.myProfile'), icon: User },
         ]

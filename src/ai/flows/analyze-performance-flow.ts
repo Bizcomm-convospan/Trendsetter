@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI agent for analyzing the performance of a published article and suggesting improvements.
@@ -57,7 +58,7 @@ const analyzePerformancePrompt = ai.definePrompt({
         - If views are very low, the core topic might not be in demand, or the article needs a complete rewrite for a different keyword.
     2.  **Provide a concise diagnosis** summarizing this weakness.
     3.  **Formulate a clear recommendation** for the user's next step.
-    4.  **Suggest a specific action** that maps to one of the application's tools: 'optimize_headlines', 'humanize_content', or 'rewrite_article'.
+    4.  **Suggest a specific action** that maps to one of the application's tools: 'optimize_headlines', 'humanize_content', 'rewrite_article'.
 
     Return the result in the specified JSON format.
   `,
