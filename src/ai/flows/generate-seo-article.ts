@@ -10,7 +10,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import { openai } from 'openai';
+import { openai } from '@genkit-ai/openai';
 
 const GenerateSeoArticleInputSchema = z.object({
   topic: z

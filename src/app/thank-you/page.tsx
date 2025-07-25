@@ -7,35 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { LandingLayout } from '@/components/layout/LandingLayout';
 import { CheckCircle2, Loader2 } from 'lucide-react';
-import { useEffect, useState, Suspense } from 'react';
-
+import { Suspense } from 'react';
 
 function ThankYouContent() {
   const searchParams = useSearchParams();
-  const [planName, setPlanName] = useState<string | null>(null);
-
-  // This useEffect will only run on the client, after hydration.
-  // This prevents the server from rendering one thing and the client another.
-  useEffect(() => {
-    const planNames: Record<string, string> = {
-      basic: 'Basic Plan',
-      pro: 'Pro Plan',
-    };
-    const planId = searchParams.get('plan');
-    const name = planId ? planNames[planId] || 'your selected plan' : 'your selected plan';
-    setPlanName(name);
-  }, [searchParams]);
-
-  if (planName === null) {
-      return (
-          <Card className="w-full max-w-lg text-center shadow-xl">
-              <CardContent className="p-10 flex items-center justify-center gap-4">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary"/>
-                  <p>Loading your subscription details...</p>
-              </CardContent>
-          </Card>
-      )
-  }
+  const planId = searchParams.get('plan');
+  
+  const planNames: Record<string, string> = {
+    basic: 'Basic Plan',
+    pro: 'Pro Plan',
+  };
+  const planName = planId ? planNames[planId] || 'your selected plan' : 'your selected plan';
 
   return (
     <Card className="w-full max-w-lg text-center shadow-xl animate-in fade-in-50">
@@ -69,9 +51,12 @@ export default function ThankYouPage() {
     <LandingLayout>
       <section className="container flex min-h-[calc(100vh-10rem)] items-center justify-center py-12">
         <Suspense fallback={
-          <div className="flex items-center justify-center p-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary"/>
-          </div>
+          <Card className="w-full max-w-lg text-center shadow-xl">
+              <CardContent className="p-10 flex items-center justify-center gap-4">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+                  <p>Loading your subscription details...</p>
+              </CardContent>
+          </Card>
         }>
           <ThankYouContent />
         </Suspense>
