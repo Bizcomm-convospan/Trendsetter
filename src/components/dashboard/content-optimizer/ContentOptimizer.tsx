@@ -102,7 +102,7 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
   }, [article.content]);
 
   useEffect(() => {
-    if (editorRef.current) {
+    if (editorRef.current && editorRef.current.innerHTML !== content) {
       editorRef.current.innerHTML = content;
     }
   }, [content]);
@@ -196,21 +196,22 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
         {/* Left Column: Editor */}
         <div className="lg:col-span-2 space-y-4">
             <Card className="shadow-lg">
-                <CardContent className="p-6 space-y-4">
+                <CardContent className="p-4 space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="title" className="text-sm font-semibold">Title</Label>
-                        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="text-lg" />
+                        <Label htmlFor="title" className="text-xs font-semibold uppercase text-muted-foreground">Title</Label>
+                        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="text-2xl font-bold h-auto p-0 border-none focus-visible:ring-0" />
                          <p className="text-xs text-muted-foreground text-right">{title.length} / 70</p>
                     </div>
+                    <Separator />
                     <div className="space-y-2">
-                        <Label htmlFor="description" className="text-sm font-semibold">Description</Label>
-                        <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+                        <Label htmlFor="description" className="text-xs font-semibold uppercase text-muted-foreground">Meta Description</Label>
+                        <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="border-none p-0 focus-visible:ring-0" />
                         <p className="text-xs text-muted-foreground text-right">{description.length} / 160</p>
                     </div>
                 </CardContent>
             </Card>
             <Card className="shadow-lg">
-                <CardContent className="p-6 space-y-4">
+                <CardContent className="p-2 space-y-2">
                     <EditorToolbar onCommand={handleEditorCommand} />
                     <div
                         ref={editorRef}
@@ -227,16 +228,16 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
         <aside className="lg:col-span-1 space-y-6 sticky top-24">
             <Card className="shadow-lg">
                 <CardHeader>
-                    <CardTitle>Guidelines</CardTitle>
+                    <CardTitle>Content Assistant</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                     <Tabs defaultValue="guidelines" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3">
+                        <TabsList className="grid w-full grid-cols-3 px-2">
                             <TabsTrigger value="guidelines">Guidelines</TabsTrigger>
                             <TabsTrigger value="facts">Facts</TabsTrigger>
                             <TabsTrigger value="outline">Outline</TabsTrigger>
                         </TabsList>
-                        <TabsContent value="guidelines" className="pt-4">
+                        <TabsContent value="guidelines" className="pt-4 px-4">
                             <ScrollArea className="h-[70vh] pr-4">
                                 <div className="space-y-6">
                                     {/* Score */}
@@ -292,11 +293,18 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
                                                     {kw.keyword} {kw.count}/{kw.target}
                                                 </Badge>
                                             ))}
+                                            {!seoResult && <p className="text-xs text-muted-foreground">Run analysis to see keyword suggestions.</p>}
                                         </div>
                                     </div>
                                 </div>
                             </ScrollArea>
                         </TabsContent>
+                         <TabsContent value="facts" className="pt-4 px-4">
+                            <p className="text-sm text-muted-foreground">Fact-checking and outline features are coming soon.</p>
+                         </TabsContent>
+                         <TabsContent value="outline" className="pt-4 px-4">
+                             <p className="text-sm text-muted-foreground">Fact-checking and outline features are coming soon.</p>
+                         </TabsContent>
                     </Tabs>
                 </CardContent>
             </Card>
