@@ -82,6 +82,7 @@ const GenerateArticleSchema = z.object({
   language: z.string().optional(),
   template: z.enum(['standard', 'listicle', 'how-to']).default('standard'),
   tone: z.enum(['professional', 'casual', 'witty', 'authoritative']).default('professional'),
+  modelProvider: z.enum(['google-ai', 'openai']).default('google-ai'),
 });
 
 const DiscoverTrendsSchema = z.object({
@@ -178,6 +179,7 @@ export async function handleGenerateArticle(
     language: (formData.get('language') as string) || undefined,
     template: formData.get('template') as 'standard' | 'listicle' | 'how-to',
     tone: formData.get('tone') as 'professional' | 'casual' | 'witty' | 'authoritative',
+    modelProvider: formData.get('modelProvider') as 'google-ai' | 'openai',
   };
 
   const validatedFields = GenerateArticleSchema.safeParse(rawFormData);
