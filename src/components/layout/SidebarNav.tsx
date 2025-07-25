@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Wand2, ScanText, User, BrainCircuit, MessageCircleQuestion, Target, Key, TrendingUp, Search, FileSignature, BarChart2, Edit, Zap, Mail } from 'lucide-react';
+import { LayoutDashboard, Wand2, ScanText, User, BrainCircuit, MessageCircleQuestion, Target, Key, TrendingUp, Search, FileSignature, BarChart2, Edit, Zap, Mail, ShieldCheck } from 'lucide-react';
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -50,6 +50,7 @@ export function SidebarNav() {
         { href: '/dashboard/content-optimizer', label: 'Content Optimizer', icon: Edit },
         { href: '/dashboard/ai-detector', label: t('sidebar.aiDetector'), icon: ScanText },
         { href: '/dashboard/humanizer', label: t('sidebar.aiHumanizer'), icon: Wand2 },
+        { href: '/dashboard/plagiarism-checker', label: 'Plagiarism Checker', icon: ShieldCheck },
       ]
     },
     {

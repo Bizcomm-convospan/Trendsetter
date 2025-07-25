@@ -1,6 +1,7 @@
+
 'use server';
 /**
- * @fileOverview A flow for discovering trending topics.
+ * @fileOverview A flow for discovering trending topics with verifiable citations.
  *
  * - discoverTrends - A function that handles discovering current trends, optionally based on a topic.
  * - DiscoverTrendsInput - The input type for the discoverTrends function.
@@ -9,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {googleSearch} from '@genkit-ai/googleai';
 import { DiscoveredTrend, DiscoveredTrendSchema } from './schemas';
 
 const DiscoverTrendsInputSchema = z.object({
@@ -34,9 +36,15 @@ const discoverTrendsPrompt = ai.definePrompt({
   name: 'discoverTrendsPrompt',
   input: {schema: DiscoverTrendsInputSchema},
   output: {schema: DiscoverTrendsOutputSchema},
+  tools: [googleSearch], // Enable the Google Search tool for grounding
+  toolConfig: {
+    googleSearch: {
+        blocklist: [], // You can block certain sites if needed
+    },
+  },
   prompt: `
-    You are an expert trend analyst. Your goal is to identify 5 current trending topics by simulating a search of real-time web data from sources like Google Trends, news aggregators, and social media.
-    The current timestamp to consider is Friday, June 20, 2025, 02:08 PM IST.
+    You are an expert trend analyst. Your goal is to identify 5 current trending topics by searching real-time web data from sources like Google Trends, news aggregators, and social media.
+    You MUST use the provided Google Search tool to find these trends and use the search results as the basis for your answer. You must cite your sources.
 
     Apply the following filters to your analysis:
     {{#if topic}}
@@ -56,8 +64,9 @@ const discoverTrendsPrompt = ai.definePrompt({
 
     For each trend, you must provide:
     1. A concise and engaging title.
-    2. A brief (1-2 sentence) description explaining why the topic is relevant and trending, mentioning the sources you simulated checking.
+    2. A brief (1-2 sentence) description explaining why the topic is relevant and trending, based on the search results.
     3. A list of 3-5 relevant SEO keywords that could be used for an article on the topic.
+    4. A list of citations from the search tool that support the trend.
 
     Return the results in the specified JSON format.
   `,
@@ -70,7 +79,24 @@ const discoverTrendsFlow = ai.defineFlow(
     outputSchema: DiscoverTrendsOutputSchema,
   },
   async (input) => {
-    const {output} = await discoverTrendsPrompt(input);
-    return output!;
+    const llmResponse = await discoverTrendsPrompt(input);
+    const output = llmResponse.output();
+    
+    if (!output) {
+        throw new Error("Trend discovery failed to produce an output.");
+    }
+
+    // Attach citation data to the output
+    const populatedTrends = output.discoveredTrends.map(trend => {
+        const trendCitations = llmResponse.citations?.filter(citation => 
+            (citation.title.includes(trend.title) || trend.description.includes(citation.title))
+        );
+        return {
+            ...trend,
+            citations: trendCitations?.map(c => ({ title: c.title, url: c.url })) || [],
+        }
+    });
+
+    return { discoveredTrends: populatedTrends };
   }
 );

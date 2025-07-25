@@ -54,6 +54,11 @@ import {
     ContentOptimizerInput,
     ContentOptimizerOutput,
 } from '@/ai/flows/content-optimizer-flow';
+import {
+    checkPlagiarism,
+    PlagiarismCheckerInput,
+    PlagiarismCheckerOutput,
+} from '@/ai/flows/plagiarism-checker-flow';
 import { z } from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -99,6 +104,12 @@ const AiDetectorSchema = z.object({
   content: z
     .string()
     .min(50, 'Content must be at least 50 characters to analyze effectively.'),
+});
+
+const PlagiarismCheckerSchema = z.object({
+  content: z
+    .string()
+    .min(50, 'Content must be at least 50 characters to check effectively.'),
 });
 
 const ContentOptimizerSchema = z.object({
@@ -282,6 +293,32 @@ export async function handleAiDetection(
     return { error: e.message || 'Failed to analyze content. Please try again.' };
   }
 }
+
+export async function handlePlagiarismCheck(
+  formData: FormData
+): Promise<ActionResponse<PlagiarismCheckerOutput>> {
+  const rawFormData = {
+    content: formData.get('content') as string,
+  };
+
+  const validatedFields = PlagiarismCheckerSchema.safeParse(rawFormData);
+
+  if (!validatedFields.success) {
+    return {
+      validationErrors: validatedFields.error.flatten().fieldErrors,
+      error: 'Validation failed. Please check your input.',
+    };
+  }
+
+  try {
+    const result = await checkPlagiarism(validatedFields.data as PlagiarismCheckerInput);
+    return { data: result };
+  } catch (e: any) {
+    console.error('Error during plagiarism check:', e);
+    return { error: e.message || 'Failed to check content. Please try again.' };
+  }
+}
+
 
 export async function handlePublishArticle(
   articleId: string

@@ -4,18 +4,20 @@
 import { useState, useEffect, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import { handleDiscoverTrends, type ActionResponse } from '@/app/actions';
-import type { DiscoverTrendsOutput } from '@/ai/flows/discover-trends-flow';
+import type { DiscoverTrendsOutput, DiscoveredTrend } from '@/ai/flows/discover-trends-flow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, TrendingUp, BarChart3, FileText, BrainCircuit } from 'lucide-react';
+import { Loader2, TrendingUp, BarChart3, FileText, BrainCircuit, BookCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import Link from 'next/link';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -25,6 +27,45 @@ function SubmitButton() {
       Discover Trends
     </Button>
   );
+}
+
+function CitationsPopover({ citations }: { citations: DiscoveredTrend['citations'] }) {
+    if (!citations || citations.length === 0) {
+        return null;
+    }
+
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                    <BookCheck className="mr-2 h-4 w-4"/>
+                    Show Sources
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+                <div className="grid gap-4">
+                    <div className="space-y-2">
+                        <h4 className="font-medium leading-none">Citations</h4>
+                        <p className="text-sm text-muted-foreground">
+                            Sources used by the AI to identify this trend.
+                        </p>
+                    </div>
+                    <div className="grid gap-2">
+                        {citations.map((citation, index) => (
+                            <div key={index} className="grid grid-cols-[25px_1fr] items-start pb-2 last:mb-0 last:pb-0">
+                                <span className="flex h-2 w-2 translate-y-1 rounded-full bg-sky-500" />
+                                <div className="space-y-1">
+                                    <Link href={citation.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium leading-none hover:underline">
+                                        {citation.title}
+                                    </Link>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </PopoverContent>
+        </Popover>
+    )
 }
 
 export function TrendDiscoveryClient({ onSelectTopic }: { onSelectTopic: (topic: string) => void }) {
@@ -221,8 +262,9 @@ export function TrendDiscoveryClient({ onSelectTopic }: { onSelectTopic: (topic:
                     <TableHeader>
                     <TableRow>
                         <TableHead className="w-[25%]">Trend Title</TableHead>
-                        <TableHead className="w-[40%]">Description</TableHead>
+                        <TableHead className="w-[30%]">Description</TableHead>
                         <TableHead>Keywords</TableHead>
+                        <TableHead>Citations</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                     </TableHeader>
@@ -237,6 +279,9 @@ export function TrendDiscoveryClient({ onSelectTopic }: { onSelectTopic: (topic:
                                 <Badge key={keyword} variant="secondary">{keyword}</Badge>
                             ))}
                             </div>
+                        </TableCell>
+                        <TableCell>
+                            <CitationsPopover citations={trend.citations} />
                         </TableCell>
                         <TableCell className="text-right">
                             <Button variant="ghost" size="sm" onClick={() => onSelectTopic(trend.title)}>
