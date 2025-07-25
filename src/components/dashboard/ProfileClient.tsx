@@ -79,7 +79,10 @@ export function ProfileClient() {
                     </Button>
                 </CardFooter>
             </Card>
-            
+        </div>
+
+        {/* Right Column - Brand, AI, Subscription */}
+        <div className="lg:col-span-2 space-y-8">
             <Card className="shadow-lg">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Palette className="text-primary" /> Global Brand Voice</CardTitle>
@@ -114,29 +117,26 @@ export function ProfileClient() {
                 <CardContent>
                     <div className="space-y-2">
                         <Label htmlFor="ai-model">Active Model</Label>
-                        <Select defaultValue="gemini" disabled>
+                        <Select defaultValue="google-ai">
                             <SelectTrigger id="ai-model" className="w-full sm:w-[280px]">
                                 <SelectValue placeholder="Select a model" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
                                     <SelectLabel>Supported Models</SelectLabel>
-                                    <SelectItem value="gemini">Google Gemini (Active)</SelectItem>
-                                    <SelectItem value="openai">OpenAI GPT-4 (Requires separate API key)</SelectItem>
-                                    <SelectItem value="anthropic">Anthropic Claude 3 (Requires separate API key)</SelectItem>
+                                    <SelectItem value="google-ai">Google Gemini</SelectItem>
+                                    <SelectItem value="openai">OpenAI GPT-4</SelectItem>
+                                    <SelectItem value="anthropic" disabled>Anthropic Claude 3 (Coming Soon)</SelectItem>
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground">
-                            Model switching is a feature planned for future updates. The app currently uses Google Gemini.
+                            Note: Using models other than Google Gemini requires setting the appropriate API key (e.g., OPENAI_API_KEY) in the project's environment variables.
                         </p>
                     </div>
                 </CardContent>
             </Card>
-        </div>
 
-        {/* Right Column - Subscription, Usage, API */}
-        <div className="lg:col-span-2 space-y-8">
             <Card className="shadow-lg">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><CreditCard /> Subscription & Billing</CardTitle>
@@ -152,75 +152,6 @@ export function ProfileClient() {
                             <Link href="/pricing">Change Plan</Link>
                         </Button>
                     </div>
-                     <div className="flex items-center justify-between rounded-lg border p-4">
-                        <div>
-                            <p className="font-semibold text-foreground">Payment Method</p>
-                            <p className="text-sm text-muted-foreground">Visa ending in •••• 4242</p>
-                        </div>
-                        <Button variant="outline" disabled>Update Payment</Button>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card className="shadow-lg">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><BarChart2 /> Current Usage</CardTitle>
-                    <CardDescription>Your usage statistics for the current billing cycle. Resets on July 20, 2025.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                        <Label className="flex items-center gap-2 font-medium"><TrendingUp className="h-4 w-4" /> Trend Discoveries</Label>
-                        <Progress value={25} />
-                        <p className="text-sm text-muted-foreground">5 of 20 searches used.</p>
-                    </div>
-                    <Separator />
-                    <div className="space-y-2">
-                        <Label className="flex items-center gap-2 font-medium"><MessageCircleQuestion className="h-4 w-4" /> Question Spy Searches</Label>
-                        <Progress value={60} />
-                        <p className="text-sm text-muted-foreground">6 of 10 searches used.</p>
-                    </div>
-                    <Separator />
-                    <div className="space-y-2">
-                        <Label className="flex items-center gap-2 font-medium"><Target className="h-4 w-4" /> Competitor Analyses</Label>
-                        <Progress value={20} />
-                        <p className="text-sm text-muted-foreground">1 of 5 reports used.</p>
-                    </div>
-                    <Separator />
-                    <div className="space-y-2">
-                        <Label className="flex items-center gap-2 font-medium"><BrainCircuit className="h-4 w-4" /> "Answer the AI" Generations</Label>
-                        <Progress value={50} />
-                        <p className="text-sm text-muted-foreground">10 of 20 generations used.</p>
-                    </div>
-                    <Separator />
-                     <div className="space-y-2">
-                        <Label className="flex items-center gap-2 font-medium"><FileText className="h-4 w-4" /> Content Generation</Label>
-                        <Progress value={40} />
-                        <p className="text-sm text-muted-foreground">10 of 25 articles used.</p>
-                    </div>
-                     <Separator />
-                     <div className="space-y-2">
-                        <Label className="flex items-center gap-2 font-medium"><ScanText className="h-4 w-4" /> AI Detector Analyses</Label>
-                        <Progress value={80} />
-                        <p className="text-sm text-muted-foreground">40 of 50 analyses used.</p>
-                    </div>
-                </CardContent>
-            </Card>
-            
-            <Card className="shadow-lg">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><KeyRound /> API Access</CardTitle>
-                    <CardDescription>Use your API key for custom integrations. Available on Pro plan and higher.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-center space-x-2">
-                        <Input value={apiKey} readOnly className="font-mono text-sm" />
-                        <Button variant="outline" size="icon" onClick={handleCopyKey} aria-label="Copy API Key">
-                            <Copy className="h-4 w-4" />
-                        </Button>
-                         <Button variant="outline" size="icon" onClick={handleRegenerateKey} aria-label="Regenerate API Key">
-                            <RefreshCw className="h-4 w-4" />
-                        </Button>
-                    </div>
                 </CardContent>
             </Card>
         </div>
@@ -228,5 +159,3 @@ export function ProfileClient() {
     </div>
   );
 }
-
-    
