@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useEffect, ChangeEvent } from 'react';
@@ -35,7 +36,8 @@ export function AiDetectorClient() {
   const [state, setState] = useState<ActionResponse<AiDetectorOutput>>({});
 
   useEffect(() => {
-    // This logic must be in useEffect to avoid hydration errors
+    // This logic must be in useEffect to avoid hydration errors.
+    // It runs only on the client, after the initial server render has been "hydrated".
     try {
       const initialContent = localStorage.getItem('humanizer-initial-content');
       if (initialContent) {
