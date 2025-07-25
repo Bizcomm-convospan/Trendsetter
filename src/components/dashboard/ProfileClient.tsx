@@ -16,21 +16,11 @@ import { User, CreditCard, BarChart2, KeyRound, Copy, RefreshCw, Loader2, FileTe
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { handleSaveWebhookUrl, type ActionResponse } from '@/app/actions';
 
-function SaveWebhookButton() {
-    const { pending } = useFormStatus();
-    return (
-        <Button type="submit" disabled={pending} className="w-full sm:w-auto">
-            {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Save Webhook URL
-        </Button>
-    )
-}
 
 export function ProfileClient() {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [apiKey, setApiKey] = useState('tp_live_********************1234');
-  const [webhookUrlState, setWebhookUrlState] = useState<ActionResponse<{success: boolean}>>({});
   
   const handleSave = async () => {
     setIsSaving(true);
@@ -49,15 +39,6 @@ export function ProfileClient() {
     toast({ title: "API Key Regenerated", description: "A new API key has been generated." });
   };
 
-  const saveWebhookAction = async (formData: FormData) => {
-    const result = await handleSaveWebhookUrl(formData);
-    if (result.error) {
-        toast({ variant: 'destructive', title: 'Error', description: result.error });
-    } else {
-        toast({ title: 'Success!', description: 'Your Zapier webhook URL has been saved.' });
-    }
-    setWebhookUrlState(result);
-  };
 
   return (
     <div className="space-y-8">
@@ -99,34 +80,31 @@ export function ProfileClient() {
             </Card>
 
             <Card className="shadow-lg">
-                <form action={saveWebhookAction}>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Zap /> Automations</CardTitle>
-                        <CardDescription>
-                            Connect Trendsetter Pro to other apps using Zapier.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="webhookUrl">Zapier Webhook URL</Label>
-                            <Input 
-                                id="webhookUrl"
-                                name="webhookUrl"
-                                type="url"
-                                placeholder="https://hooks.zapier.com/hooks/catch/..."
-                            />
-                            {webhookUrlState.validationErrors?.webhookUrl && (
-                                <p className="text-sm text-destructive">{webhookUrlState.validationErrors.webhookUrl}</p>
-                            )}
-                            <p className="text-xs text-muted-foreground">
-                                Create a "Catch Hook" trigger in <a href="https://zapier.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">Zapier</a> and paste the URL here to enable publishing automation.
-                            </p>
-                        </div>
-                    </CardContent>
-                    <CardFooter>
-                        <SaveWebhookButton />
-                    </CardFooter>
-                </form>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Cpu /> AI Model Configuration</CardTitle>
+                    <CardDescription>Select the underlying AI model for content generation and analysis.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        <Label htmlFor="ai-model">Active Model</Label>
+                        <Select defaultValue="gemini" disabled>
+                            <SelectTrigger id="ai-model" className="w-full sm:w-[280px]">
+                                <SelectValue placeholder="Select a model" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectLabel>Supported Models</SelectLabel>
+                                    <SelectItem value="gemini">Google Gemini (Active)</SelectItem>
+                                    <SelectItem value="openai">OpenAI GPT-4 (Requires separate API key)</SelectItem>
+                                    <SelectItem value="anthropic">Anthropic Claude 3 (Requires separate API key)</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                            Model switching is a feature planned for future updates. The app currently uses Google Gemini.
+                        </p>
+                    </div>
+                </CardContent>
             </Card>
         </div>
 
@@ -218,35 +196,6 @@ export function ProfileClient() {
                     </div>
                 </CardContent>
             </Card>
-
-            <Card className="shadow-lg">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Cpu /> AI Model Configuration</CardTitle>
-                    <CardDescription>Select the underlying AI model for content generation and analysis.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-2">
-                        <Label htmlFor="ai-model">Active Model</Label>
-                        <Select defaultValue="gemini" disabled>
-                            <SelectTrigger id="ai-model" className="w-full sm:w-[280px]">
-                                <SelectValue placeholder="Select a model" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectLabel>Supported Models</SelectLabel>
-                                    <SelectItem value="gemini">Google Gemini (Active)</SelectItem>
-                                    <SelectItem value="openai">OpenAI GPT-4 (Requires separate API key)</SelectItem>
-                                    <SelectItem value="anthropic">Anthropic Claude 3 (Requires separate API key)</SelectItem>
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground">
-                            Model switching is a feature planned for future updates. The app currently uses Google Gemini.
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
-
         </div>
       </div>
     </div>
