@@ -110,16 +110,18 @@ export function PerformanceClient() {
       
       switch(suggestedAction) {
         case 'optimize_headlines':
-          // This would ideally open the headline optimizer dialog. For now, we'll log it.
-          // In a real implementation, you'd pass article data to a global state/modal provider.
-          toast({ title: "Action Required", description: "Navigate to Content Creation to optimize headlines for this article."});
+          localStorage.setItem('content-creation-initial-topic', article.topic);
+          toast({ title: "Action Required", description: "Taking you to the Content Creation Hub to optimize headlines."});
+          router.push('/dashboard/content-creation');
           break;
         case 'humanize_content':
           localStorage.setItem('humanizer-initial-content', article.content);
+          toast({ title: "Action Required", description: "Opening the AI Humanizer with your article content."});
           router.push('/dashboard/humanizer');
           break;
         case 'rewrite_article':
-           localStorage.setItem('content-creation-initial-topic', article.topic);
+           localStorage.setItem('content-creation-initial-topic', `Rewrite and improve article about: ${article.topic}`);
+           toast({ title: "Action Required", description: "Taking you to the Content Creation Hub to rewrite the article."});
            router.push('/dashboard/content-creation');
           break;
         default:

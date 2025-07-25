@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Search, Target, FileSearch, BarChart, FlaskConical, CircleAlert, CircleCheck, ClipboardCheck, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Loader2, Search, Target, FileSearch, BarChart, FlaskConical, CircleCheck, ClipboardCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { type ActionResponse, handleCompetitorAnalysis } from '@/app/actions';
 import { type CompetitorAnalyzerOutput } from '@/ai/flows/competitor-analyzer-flow';
@@ -56,7 +56,7 @@ export function CompetitorAnalyzerClient() {
                 Content Competitor Analyzer
             </CardTitle>
             <CardDescription>
-              Enter a competitor's article URL to get an AI-powered report card on their content strategy and find opportunities to outperform them.
+              Enter a competitor's article URL. Our AI will deploy a headless browser to crawl the page, extract its content, and generate a strategic report card to help you outperform them.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -97,27 +97,27 @@ export function CompetitorAnalyzerClient() {
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-4 border rounded-lg">
+                    <div className="p-4 border rounded-lg flex flex-col justify-center">
                         <h3 className="font-semibold flex items-center gap-2 mb-2"><BarChart className="text-primary"/> Content Grade</h3>
-                        <p className="text-4xl font-bold">{resultData.contentGrade}</p>
-                        <p className="text-sm text-muted-foreground">Based on readability, structure, and SEO.</p>
+                        <p className="text-5xl font-bold">{resultData.contentGrade}</p>
+                        <p className="text-sm text-muted-foreground mt-1">Based on readability, structure, and SEO.</p>
                     </div>
-                     <div className="p-4 border rounded-lg">
+                     <div className="p-4 border rounded-lg flex flex-col justify-center">
                         <h3 className="font-semibold flex items-center gap-2 mb-2"><FlaskConical className="text-primary"/> Tone & Style</h3>
-                        <p className="text-lg">{resultData.toneAnalysis}</p>
+                        <p className="text-lg font-semibold">{resultData.toneAnalysis}</p>
                     </div>
                 </div>
                 <Separator />
                 <div className="p-4 border rounded-lg">
                     <h3 className="font-semibold flex items-center gap-2 mb-3"><ClipboardCheck className="text-primary"/> Key Topics & Keywords</h3>
                      <div className="flex flex-wrap gap-2">
-                        {resultData.keyTopics.map(topic => <Badge key={topic} variant="secondary">{topic}</Badge>)}
+                        {resultData.keyTopics.map(topic => <Badge key={topic} variant="secondary" className="text-base py-1 px-3">{topic}</Badge>)}
                     </div>
                 </div>
                  <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-900/20">
                     <h3 className="font-semibold flex items-center gap-2 mb-3 text-green-800 dark:text-green-300"><CircleCheck className="text-green-600"/> Content Gaps & Opportunities</h3>
                     <p className="text-sm text-muted-foreground mb-3">Here are topics the competitor missed. Covering these could make your article better.</p>
-                     <ul className="space-y-2 list-disc pl-5">
+                     <ul className="space-y-2 list-disc pl-5 text-base">
                         {resultData.contentGaps.map((gap, index) => <li key={index}>{gap}</li>)}
                     </ul>
                 </div>

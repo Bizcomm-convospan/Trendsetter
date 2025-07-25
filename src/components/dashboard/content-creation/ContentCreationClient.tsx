@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook, AlertTriangle, Video } from 'lucide-react';
+import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook, AlertTriangle, Video, Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
@@ -27,6 +27,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { type HeadlineSuggestion } from '@/ai/flows/schemas';
+import Link from 'next/link';
 
 interface Article extends GenerateSeoArticleOutput {
   id: string;
@@ -60,53 +61,45 @@ function ArticleRowSkeleton() {
 }
 
 function WordpressIntegrationStatus() {
-    const isUrlConfigured = process.env.NEXT_PUBLIC_WP_WEBHOOK_URL && !process.env.NEXT_PUBLIC_WP_WEBHOOK_URL.includes('your-ngrok-url');
-    const isTokenConfigured = process.env.NEXT_PUBLIC_WP_WEBHOOK_TOKEN && !process.env.NEXT_PUBLIC_WP_WEBHOOK_TOKEN.includes('your_secure_token_here');
-    const isConfigured = isUrlConfigured && isTokenConfigured;
-    
-    const StatusIcon = isConfigured ? CheckCircle : AlertTriangle;
-    const statusColor = isConfigured ? 'text-green-500' : 'text-amber-500';
+    const isZapierUrlConfigured = process.env.NEXT_PUBLIC_ZAPIER_WEBHOOK_URL && !process.env.NEXT_PUBLIC_ZAPIER_WEBHOOK_URL.includes('your-zapier-webhook-url-here');
 
     return (
          <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe className="text-primary"/>
-                WordPress Integration Status
+                Publishing Automation Status
               </CardTitle>
               <CardDescription>
-                This module manages publishing content to your WordPress site. Status is based on your environment configuration.
+                This application uses Zapier to automate publishing to WordPress or any other platform. To enable this, you need to configure a Zapier webhook.
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
               <div className="flex items-start gap-4 rounded-lg border p-4">
-                <StatusIcon className={`h-6 w-6 ${statusColor} mt-1 flex-shrink-0`} />
+                {isZapierUrlConfigured ? <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" /> : <AlertTriangle className="h-6 w-6 text-amber-500 mt-1 flex-shrink-0" />}
                 <div>
-                  <h3 className="font-semibold">Webhook URL</h3>
+                  <h3 className="font-semibold">Zapier Webhook URL</h3>
                   <p className="text-sm text-muted-foreground">
-                    {isUrlConfigured 
-                        ? "The application is ready to send data to your configured webhook URL." 
-                        : "The WP_WEBHOOK_URL is not configured in your .env file."
+                    {isZapierUrlConfigured
+                        ? "Automation is active. Published articles will be sent to your configured Zapier webhook."
+                        : "Automation is disabled. Your ZAPIER_WEBHOOK_URL is not configured in your .env file."
                     }
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-4 rounded-lg border p-4">
-                <StatusIcon className={`h-6 w-6 ${statusColor} mt-1 flex-shrink-0`} />
+               <div className="flex items-start gap-4 rounded-lg border p-4 bg-muted/40">
+                <Info className="h-6 w-6 text-sky-500 mt-1 flex-shrink-0" />
                 <div>
-                  <h3 className="font-semibold">Authentication Token</h3>
-                   <p className="text-sm text-muted-foreground">
-                    {isTokenConfigured 
-                        ? "A security token is correctly configured to be sent with each request."
-                        : "The WP_WEBHOOK_TOKEN is not configured in your .env file."
-                    }
+                  <h3 className="font-semibold">How to Enable Automation</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Create a "Catch Hook" trigger in <Link href="https://zapier.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">Zapier</Link>, connect it to a WordPress "Create Post" action, and paste the webhook URL into your .env file.
                   </p>
                 </div>
               </div>
             </CardContent>
             <CardFooter>
                 <p className="text-xs text-muted-foreground">
-                    If publishing fails, ensure the URL is correct (e.g., using a valid ngrok link for local testing) and the token matches your WordPress plugin's settings.
+                    When you click "Publish", the app sends the article data to your Zapier webhook, which then creates the post in WordPress. This allows for powerful, flexible automations.
                 </p>
             </CardFooter>
           </Card>
@@ -211,10 +204,14 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   const [isSocialDialogOpen, setIsSocialDialogOpen] = useState(false);
 
   useEffect(() => {
-    const storedTopic = localStorage.getItem('content-creation-initial-topic');
-    if (storedTopic) {
-        setTopic(storedTopic);
-        localStorage.removeItem('content-creation-initial-topic');
+    try {
+        const storedTopic = localStorage.getItem('content-creation-initial-topic');
+        if (storedTopic) {
+            setTopic(storedTopic);
+            localStorage.removeItem('content-creation-initial-topic');
+        }
+    } catch (error) {
+        console.error("Could not access localStorage:", error);
     }
   }, []);
 
@@ -270,7 +267,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
     if (result.error) {
       toast({ variant: 'destructive', title: 'Publishing Failed', description: result.error });
     } else {
-      toast({ title: 'Article Published!', description: 'Your article has been sent to WordPress.' });
+      toast({ title: 'Article Published!', description: 'Your article has been sent to your automation workflow.' });
     }
     setActiveActionId(null);
   };
@@ -295,6 +292,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
     } else {
         toast({ title: 'Video Generated!', description: 'A video has been created for your article.' });
     }
+    // Update the local state to remove the spinner, the onSnapshot listener will update the videoUrl
     setDraftArticles(prev => prev.map(a => a.id === article.id ? { ...a, isGeneratingVideo: false } : a));
     setActiveActionId(null);
   };
@@ -375,7 +373,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><UploadCloud className="text-primary"/>Step 3: Refine & Publish Drafts</CardTitle>
-            <CardDescription>These articles are generated and waiting to be published to your website. Use the action buttons to improve them before sending.</CardDescription>
+            <CardDescription>These articles are generated and waiting to be published. Use the action buttons to refine them with images, video, and better text before publishing.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -474,11 +472,11 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                                 onClick={() => handlePublish(article.id)}
                                 disabled={activeActionId === article.id || article.isGeneratingVideo}
                                 >
-                                <span className="sr-only">Publish to WordPress</span>
+                                <span className="sr-only">Publish Article</span>
                                 {activeActionId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent><p>Publish to WordPress</p></TooltipContent>
+                            <TooltipContent><p>Publish Article</p></TooltipContent>
                         </Tooltip>
                       </TableCell>
                     </TableRow>
@@ -496,7 +494,7 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><FileCheck2 className="text-green-600"/>Published Articles Log</CardTitle>
-            <CardDescription>A log of all articles successfully published to your website via the integrated webhook.</CardDescription>
+            <CardDescription>A log of all articles successfully sent to your publishing workflow (e.g., Zapier).</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
