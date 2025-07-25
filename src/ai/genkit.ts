@@ -2,6 +2,9 @@ import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/googleai';
 import {openai} from '@genkit-ai/openai';
 
+// Intentionally throwing an error to test failure modes for all AI agents.
+throw new Error('TEST_FAILURE: AI Service initialization failed.');
+
 export const ai = genkit({
   plugins: [
     googleAI(),
