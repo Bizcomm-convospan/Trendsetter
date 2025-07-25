@@ -38,8 +38,15 @@ export function HeroSection() {
                     <li className="flex items-start">
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
-                            <span className="font-semibold text-foreground">Create Content that Ranks:</span>
-                            <span className="text-muted-foreground"> Generate articles aligned with Google's core E-E-A-T principles for long-term SEO success.</span>
+                            <span className="font-semibold text-foreground">Optimize with AI-Powered Scores:</span>
+                            <span className="text-muted-foreground"> Use the Content Optimizer to get a real-time Content Score, NLP keywords, and actionable advice.</span>
+                        </div>
+                    </li>
+                     <li className="flex items-start">
+                        <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
+                        <div>
+                            <span className="font-semibold text-foreground">Automate Your Workflow:</span>
+                            <span className="text-muted-foreground"> Publish content to WordPress, Ghost, or any other platform seamlessly with our Zapier integration.</span>
                         </div>
                     </li>
                     <li className="flex items-start">
@@ -47,13 +54,6 @@ export function HeroSection() {
                         <div>
                             <span className="font-semibold text-foreground">Convert Articles to Engaging Videos:</span>
                             <span className="text-muted-foreground"> Turn your generated content into short-form videos for social media and embeds in one click.</span>
-                        </div>
-                    </li>
-                    <li className="flex items-start">
-                        <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
-                        <div>
-                            <span className="font-semibold text-foreground">Outsmart Your Competition:</span>
-                            <span className="text-muted-foreground"> Use the Competitor Agent to find strategic gaps and generate superior content.</span>
                         </div>
                     </li>
                      <li className="flex items-start">
