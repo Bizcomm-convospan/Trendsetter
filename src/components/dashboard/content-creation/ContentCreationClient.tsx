@@ -4,17 +4,17 @@
 import { useState, useEffect, useTransition, useMemo } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
-import { handleGenerateArticle, handlePublishArticle, handleGenerateImage, handleGenerateVideo, type ActionResponse } from '@/app/actions';
+import { handleGenerateArticle, handlePublishArticle, handleGenerateImage, handleGenerateVideo, handleGenerateHumanizedContent, handleUpdateArticleContent, type ActionResponse } from '@/app/actions';
 import type { GenerateSeoArticleOutput } from '@/ai/flows/generate-seo-article';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook, AlertTriangle, Video, Info } from 'lucide-react';
+import { Loader2, FileText, Wand2, UploadCloud, Send, FileCheck2, Globe, CheckCircle, Lightbulb, Image as ImageIcon, MessageSquare, Twitter, Linkedin, Facebook, AlertTriangle, Video, Info, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, Timestamp, doc, updateDoc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -28,6 +28,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { type HeadlineSuggestion } from '@/ai/flows/schemas';
 import Link from 'next/link';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+
 
 interface Article extends GenerateSeoArticleOutput {
   id: string;
@@ -137,6 +139,46 @@ function SocialMediaDialog({ article, open, onOpenChange }: { article: Article |
     )
 }
 
+// The new popover for inline text editing
+function TextImprovementPopover({ selection, onImproveText }: { selection: Selection | null, onImproveText: (text: string) => void }) {
+  const [isImproving, startImproving] = useTransition();
+
+  if (!selection || selection.isCollapsed) {
+    return null;
+  }
+
+  const handleImprove = async () => {
+    const selectedText = selection.toString();
+    if (!selectedText) return;
+
+    startImproving(async () => {
+      const formData = new FormData();
+      formData.append('contentToHumanize', selectedText);
+      const response = await handleGenerateHumanizedContent(formData);
+      if (response.data) {
+        onImproveText(response.data);
+      } else {
+        alert("Failed to improve text.");
+      }
+    });
+  };
+
+  const popoverStyle: React.CSSProperties = {
+    position: 'absolute',
+    left: `${selection.getRangeAt(0).getBoundingClientRect().left}px`,
+    top: `${selection.getRangeAt(0).getBoundingClientRect().top - 40}px`,
+  };
+
+  return (
+    <div style={popoverStyle} className="z-50">
+        <Button onClick={handleImprove} disabled={isImproving} size="sm" className="shadow-lg">
+            {isImproving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+            Improve with AI
+        </Button>
+    </div>
+  );
+}
+
 
 export function ContentCreationClient({ initialTopic }: { initialTopic?: string }) {
   const { toast } = useToast();
@@ -156,6 +198,10 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
   
   const [selectedArticleForSocial, setSelectedArticleForSocial] = useState<Article | null>(null);
   const [isSocialDialogOpen, setIsSocialDialogOpen] = useState(false);
+
+  const [textSelection, setTextSelection] = useState<Selection | null>(null);
+  const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
+
 
   useEffect(() => {
     try {
@@ -273,6 +319,37 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
     setIsSocialDialogOpen(true);
   };
 
+  // Inline editing handlers
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    if (selection && !selection.isCollapsed) {
+      setTextSelection(selection);
+    } else {
+      setTextSelection(null);
+    }
+  };
+
+  const handleImproveText = async (improvedText: string) => {
+    if (textSelection && editingArticleId) {
+      const range = textSelection.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(document.createTextNode(improvedText));
+      
+      const articleContentDiv = document.getElementById(`article-content-${editingArticleId}`);
+      if (articleContentDiv) {
+        const newContent = articleContentDiv.innerHTML;
+        // Now, update this newContent in Firestore
+        await handleUpdateArticleContent(editingArticleId, newContent);
+        toast({ title: 'Content Improved!', description: 'The selected text has been updated.' });
+      }
+    }
+    setTextSelection(null);
+  };
+
+  const openArticleEditor = (articleId: string) => {
+    setEditingArticleId(articleId);
+  };
+
   return (
     <>
       <TooltipProvider>
@@ -288,31 +365,53 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
           </CardHeader>
           <form action={generateArticleAction}>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2 space-y-2">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
                   <Label htmlFor="topic" className="font-semibold">Topic or Keyword</Label>
                   <Input
                     id="topic"
                     name="topic"
-                    placeholder="e.g., 'The future of AI in marketing' or 'sustainable energy innovations'"
+                    placeholder="e.g., 'The future of AI in marketing'"
                     required
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
                     disabled={isGenerating}
                   />
                 </div>
-                <div className="space-y-2">
+                 <div className="space-y-2">
                     <Label htmlFor="language" className="font-semibold">Language</Label>
                     <Select name="language" defaultValue="en" disabled={isGenerating}>
-                        <SelectTrigger id="language">
-                            <SelectValue placeholder="Select a language" />
-                        </SelectTrigger>
+                        <SelectTrigger id="language"><SelectValue /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="en">English</SelectItem>
                             <SelectItem value="es">Spanish</SelectItem>
                             <SelectItem value="fr">French</SelectItem>
                             <SelectItem value="de">German</SelectItem>
-                            <SelectItem value="it">Italian</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="space-y-2">
+                    <Label htmlFor="template" className="font-semibold">Content Template</Label>
+                    <Select name="template" defaultValue="standard" disabled={isGenerating}>
+                        <SelectTrigger id="template"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="standard">Standard Blog Post</SelectItem>
+                            <SelectItem value="listicle">Listicle (e.g., Top 5...)</SelectItem>
+                            <SelectItem value="how-to">How-To Guide</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="tone" className="font-semibold">Voice & Tone</Label>
+                    <Select name="tone" defaultValue="professional" disabled={isGenerating}>
+                        <SelectTrigger id="tone"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="professional">Professional</SelectItem>
+                            <SelectItem value="casual">Casual & Friendly</SelectItem>
+                            <SelectItem value="witty">Witty & Humorous</SelectItem>
+                            <SelectItem value="authoritative">Authoritative & Formal</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -323,6 +422,32 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
             </CardFooter>
           </form>
         </Card>
+        
+        {editingArticleId && (
+            <Dialog open={!!editingArticleId} onOpenChange={(isOpen) => !isOpen && setEditingArticleId(null)}>
+                <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+                    <DialogHeader>
+                        <DialogTitle>Article Editor</DialogTitle>
+                        <DialogDescription>
+                            Edit your article below. Highlight any text to improve it with AI.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex-grow overflow-y-auto" onMouseUp={handleTextSelection}>
+                        <div 
+                            id={`article-content-${editingArticleId}`}
+                            contentEditable 
+                            suppressContentEditableWarning 
+                            className="prose dark:prose-invert max-w-none p-4 rounded-md border h-full focus:outline-none focus:ring-2 focus:ring-primary"
+                            dangerouslySetInnerHTML={{ __html: draftArticles.find(a => a.id === editingArticleId)?.content || '' }}
+                        />
+                         {textSelection && (
+                          <TextImprovementPopover selection={textSelection} onImproveText={handleImproveText} />
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+        )}
+
 
         <Card className="shadow-lg">
           <CardHeader>
@@ -364,74 +489,56 @@ export function ContentCreationClient({ initialTopic }: { initialTopic?: string 
                       </TableCell>
                       <TableCell>{article.createdAt ? format(article.createdAt.toDate(), 'PP') : 'N/A'}</TableCell>
                       <TableCell className="text-right space-x-1">
-                         <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => onGenerateVideo(article)}
-                                disabled={activeActionId === article.id || article.isGeneratingVideo}
-                                >
-                                <span className="sr-only">Generate Video</span>
-                                {activeActionId === article.id && article.isGeneratingVideo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Generate Video</p></TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => onGenerateImage(article)}
-                                disabled={activeActionId === article.id || article.isGeneratingVideo}
-                                >
-                                <span className="sr-only">Generate Featured Image</span>
-                                {activeActionId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Generate Featured Image</p></TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="outline" size="icon" onClick={() => onShowHeadlines(article)} disabled={activeActionId === article.id || article.isGeneratingVideo}>
-                                    <span className="sr-only">View Headlines</span>
-                                    <Lightbulb className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>View Headlines</p></TooltipContent>
-                        </Tooltip>
-                         <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="outline" size="icon" onClick={() => onShowSocial(article)} disabled={activeActionId === article.id || article.isGeneratingVideo}>
-                                    <span className="sr-only">View Social Posts</span>
-                                    <MessageSquare className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>View Social Posts</p></TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="outline" size="icon" onClick={() => handleHumanizeClick(article.content)} disabled={activeActionId === article.id || article.isGeneratingVideo}>
-                                <span className="sr-only">Rewrite with AI Humanizer</span>
+                         <Tooltip><TooltipTrigger asChild>
+                            <Button variant="outline" size="icon" onClick={() => openArticleEditor(article.id)} disabled={activeActionId === article.id || article.isGeneratingVideo}>
+                                <span className="sr-only">Edit Article</span>
                                 <Wand2 className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Rewrite with AI Humanizer</p></TooltipContent>
-                        </Tooltip>
-                         <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                size="icon"
-                                onClick={() => handlePublish(article.id)}
-                                disabled={activeActionId === article.id || article.isGeneratingVideo}
-                                >
-                                <span className="sr-only">Publish Article</span>
-                                {activeActionId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Publish Article</p></TooltipContent>
-                        </Tooltip>
+                            </Button>
+                        </TooltipTrigger><TooltipContent><p>Edit & Improve with AI</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild>
+                            <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => onGenerateVideo(article)}
+                            disabled={activeActionId === article.id || article.isGeneratingVideo}
+                            >
+                            <span className="sr-only">Generate Video</span>
+                            {activeActionId === article.id && article.isGeneratingVideo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
+                            </Button>
+                        </TooltipTrigger><TooltipContent><p>Generate Video</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild>
+                            <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => onGenerateImage(article)}
+                            disabled={activeActionId === article.id || article.isGeneratingVideo}
+                            >
+                            <span className="sr-only">Generate Featured Image</span>
+                            {activeActionId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+                            </Button>
+                        </TooltipTrigger><TooltipContent><p>Generate Featured Image</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild>
+                            <Button variant="outline" size="icon" onClick={() => onShowHeadlines(article)} disabled={activeActionId === article.id || article.isGeneratingVideo}>
+                                <span className="sr-only">View Headlines</span>
+                                <Lightbulb className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger><TooltipContent><p>View Headlines</p></TooltipContent></Tooltip>
+                         <Tooltip><TooltipTrigger asChild>
+                            <Button variant="outline" size="icon" onClick={() => onShowSocial(article)} disabled={activeActionId === article.id || article.isGeneratingVideo}>
+                                <span className="sr-only">View Social Posts</span>
+                                <MessageSquare className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger><TooltipContent><p>View Social Posts</p></TooltipContent></Tooltip>
+                         <Tooltip><TooltipTrigger asChild>
+                            <Button
+                            size="icon"
+                            onClick={() => handlePublish(article.id)}
+                            disabled={activeActionId === article.id || article.isGeneratingVideo}
+                            >
+                            <span className="sr-only">Publish Article</span>
+                            {activeActionId === article.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                            </Button>
+                        </TooltipTrigger><TooltipContent><p>Publish Article</p></TooltipContent></Tooltip>
                       </TableCell>
                     </TableRow>
                   ))

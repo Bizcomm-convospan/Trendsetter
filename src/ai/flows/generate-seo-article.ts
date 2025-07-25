@@ -20,6 +20,8 @@ const GenerateSeoArticleInputSchema = z.object({
     .string()
     .describe('The topic or keyword to generate an article about.'),
   language: z.string().optional().describe('The language for the article (e.g., en, es, fr).'),
+  template: z.enum(['standard', 'listicle', 'how-to']).default('standard').describe('The structure of the article (e.g., standard blog post, listicle).'),
+  tone: z.enum(['professional', 'casual', 'witty', 'authoritative']).default('professional').describe('The desired writing style and tone for the article.'),
 });
 export type GenerateSeoArticleInput = z.infer<typeof GenerateSeoArticleInputSchema>;
 
@@ -64,13 +66,21 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert SEO content writer and social media manager.
 Your task is to generate a comprehensive content package based on the user's topic. This includes a high-quality article, metadata, an image prompt, headline ideas, and social media posts. The article should be 300-500 words and align with Google's E-E-A-T guidelines.
 
-{{#if language}}
-The entire output must be in the following language: {{{language}}}.
-{{/if}}
+**Topic/Keyword:** {{{topic}}}
 
-Topic/Keyword: {{{topic}}}
+**Formatting Instructions:**
+- **Article Structure:** Generate the article based on the '{{{template}}}' template.
+  {{#if (eq template "listicle")}}
+  (e.g., a numbered or bulleted list of items, such as 'Top 5...' or '7 Ways to...').
+  {{else if (eq template "how-to")}}
+  (e.g., a step-by-step guide to accomplishing a task).
+  {{else}}
+  (e.g., a standard informational blog post with an introduction, body, and conclusion).
+  {{/if}}
+- **Tone of Voice:** Write in a '{{{tone}}}' tone.
+- **Language:** The entire output must be in the following language: {{#if language}}{{{language}}}{{else}}English{{/if}}.
 
-The response must include all of the following:
+**The response must include all of the following:**
 1.  **Article Title**: An engaging and informative main title for the article.
 2.  **Article Content**: The full article in well-structured HTML format (use <p>, <h2>, <h3>, <ul>, <li>, <strong>).
 3.  **Featured Image Prompt**: A descriptive prompt for an AI image generator to create a relevant featured image.

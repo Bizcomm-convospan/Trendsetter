@@ -75,6 +75,8 @@ const GenerateArticleSchema = z.object({
     .string()
     .min(3, 'Topic or keyword must be at least 3 characters long.'),
   language: z.string().optional(),
+  template: z.enum(['standard', 'listicle', 'how-to']).default('standard'),
+  tone: z.enum(['professional', 'casual', 'witty', 'authoritative']).default('professional'),
 });
 
 const DiscoverTrendsSchema = z.object({
@@ -158,6 +160,8 @@ export async function handleGenerateArticle(
   const rawFormData = {
     topic: formData.get('topic') as string,
     language: (formData.get('language') as string) || undefined,
+    template: formData.get('template') as 'standard' | 'listicle' | 'how-to',
+    tone: formData.get('tone') as 'professional' | 'casual' | 'witty' | 'authoritative',
   };
 
   const validatedFields = GenerateArticleSchema.safeParse(rawFormData);
@@ -629,5 +633,26 @@ export async function handleSaveWebhookUrl(
   } catch (e: any) {
     console.error('Error saving webhook URL:', e);
     return { error: e.message || 'Failed to save webhook URL.' };
+  }
+}
+
+export async function handleUpdateArticleContent(
+  articleId: string,
+  newContent: string
+): Promise<ActionResponse<{ success: boolean }>> {
+  if (!articleId || !newContent) {
+    return { error: 'Article ID and new content are required.' };
+  }
+
+  try {
+    const articleRef = adminDb.collection('articles').doc(articleId);
+    await articleRef.update({
+      content: newContent,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+    return { data: { success: true } };
+  } catch (e: any) {
+    console.error(`Error updating article ${articleId}:`, e);
+    return { error: e.message || 'Failed to update article content.' };
   }
 }
