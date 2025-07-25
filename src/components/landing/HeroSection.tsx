@@ -9,10 +9,13 @@ export function HeroSection() {
     <section className="container grid gap-12 lg:grid-cols-2 items-center py-12 md:py-20 lg:py-24">
       <div className="flex flex-col items-center text-center lg:items-start lg:text-left gap-6 lg:gap-8">
         <h1 className="text-4xl font-extrabold leading-tight tracking-tighter sm:text-5xl md:text-6xl text-foreground">
-          Deploy an army of self-improving AI agents to win at <span className="text-primary">Content & SEO</span>
+          Deploy an Army of Self-Improving AI Agents to Win at <span className="text-primary">Content & SEO</span>
         </h1>
+        <p className="text-xl font-medium text-muted-foreground">
+          Your All-in-One AI Workforce for Content Marketing and SEO Dominance.
+        </p>
         <p className="max-w-[600px] text-lg text-muted-foreground sm:text-xl">
-         In an era of constant algorithm updates like Google's 'Muvera', Trendsetter Pro helps you dominate by using a proprietary performance feedback loop to create content that ranks higher and converts better over time.
+          In an era of constant algorithm updates, Trendsetter Pro helps you dominate by using a proprietary performance feedback loop to create content that ranks higher and converts better over time.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Button asChild size="lg">
@@ -38,28 +41,28 @@ export function HeroSection() {
                     <li className="flex items-start">
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
-                            <span className="font-semibold text-foreground">Optimize with AI-Powered Scores:</span>
-                            <span className="text-muted-foreground"> Use the Content Optimizer to get a real-time Content Score, NLP keywords, and actionable advice.</span>
+                            <span className="font-semibold text-foreground">Discover & Analyze:</span>
+                            <span className="text-muted-foreground"> Uncover emerging trends, find content gaps by analyzing competitors, and discover the questions your audience is asking.</span>
                         </div>
                     </li>
                      <li className="flex items-start">
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
-                            <span className="font-semibold text-foreground">Automate Your Workflow:</span>
-                            <span className="text-muted-foreground"> Publish content to WordPress, Ghost, or any other platform seamlessly with our Zapier integration.</span>
+                            <span className="font-semibold text-foreground">Create & Optimize:</span>
+                            <span className="text-muted-foreground"> Generate E-E-A-T aligned articles and use the Content Optimizer to get a real-time Content Score with actionable suggestions.</span>
                         </div>
                     </li>
                     <li className="flex items-start">
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
-                            <span className="font-semibold text-foreground">Convert Articles to Engaging Videos:</span>
-                            <span className="text-muted-foreground"> Turn your generated content into short-form videos for social media and embeds in one click.</span>
+                            <span className="font-semibold text-foreground">Convert & Publish:</span>
+                            <span className="text-muted-foreground"> Turn articles into engaging videos in one click and publish to any platform seamlessly with our Zapier integration.</span>
                         </div>
                     </li>
                      <li className="flex items-start">
                         <Check className="mr-3 mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
                         <div>
-                            <span className="font-semibold text-foreground">Close the Loop with Performance Data:</span>
+                            <span className="font-semibold text-foreground">Close the Loop with AI Audits:</span>
                             <span className="text-muted-foreground"> Our AI analyzes your content's performance to give you actionable advice, creating a feedback loop for continuous improvement.</span>
                         </div>
                     </li>
