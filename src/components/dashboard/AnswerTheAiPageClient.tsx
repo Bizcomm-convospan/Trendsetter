@@ -18,7 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 function SubmitButton({ children, ...props }: { children: React.ReactNode } & React.ComponentProps<typeof Button>) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} {...props}>
+    <Button type="submit" disabled={pending} {...props} className="w-full sm:w-auto">
       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
       {children}
     </Button>
@@ -142,7 +142,7 @@ export function AnswerTheAiPageClient() {
                   <p className="text-sm text-muted-foreground">This action will first run the Trend Discovery engine and then immediately use the results to generate content questions.</p>
               </CardContent>
               <CardFooter>
-                  <Button onClick={handleDiscoverAndGenerate} disabled={isProcessing}>
+                  <Button onClick={handleDiscoverAndGenerate} disabled={isProcessing} className="w-full sm:w-auto">
                       {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                       Discover & Generate
                   </Button>

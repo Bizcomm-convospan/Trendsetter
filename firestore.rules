@@ -2,21 +2,28 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // The prospecting_jobs collection holds the status of background jobs.
-    // Client-side code needs to be able to read a document to check its status,
-    // but should not be able to write to it directly. All writes are handled
-    // by trusted server-side functions.
-    match /prospecting_jobs/{jobId} {
-      allow read: if true;
-      allow create, update, delete: if false;
-    }
-
-    // The prospects collection is a write-only target for the background
-    // AI functions. There is no client-side code that reads from this collection,
-    // so we can lock it down completely from client access.
-    match /prospects/{prospectId} {
+    
+    // By default, deny all reads and writes.
+    match /{document=**} {
       allow read, write: if false;
+    }
+    
+    // Allow writes to the collections the app uses.
+    // In a real multi-user app, these rules would be more granular,
+    // checking `request.auth.uid` to ensure users can only write to their own documents.
+    match /articles/{articleId} {
+      allow write: if true; // Allows creating/updating articles
+      allow read: if true; // Allow reading articles to show in lists
+    }
+    
+    match /ai_cache/{cacheId} {
+      allow write: if true; // Allows caching AI results
+      allow read: if true;
+    }
+    
+    match /settings/integrations {
+        allow write: if true; // Allows saving the Zapier webhook URL
+        allow read: if true; // Allows the backend function to read the URL
     }
   }
 }
