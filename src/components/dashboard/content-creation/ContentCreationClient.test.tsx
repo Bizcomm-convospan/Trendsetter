@@ -126,7 +126,7 @@ describe('ContentCreationClient', () => {
     await waitFor(() => {
       expect(screen.getByText('My First Draft')).toBeInTheDocument();
       // Use queryByRole because the button is nested in a tooltip
-      expect(screen.queryByRole('button', { name: /Publish to WordPress/i })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Publish Article/i })).toBeInTheDocument();
     });
   });
 
@@ -150,14 +150,14 @@ describe('ContentCreationClient', () => {
 
     render(<ContentCreationClient />);
 
-    const publishButton = await screen.findByRole('button', { name: /Publish to WordPress/i });
+    const publishButton = await screen.findByRole('button', { name: /Publish Article/i });
     await user.click(publishButton);
 
     await waitFor(() => {
         expect(mockedHandlePublishArticle).toHaveBeenCalledWith('draft1');
         expect(mockedToast).toHaveBeenCalledWith({
             title: 'Article Published!',
-            description: 'Your article has been sent to WordPress.'
+            description: 'Your article has been sent to your automation workflow.'
         });
     });
   });
@@ -182,7 +182,7 @@ describe('ContentCreationClient', () => {
 
     render(<ContentCreationClient />);
 
-    const publishButton = await screen.findByRole('button', { name: /Publish to WordPress/i });
+    const publishButton = await screen.findByRole('button', { name: /Publish Article/i });
     await user.click(publishButton);
 
     await waitFor(() => {
@@ -194,5 +194,3 @@ describe('ContentCreationClient', () => {
     });
   });
 });
-
-    
