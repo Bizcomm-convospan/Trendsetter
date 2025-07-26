@@ -1,5 +1,5 @@
 
-import { onRequest } from "firebase-functions/v2/onRequest";
+import { onRequest } from "firebase-functions/v2/https";
 import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
