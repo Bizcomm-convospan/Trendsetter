@@ -60,6 +60,12 @@ export function AnswerTheAiPageClient() {
   };
 
   const handleGenerateFromTrends = (trendsJson: string) => {
+    // Add a guard clause to prevent calling the action with invalid data
+    if (!trendsJson || trendsJson.trim() === '') {
+        toast({ variant: 'destructive', title: "Error", description: "No trend data was provided to generate angles from."});
+        return;
+    }
+
     setResult(null);
     startTransition(async () => {
       const response = await handleAnswerTheAI(trendsJson);

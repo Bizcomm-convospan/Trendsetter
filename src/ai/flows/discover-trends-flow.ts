@@ -10,7 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import googleSearch from '@genkit-ai/googleai/search';
+import { googleSearch } from '@genkit-ai/googleai';
 import { DiscoveredTrend, DiscoveredTrendSchema } from './schemas';
 
 const DiscoverTrendsInputSchema = z.object({
