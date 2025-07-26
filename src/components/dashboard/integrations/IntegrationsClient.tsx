@@ -8,8 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Zap } from 'lucide-react';
+import { Loader2, Zap, ExternalLink } from 'lucide-react';
 import { handleSaveWebhookUrl, type ActionResponse } from '@/app/actions';
+import Link from 'next/link';
+import { TrendsetterProLogo } from '@/components/icons';
+
 
 function SaveWebhookButton() {
     const { pending } = useFormStatus();
@@ -24,6 +27,7 @@ function SaveWebhookButton() {
 export function IntegrationsClient() {
   const { toast } = useToast();
   const [webhookUrlState, setWebhookUrlState] = useState<ActionResponse<{success: boolean}>>({});
+  const firebaseProjectUrl = "https://console.firebase.google.com/project/trendsetter-pro/overview";
 
   const saveWebhookAction = async (formData: FormData) => {
     const result = await handleSaveWebhookUrl(formData);
@@ -80,6 +84,40 @@ export function IntegrationsClient() {
                 </CardFooter>
             </form>
         </Card>
+
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#FFCA28]">
+                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.73 4.26L17.65 3.18C17.04 2.57 16.14 2.5 15.45 2.9L5.3 7.93C4.6 8.32 4.6 9.33 5.3 9.72L12.01 13.33L18.73 4.26Z" fill="#FBC02D"/>
+                        <path d="M12.01 13.33L14.28 21.05C14.62 21.75 15.52 21.9 16.27 21.46L18.72 19.86L12.01 13.33Z" fill="#FFA000"/>
+                        <path d="M5.3 9.72L10.33 12.33L12.01 13.33L5.3 9.72Z" fill="#FFCA28"/>
+                        <path d="M18.72 19.86L18.73 4.26L12.01 13.33L16.27 21.46C16.92 21.9 17.82 21.75 18.16 21.05L18.72 19.86Z" fill="#F57C00"/>
+                        </svg>
+
+                    </div>
+                    Firebase
+                </CardTitle>
+                <CardDescription>
+                    Your project's backend services, including the database and AI agents, are hosted on Firebase. Access the console to manage your project.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground">
+                    Use the Firebase Console to view application logs, browse your Firestore database, and monitor function performance.
+                </p>
+            </CardContent>
+            <CardFooter>
+                <Button asChild variant="outline">
+                    <Link href={firebaseProjectUrl} target="_blank" rel="noopener noreferrer">
+                        Open Firebase Console
+                        <ExternalLink className="ml-2 h-4 w-4" />
+                    </Link>
+                </Button>
+            </CardFooter>
+        </Card>
+
       </div>
     </div>
   );
