@@ -15,7 +15,6 @@ initializeBrowserOnColdStart();
 admin.initializeApp();
 const db = admin.firestore();
 
-// The request schema now lives in the competitor-analyzer file, but we can re-use it here.
 const CompetitorAnalysisRequestSchema = CompetitorAnalyzerInputSchema;
 
 
@@ -45,7 +44,6 @@ export const analyze = onRequest({ cors: true }, async (request, response) => {
   const { url } = input;
   const flowName = 'competitorAnalyzerFlow';
   
-  // Use a hash of the URL as the document ID for a deterministic key.
   const crypto = require('crypto');
   const cacheKey = crypto.createHash('sha256').update(`${flowName}:${url}`).digest('hex');
   const cacheRef = db.collection('ai_cache').doc(cacheKey);
@@ -54,7 +52,6 @@ export const analyze = onRequest({ cors: true }, async (request, response) => {
     const cachedDoc = await cacheRef.get();
     if (cachedDoc.exists) {
       const cacheData = cachedDoc.data();
-      // Check if cache entry has an expiration and if it's still valid
       if (cacheData?.expiresAt && cacheData.expiresAt.toDate() > new Date()) {
         logger.info(`[Cache Hit] Returning cached result for ${url}`);
         response.status(200).json(cacheData.output);
@@ -66,7 +63,6 @@ export const analyze = onRequest({ cors: true }, async (request, response) => {
     logger.info(`[Cache Miss] Running competitor analysis for ${url}`);
     const output: CompetitorAnalyzerOutput = await analyzeCompetitor(input);
 
-    // Store result in cache with a 24-hour expiration
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 1);
     await cacheRef.set({
@@ -97,18 +93,16 @@ export const onArticlePublish = onDocumentUpdated("articles/{articleId}", async 
   const before = event.data.before.data();
   const after = event.data.after.data();
 
-  // Check if the status changed from 'draft' to 'published'
   if (before.status === 'draft' && after.status === 'published') {
     logger.info(`Article ${event.params.articleId} was published. Preparing to send to webhook.`);
     
-    // Fetch the webhook URL from Firestore settings instead of environment variables
     const settingsRef = db.collection('settings').doc('integrations');
     const settingsDoc = await settingsRef.get();
     const webhookUrl = settingsDoc.data()?.zapierWebhookUrl;
 
     if (!webhookUrl) {
         logger.warn(`Zapier webhook URL is not configured in Firestore settings. Skipping webhook for article ${event.params.articleId}.`);
-        return; // Exit gracefully if the URL isn't set up
+        return;
     }
     
     const payload = {
@@ -140,7 +134,6 @@ export const onArticlePublish = onDocumentUpdated("articles/{articleId}", async 
             message: error.message,
             stack: error.stack,
         });
-        // You might want to add retry logic or an alert here in a real production system.
     }
   }
 });

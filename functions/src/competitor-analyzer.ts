@@ -57,8 +57,6 @@ const competitorAnalyzerFlow = ai.defineFlow(
     outputSchema: CompetitorAnalyzerOutputSchema,
   },
   async (input) => {
-    // The prompt is now responsible for calling the tool.
-    // The AI will use the tool to get the content and then perform the analysis.
     const { output } = await competitorAnalyzerPrompt(input);
     
     if (!output) {

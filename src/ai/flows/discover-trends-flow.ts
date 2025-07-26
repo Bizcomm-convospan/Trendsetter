@@ -10,7 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import googleSearch from '@genkit-ai/googleai';
+import googleSearch from '@genkit-ai/googleai/search';
 import { DiscoveredTrend, DiscoveredTrendSchema } from './schemas';
 
 const DiscoverTrendsInputSchema = z.object({
@@ -36,10 +36,10 @@ const discoverTrendsPrompt = ai.definePrompt({
   name: 'discoverTrendsPrompt',
   input: {schema: DiscoverTrendsInputSchema},
   output: {schema: DiscoverTrendsOutputSchema},
-  tools: [googleSearch], // Enable the Google Search tool for grounding
+  tools: [googleSearch],
   toolConfig: {
     googleSearch: {
-        blocklist: [], // You can block certain sites if needed
+        blocklist: [],
     },
   },
   prompt: `
@@ -86,7 +86,6 @@ const discoverTrendsFlow = ai.defineFlow(
         throw new Error("Trend discovery failed to produce an output.");
     }
 
-    // Attach citation data to the output
     const populatedTrends = output.discoveredTrends.map(trend => {
         const trendCitations = llmResponse.citations?.filter(citation => 
             (citation.title.includes(trend.title) || trend.description.includes(citation.title))

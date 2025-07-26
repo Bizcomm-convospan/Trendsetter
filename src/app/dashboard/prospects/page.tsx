@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,14 +10,12 @@ import { Loader2, UserPlus, Filter, Download } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { AppLayout } from '@/components/layout/AppLayout';
 
-// This is a placeholder for the real ICP criteria you would define.
 const idealCustomerProfile = {
   industries: ['Technology', 'Healthcare', 'Finance'],
   regions: ['North America', 'Europe'],
   jobTitles: ['CEO', 'CTO', 'VP of Engineering'],
 };
 
-// This is a placeholder for the real prospect data that would be streamed from the AI engine.
 const initialProspects = [
   { id: 'p1', companyName: 'Innovate Inc.', contactName: 'Alice Johnson', jobTitle: 'CTO', industry: 'Technology', region: 'North America', score: 95, status: 'Contacted' },
   { id: 'p2', companyName: 'HealthWell Group', contactName: 'Bob Williams', jobTitle: 'CEO', industry: 'Healthcare', region: 'Europe', score: 88, status: 'New' },
@@ -37,7 +34,6 @@ export default function ProspectsPage() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // Simulate initial loading of prospects
     setTimeout(() => {
       setProspects(initialProspects);
       setIsLoading(false);
@@ -53,7 +49,6 @@ export default function ProspectsPage() {
         if (prev >= 100) {
           clearInterval(interval);
           setIsCrawling(false);
-          // Add a new mock prospect
           setProspects(old => [{
               id: `p${old.length + 1}`,
               companyName: 'Global-AI',
@@ -164,10 +159,7 @@ export default function ProspectsPage() {
                 {isLoading ? (
                   [...Array(5)].map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell><Loader2 className="h-5 w-5 animate-spin" /></TableCell>
-                      <TableCell></TableCell>
-                      <TableCell></TableCell>
-                      <TableCell></TableCell>
+                      <TableCell colSpan={4}><Loader2 className="h-5 w-5 animate-spin" /></TableCell>
                     </TableRow>
                   ))
                 ) : (

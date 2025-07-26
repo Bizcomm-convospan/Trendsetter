@@ -1,3 +1,4 @@
+
 // Mock dependencies before importing the functions
 jest.mock('firebase-admin', () => ({
   initializeApp: jest.fn(),
@@ -93,7 +94,6 @@ describe('analyze HTTP Function', () => {
 
     it('should call analyzeCompetitor and return result on cache miss', async () => {
         mockRequest = { method: 'POST', body: { url: validUrl }};
-        // Ensure cache miss (default mock behavior)
         
         await analyze(mockRequest as Request, mockResponse as Response);
         
@@ -111,30 +111,28 @@ describe('analyze HTTP Function', () => {
 
     it('should return cached result on cache hit', async () => {
         const cachedOutput = { keyTopics: ['cached', 'data'], contentGrade: 'B' };
-        // Simulate cache hit
         (mockDb.get as jest.Mock).mockResolvedValue({
             exists: true,
             data: () => ({
                 output: cachedOutput,
-                expiresAt: { toDate: () => new Date(Date.now() + 100000) } // Not expired
+                expiresAt: { toDate: () => new Date(Date.now() + 100000) }
             })
         });
 
         mockRequest = { method: 'POST', body: { url: validUrl }};
         await analyze(mockRequest as Request, mockResponse as Response);
 
-        expect(analyzeCompetitor).not.toHaveBeenCalled(); // Should not call the expensive function
+        expect(analyzeCompetitor).not.toHaveBeenCalled();
         expect(mockResponse.status).toHaveBeenCalledWith(200);
         expect(mockResponse.json).toHaveBeenCalledWith(cachedOutput);
     });
 
     it('should ignore expired cache and fetch new result', async () => {
-         // Simulate expired cache hit
         (mockDb.get as jest.Mock).mockResolvedValue({
             exists: true,
             data: () => ({
                 output: { keyTopics: ['expired'] },
-                expiresAt: { toDate: () => new Date(Date.now() - 100000) } // Expired
+                expiresAt: { toDate: () => new Date(Date.now() - 100000) }
             })
         });
 

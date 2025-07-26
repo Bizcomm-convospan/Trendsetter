@@ -118,8 +118,6 @@ const ContentOptimizerSchema = z.object({
   language: z.string().optional(),
 });
 
-// Using a raw string because parsing server-side can be tricky with complex objects.
-// Client will JSON.stringify
 const AnswerTheAITrendsSchema = z.string().min(10, 'Trend data is required.');
 
 const AnswerTheAITextSchema = z.object({
@@ -215,7 +213,6 @@ export async function handleDiscoverTrends(
     category: (formData.get('category') as string) || undefined,
   };
 
-  // Don't pass 'all' to the AI flow, as it's the default behavior
   if (rawFormData.category === 'all') {
     rawFormData.category = undefined;
   }
@@ -330,9 +327,6 @@ export async function handlePublishArticle(
   try {
     const articleRef = adminDb.collection('articles').doc(articleId);
     
-    // The responsibility of this function is now just to update the status.
-    // A separate Firebase Function will be triggered by this update to handle
-    // the webhook call to Zapier or any other service.
     await articleRef.update({
       status: 'published',
       publishedAt: FieldValue.serverTimestamp(),
@@ -391,7 +385,6 @@ export async function handleAnswerTheAIFromText(
   }
 
   try {
-    // Convert the raw text into a format the answerTheAI flow can understand.
     const trends: AnswerTheAIInput = [
       {
         title: 'Custom User Topic',
@@ -473,8 +466,6 @@ export async function handleCompetitorAnalysis(
   }
 
   try {
-    // This server action now calls our own API route for analysis,
-    // which in turn calls the deployed Firebase Function.
     const rootUrl = process.env.NEXT_PUBLIC_VERCEL_URL
       ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
       : 'http://localhost:3000';
@@ -667,8 +658,6 @@ export async function handleSaveWebhookUrl(
   }
 
   try {
-    // In a real multi-user app, you'd associate this with the current user ID.
-    // For this demo, we'll store it in a predictable document.
     const settingsRef = adminDb.collection('settings').doc('integrations');
     await settingsRef.set({
       zapierWebhookUrl: validatedFields.data.webhookUrl,
@@ -686,7 +675,7 @@ export async function handleUpdateArticleContent(
   articleId: string,
   newContent: string
 ): Promise<ActionResponse<{ success: boolean }>> {
-  if (!articleId || !newContent) {
+  if (!articleId || newContent === undefined) {
     return { error: 'Article ID and new content are required.' };
   }
 

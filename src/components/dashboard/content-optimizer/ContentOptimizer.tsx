@@ -1,19 +1,15 @@
 
-
 'use client';
 
 import { useState, useTransition, useMemo, useEffect, useRef, useCallback } from 'react';
-import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Sparkles, CheckCircle, FileText, BarChart, BookOpen, Lightbulb, Languages, Edit, Type, Palette, Bold, Italic, Underline, List, Heading2, Heading3, Save, ArrowLeft, Heading1, ShieldCheck, BrainCircuit, ScanSearch, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, Sparkles, Save, ArrowLeft, ScanSearch, Link as LinkIcon, Image as ImageIcon, Bold, Italic, Underline, List, Heading2, Heading3 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { type ActionResponse, handleAnalyzeContentForSeo, handleUpdateArticleContent, handleAiDetection, handlePlagiarismCheck, handleGenerateHumanizedContent } from '@/app/actions';
+import { handleAnalyzeContentForSeo, handleUpdateArticleContent } from '@/app/actions';
 import { type ContentOptimizerOutput } from '@/ai/flows/content-optimizer-flow';
-import { type AiDetectorOutput } from '@/ai/flows/ai-detector-flow';
-import { type PlagiarismCheckerOutput } from '@/ai/flows/plagiarism-checker-flow';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ChartContainer, ChartConfig } from '@/components/ui/chart';
@@ -23,6 +19,7 @@ import { Timestamp } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 interface Article {
@@ -62,8 +59,8 @@ const EditorToolbar = ({ onCommand }: { onCommand: (command: string, value?: str
             </ToggleGroup>
              <Separator orientation="vertical" className="h-6 mx-1" />
              <Button variant="ghost" size="sm" onClick={() => onCommand('insertUnorderedList')}><List className="h-4 w-4" /></Button>
-             <Button variant="ghost" size="sm" onClick={() => onCommand('createLink', window.prompt("Enter URL") || undefined)}><LinkIcon className="h-4 w-4" /></Button>
-             <Button variant="ghost" size="sm" onClick={() => onCommand('insertImage', window.prompt("Enter image URL") || undefined)}><ImageIcon className="h-4 w-4" /></Button>
+             <Button variant="ghost" size="sm" onClick={() => { const url = window.prompt("Enter URL"); if (url) onCommand('createLink', url);}}><LinkIcon className="h-4 w-4" /></Button>
+             <Button variant="ghost" size="sm" onClick={() => { const url = window.prompt("Enter image URL"); if (url) onCommand('insertImage', url);}}><ImageIcon className="h-4 w-4" /></Button>
         </div>
     )
 }
@@ -93,8 +90,7 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
 
   const [isAnalyzingSeo, startSeoTransition] = useTransition();
   const [seoResult, setSeoResult] = useState<ContentOptimizerOutput | null>(null);
-  const [localAnalysis, setLocalAnalysis] = useState<LocalAnalysis>({ wordCount: 0, paragraphCount: 0, headingCount: 0, imageCount: 0 });
-
+  const [localAnalysis, setLocalAnalysis] = useState<LocalAnalysis | null>(null);
 
   const updateLocalAnalysis = useCallback((currentContent: string) => {
     const tempDiv = document.createElement('div');
@@ -115,13 +111,14 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
   }, []);
 
   useEffect(() => {
-    // Initial analysis on mount
     updateLocalAnalysis(content);
   }, [content, updateLocalAnalysis]);
+
 
   const handleManualContentUpdate = (e: React.FormEvent<HTMLDivElement>) => {
     const newContent = e.currentTarget.innerHTML;
     setContent(newContent);
+    updateLocalAnalysis(newContent);
   };
 
   const runSeoAnalysis = useCallback(() => {
@@ -153,27 +150,26 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
   };
 
   const handleEditorCommand = (command: string, value?: string) => {
-    if(!value && (command === 'createLink' || command === 'insertImage')) return;
     document.execCommand(command, false, value);
     if(editorRef.current) {
         editorRef.current.focus();
         const newContent = editorRef.current.innerHTML;
-        setContent(newContent); // Update state after command
+        setContent(newContent);
+        updateLocalAnalysis(newContent);
     }
   };
 
   const keywordMetrics: KeywordMetric[] = useMemo(() => {
-      if (!seoResult?.nlpKeywords) return [];
+      if (!seoResult?.nlpKeywords || !content) return [];
       const plainText = content.replace(/<[^>]*>?/gm, '').toLowerCase();
 
       return seoResult.nlpKeywords.map(kw => {
         const regex = new RegExp(`\\b${kw.toLowerCase()}\\b`, 'g');
         const count = (plainText.match(regex) || []).length;
-        // Mock target, in a real app this would come from the AI
-        const target = Math.ceil(localAnalysis.wordCount / 100); 
+        const target = localAnalysis ? Math.ceil(localAnalysis.wordCount / 100) : 1; 
         return { keyword: kw, count, target: target > 0 ? target : 1 };
       });
-  }, [content, seoResult, localAnalysis.wordCount]);
+  }, [content, seoResult, localAnalysis]);
 
   const chartConfig = useMemo(() => ({
     value: { label: 'Score' },
@@ -192,7 +188,6 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
             </div>
         </header>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        {/* Left Column: Editor */}
         <div className="lg:col-span-2 space-y-4">
             <Card className="shadow-lg">
                 <CardContent className="p-4 space-y-4">
@@ -224,7 +219,6 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
             </Card>
         </div>
 
-        {/* Right Column: Analysis Sidebar */}
         <aside className="lg:col-span-1 space-y-6 sticky top-24">
             <Card className="shadow-lg">
                 <CardHeader>
@@ -240,7 +234,6 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
                         <TabsContent value="guidelines" className="pt-4 px-4">
                             <ScrollArea className="h-[70vh] pr-4">
                                 <div className="space-y-6">
-                                    {/* Score */}
                                     <div className="text-center">
                                         <h3 className="font-semibold text-foreground mb-2">Content Score</h3>
                                         {isAnalyzingSeo && !seoResult ? <Skeleton className='h-40 w-40 rounded-full mx-auto' /> :
@@ -257,30 +250,22 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
                                         }
                                     </div>
                                     <Separator/>
-                                    {/* Content Structure */}
                                     <div>
                                         <h3 className="font-semibold text-foreground mb-4">Content Structure</h3>
                                         <div className="grid grid-cols-2 gap-4 text-center">
-                                            <div>
-                                                <p className="font-bold text-xl">{localAnalysis.wordCount}</p>
-                                                <p className="text-xs text-muted-foreground">Words</p>
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-xl">{localAnalysis.headingCount}</p>
-                                                <p className="text-xs text-muted-foreground">Headings</p>
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-xl">{localAnalysis.paragraphCount}</p>
-                                                <p className="text-xs text-muted-foreground">Paragraphs</p>
-                                            </div>
-                                             <div>
-                                                <p className="font-bold text-xl">{localAnalysis.imageCount}</p>
-                                                <p className="text-xs text-muted-foreground">Images</p>
-                                            </div>
+                                            {localAnalysis ? (
+                                                <>
+                                                <div><p className="font-bold text-xl">{localAnalysis.wordCount}</p><p className="text-xs text-muted-foreground">Words</p></div>
+                                                <div><p className="font-bold text-xl">{localAnalysis.headingCount}</p><p className="text-xs text-muted-foreground">Headings</p></div>
+                                                <div><p className="font-bold text-xl">{localAnalysis.paragraphCount}</p><p className="text-xs text-muted-foreground">Paragraphs</p></div>
+                                                <div><p className="font-bold text-xl">{localAnalysis.imageCount}</p><p className="text-xs text-muted-foreground">Images</p></div>
+                                                </>
+                                            ) : (
+                                                [...Array(4)].map((_, i) => <div key={i}><Skeleton className="h-6 w-1/2 mx-auto"/><Skeleton className="h-3 w-3/4 mx-auto mt-1"/></div>)
+                                            )}
                                         </div>
                                     </div>
                                     <Separator/>
-                                    {/* Terms */}
                                     <div>
                                         <h3 className="font-semibold text-foreground mb-2">Terms</h3>
                                         <div className="relative">
