@@ -93,11 +93,15 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
 
   const [isAnalyzingSeo, startSeoTransition] = useTransition();
   const [seoResult, setSeoResult] = useState<ContentOptimizerOutput | null>(null);
+  const [localAnalysis, setLocalAnalysis] = useState<LocalAnalysis>({ wordCount: 0, paragraphCount: 0, headingCount: 0, imageCount: 0 });
+
 
   useEffect(() => {
     // Set initial content for the editor when the component mounts
     if (editorRef.current) {
       editorRef.current.innerHTML = article.content;
+      // Trigger initial analysis
+       updateLocalAnalysis(article.content);
     }
   }, [article.content]);
 
@@ -106,9 +110,29 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
       editorRef.current.innerHTML = content;
     }
   }, [content]);
+  
+  const updateLocalAnalysis = (currentContent: string) => {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = currentContent;
+    const plainText = tempDiv.innerText || '';
+
+    const words = plainText.match(/\b\w+\b/g) || [];
+    const paragraphs = plainText.split(/\n+/).filter(p => p.trim().length > 0);
+    const headings = currentContent.match(/<h[1-3]>/gi) || [];
+    const images = currentContent.match(/<img/gi) || [];
+
+    setLocalAnalysis({
+      wordCount: words.length,
+      paragraphCount: paragraphs.length,
+      headingCount: headings.length,
+      imageCount: images.length
+    });
+  };
 
   const handleManualContentUpdate = (e: React.FormEvent<HTMLDivElement>) => {
-    setContent(e.currentTarget.innerHTML);
+    const newContent = e.currentTarget.innerHTML;
+    setContent(newContent);
+    updateLocalAnalysis(newContent);
   };
 
   const runSeoAnalysis = useCallback(() => {
@@ -144,25 +168,12 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
     document.execCommand(command, false, value);
     if(editorRef.current) {
         editorRef.current.focus();
-        setContent(editorRef.current.innerHTML); // Update state after command
+        const newContent = editorRef.current.innerHTML;
+        setContent(newContent); // Update state after command
+        updateLocalAnalysis(newContent);
     }
   };
 
-  const localAnalysis: LocalAnalysis = useMemo(() => {
-    const plainText = editorRef.current?.innerText || '';
-    const words = plainText.match(/\b\w+\b/g) || [];
-    const paragraphs = plainText.split(/\n+/).filter(p => p.trim().length > 0);
-    const headings = content.match(/<h[1-3]>/gi) || [];
-    const images = content.match(/<img/gi) || [];
-
-    return {
-      wordCount: words.length,
-      paragraphCount: paragraphs.length,
-      headingCount: headings.length,
-      imageCount: images.length
-    };
-  }, [content]);
-  
   const keywordMetrics: KeywordMetric[] = useMemo(() => {
       if (!seoResult?.nlpKeywords) return [];
       const plainText = editorRef.current?.innerText.toLowerCase() || '';
