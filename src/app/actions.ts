@@ -350,6 +350,10 @@ export async function handlePublishArticle(
 export async function handleAnswerTheAI(
   trendsJson: string
 ): Promise<ActionResponse<AnswerTheAIOutput>> {
+  if (!trendsJson) {
+    return { error: 'No trend data was provided to generate angles from.' };
+  }
+  
   const validatedField = AnswerTheAITrendsSchema.safeParse(trendsJson);
 
   if (!validatedField.success) {
