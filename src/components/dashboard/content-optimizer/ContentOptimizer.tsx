@@ -96,22 +96,7 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
   const [localAnalysis, setLocalAnalysis] = useState<LocalAnalysis>({ wordCount: 0, paragraphCount: 0, headingCount: 0, imageCount: 0 });
 
 
-  useEffect(() => {
-    // Set initial content for the editor when the component mounts
-    if (editorRef.current) {
-      editorRef.current.innerHTML = article.content;
-      // Trigger initial analysis
-       updateLocalAnalysis(article.content);
-    }
-  }, [article.content]);
-
-  useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== content) {
-      editorRef.current.innerHTML = content;
-    }
-  }, [content]);
-  
-  const updateLocalAnalysis = (currentContent: string) => {
+  const updateLocalAnalysis = useCallback((currentContent: string) => {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = currentContent;
     const plainText = tempDiv.innerText || '';
@@ -127,12 +112,16 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
       headingCount: headings.length,
       imageCount: images.length
     });
-  };
+  }, []);
+
+  useEffect(() => {
+    // Initial analysis on mount
+    updateLocalAnalysis(content);
+  }, [content, updateLocalAnalysis]);
 
   const handleManualContentUpdate = (e: React.FormEvent<HTMLDivElement>) => {
     const newContent = e.currentTarget.innerHTML;
     setContent(newContent);
-    updateLocalAnalysis(newContent);
   };
 
   const runSeoAnalysis = useCallback(() => {
@@ -170,13 +159,12 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
         editorRef.current.focus();
         const newContent = editorRef.current.innerHTML;
         setContent(newContent); // Update state after command
-        updateLocalAnalysis(newContent);
     }
   };
 
   const keywordMetrics: KeywordMetric[] = useMemo(() => {
       if (!seoResult?.nlpKeywords) return [];
-      const plainText = editorRef.current?.innerText.toLowerCase() || '';
+      const plainText = content.replace(/<[^>]*>?/gm, '').toLowerCase();
 
       return seoResult.nlpKeywords.map(kw => {
         const regex = new RegExp(`\\b${kw.toLowerCase()}\\b`, 'g');
@@ -229,6 +217,7 @@ export function ContentOptimizer({ article, onBack }: ContentOptimizerProps) {
                         id="content"
                         contentEditable={!isAnalyzingSeo}
                         onInput={handleManualContentUpdate}
+                        dangerouslySetInnerHTML={{ __html: content }}
                         className="prose dark:prose-invert max-w-none min-h-[600px] w-full rounded-md border border-input bg-card px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     />
                 </CardContent>
