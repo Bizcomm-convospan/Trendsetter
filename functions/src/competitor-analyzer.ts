@@ -31,12 +31,13 @@ export type CompetitorAnalyzerOutput = z.infer<typeof CompetitorAnalyzerOutputSc
 
 const competitorAnalyzerPrompt = ai.definePrompt({
   name: 'competitorAnalyzerPrompt',
-  input: { schema: z.object({ content: z.string() }) }, // Receives clean text content
+  input: { schema: z.object({ url: z.string().url() }) }, 
   output: { schema: CompetitorAnalyzerOutputSchema },
+  tools: [crawlUrlTool],
   prompt: `
-    You are a world-class SEO analyst and content strategist. Your task is to analyze the following article text and create a "Competitor Report Card".
-
-    Analyze the text and provide the following report:
+    You are a world-class SEO analyst and content strategist. Your task is to analyze the following article and create a "Competitor Report Card".
+    To do this, you MUST first call the crawlUrlTool with the provided URL to get the article's text content.
+    Then, analyze the returned text and provide the following report:
     1.  **Key Topics**: What are the primary topics and keywords this article seems to be targeting?
     2.  **Content Grade**: Give the article an overall grade from A to F, based on its readability and structure.
     3.  **Content Gaps**: What related, important sub-topics did the author miss? Identify 3-5 opportunities to create a more comprehensive article.
@@ -44,10 +45,7 @@ const competitorAnalyzerPrompt = ai.definePrompt({
 
     Return the report in the specified JSON format.
 
-    Article Text to Analyze:
-    ---
-    {{{content}}}
-    ---
+    URL to Analyze: {{{url}}}
   `,
 });
 
@@ -57,19 +55,17 @@ const competitorAnalyzerFlow = ai.defineFlow(
     name: 'competitorAnalyzerFlow',
     inputSchema: CompetitorAnalyzerInputSchema,
     outputSchema: CompetitorAnalyzerOutputSchema,
-    tools: [crawlUrlTool]
   },
   async (input) => {
-    // Step 1: Crawl the URL to get the clean text content using the tool.
-    const cleanContent = await crawlUrlTool(input);
-
-    if (!cleanContent) {
-      throw new Error("Failed to retrieve content from the URL.");
+    // The prompt is now responsible for calling the tool.
+    // The AI will use the tool to get the content and then perform the analysis.
+    const { output } = await competitorAnalyzerPrompt(input);
+    
+    if (!output) {
+        throw new Error("Failed to get analysis from the AI prompt.");
     }
-
-    // Step 2: Pass the clean content to the analysis prompt.
-    const { output } = await competitorAnalyzerPrompt({ content: cleanContent });
-    return output!;
+    
+    return output;
   }
 );
 

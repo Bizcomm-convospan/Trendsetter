@@ -36,7 +36,9 @@ jest.mock('firebase-functions/logger', () => ({
 import * as admin from 'firebase-admin';
 import { analyze } from './index';
 import { analyzeCompetitor } from './competitor-analyzer';
-import type { Request, Response } from 'firebase-functions/v2/https';
+import type { Request } from 'firebase-functions/v2/https';
+import type { Response } from 'express';
+
 
 // A helper to get the mocked firestore instance
 const mockDb = admin.firestore() as jest.Mocked<any>;
